@@ -1,14 +1,15 @@
 using MongoDB.Driver;
 using MongoDB.Bson;
 using InstaConnect.Models;
+using Backend.Services;
 
 namespace InstaConnect.Services
 {
-    public class MongoDBConnector
+    public class MongoDBService : IMongoDBService
     {
         private MongoClient dbClient;
         private IMongoDatabase database;
-        public MongoDBConnector()
+        public MongoDBService()
         {
             string username = Environment.GetEnvironmentVariable("DB_USERNAME");
             string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
@@ -19,12 +20,6 @@ namespace InstaConnect.Services
         public IMongoCollection<TestModel> GetCollection()
         {
             return this.database.GetCollection<TestModel>("InstaConnectCollection");
-        }
-
-        public string GetDatabase()
-        {
-            var list = this.dbClient.ListDatabases().ToList();
-            return list[0].ToString();
         }
     }
 }

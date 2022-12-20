@@ -1,4 +1,6 @@
+using Backend.Services;
 using instaConnect.Config;
+using InstaConnect.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<IMongoDBService, MongoDBService>();
 
 var app = builder.Build();
 
