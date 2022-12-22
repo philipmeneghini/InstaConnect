@@ -12,12 +12,17 @@ export default class Box extends REACT.Component {
     }
 
     render() {
+        console.log(this.state.value)
         return (
-            <button
-            className = "Box"
-            onClick = {this.getDB}>
-                {this.state.value}
-            </button>
+            <>
+                <button
+                className = "Box"
+                onClick = {this.getDB}>
+                    "Click"
+                </button>
+                <p> {this.state.value.test}
+                </p>
+            </>
         )
     }
 
@@ -28,8 +33,7 @@ export default class Box extends REACT.Component {
     getDB = () => {
         axios.get(`https://localhost:7208/InstaConnect`)
         .then(response => {
-            const test = response.data
-            this.setState({test})
+            this.setState({value: response.data})
         })
         .catch(error => {
             this.setState({value: "Error"})
