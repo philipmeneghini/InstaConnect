@@ -2,6 +2,8 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using InstaConnect.Models;
 using Backend.Services;
+using Util.AppSettings;
+using Util.Constants;
 
 namespace InstaConnect.Services
 {
@@ -11,15 +13,17 @@ namespace InstaConnect.Services
         private IMongoDatabase database;
         public MongoDBService()
         {
-            string username = Environment.GetEnvironmentVariable("DB_USERNAME");
-            string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
-            this.dbClient = new MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0.zzrlv29.mongodb.net/test");
+            //string username = Environment.GetEnvironmentVariable("DB_USERNAME");
+            //string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-            this.database = this.dbClient.GetDatabase ("InstaConnect");
+            AppSettingsService appsettingservice = new AppSettingsService();
+            this.dbClient = new MongoClient(appsettingservice.GetConnectionString());
+
+            this.database = this.dbClient.GetDatabase(ApplicationConstants.DatabaseName);
         }
         public IMongoCollection<TestModel> GetCollection()
         {
-            return this.database.GetCollection<TestModel>("InstaConnectCollection");
+            return this.database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
         }
     }
 }
