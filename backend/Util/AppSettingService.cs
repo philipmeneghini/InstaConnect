@@ -1,4 +1,6 @@
-﻿namespace Util.AppSettings
+﻿using Util.Constants;
+
+namespace Util.AppSettings
 {
     public class AppSettingsService
     {
@@ -9,9 +11,9 @@
             this.configuration = builder.Build();
         }
 
-        public string GetConnectionString()
+        public string GetLocalConnectionString()
         {
-            return this.configuration.GetValue<string>("ConnectionStrings:Local");
+            return this.configuration.GetValue<string>(ApplicationConstants.LocalDatabase);
         }
     }
 }

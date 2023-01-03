@@ -1,12 +1,7 @@
 using Backend.Services;
-using instaConnect.Config;
 using InstaConnect.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var root = Directory.GetCurrentDirectory();
-var dotenv = Path.Combine(root, ".env");
-DotEnv.Load(dotenv);
 
 // Add services to the container.
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using InstaConnect.Models;
 using MongoDB.Driver;
+using Backend.Services.InstaConnectServices;
 using Backend.Services;
 
 namespace InstaConnect.Controllers
@@ -16,15 +17,14 @@ namespace InstaConnect.Controllers
 
         public InstaConnectController(IMongoDBService mongoDBService)
         {
-            _mongoDBService = mongoDBService;
+            this._mongoDBService = mongoDBService;
         }
 
         [HttpGet(Name = "GetConnection")]
-        public TestModel Get()
+        public string? Get()
         {
-            var collection = _mongoDBService.GetCollection();
-            TestModel doc = collection.Find(new BsonDocument()).FirstOrDefault();
-            return doc;
+            InstaConnectServices connection = new(_mongoDBService);
+            return connection.GetConnectionMessage();
         }
     }
 }

@@ -4,5 +4,6 @@
     {
         static public readonly string DatabaseName = "InstaConnect";
         static public readonly string TestCollectionName = "Test";
+        static public readonly string LocalDatabase = "ConnectionStrings:Local";
     }
 }

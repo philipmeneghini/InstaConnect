@@ -13,11 +13,9 @@ namespace InstaConnect.Services
         private IMongoDatabase database;
         public MongoDBService()
         {
-            //string username = Environment.GetEnvironmentVariable("DB_USERNAME");
-            //string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
             AppSettingsService appsettingservice = new AppSettingsService();
-            this.dbClient = new MongoClient(appsettingservice.GetConnectionString());
+            this.dbClient = new MongoClient(appsettingservice.GetLocalConnectionString());
 
             this.database = this.dbClient.GetDatabase(ApplicationConstants.DatabaseName);
         }

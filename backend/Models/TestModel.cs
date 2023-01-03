@@ -7,7 +7,10 @@ namespace InstaConnect.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? _id { get; set; }
-        public string? test { get; set; }
+
+        [BsonElement("_id")]
+        public string? Id { get; set; }
+        [BsonElement("test")]
+        public string? Test { get; set; }
     }
 }
