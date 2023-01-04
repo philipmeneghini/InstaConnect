@@ -1,10 +1,10 @@
 import './App.css';
-import Box from  './components/Box'
+import { DatabaseTester } from './components/DatabaseTester';
 
 function App() {
   return (
     <div className = "App">
-      <Box />
+      <DatabaseTester />
     </div>
   );
 }
