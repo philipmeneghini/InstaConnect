@@ -3,10 +3,13 @@ import axios from 'axios'
 import { GETEndPoint } from '../utils/validation.constants'
 
 import './DatabaseTester.css'
+import React from 'react'
 
+
+type Props = [value: string, setValue: React.Dispatch<React.SetStateAction<string>>]
 
 export const DatabaseTester = () => {
-    const [value, setValue] = useState("Database Not Connected")
+    const [value, setValue]: Props = useState("Database Not Connected")
 
     return (
         <>
