@@ -5,7 +5,7 @@ import React from 'react'
 function App() {
   return (
     <div className = "App">
-      <DatabaseTester />
+      <DatabaseTester value = "Database Not Connected"/>
     </div>
   );
 }

@@ -5,24 +5,25 @@ import { GETEndPoint } from '../utils/validation.constants'
 import './DatabaseTester.css'
 import React from 'react'
 
+export interface IProps {
+    value : string
+}
 
-type Props = [value: string, setValue: React.Dispatch<React.SetStateAction<string>>]
-
-export const DatabaseTester = () => {
-    const [value, setValue]: Props = useState("Database Not Connected")
+export const DatabaseTester = (currentValue: IProps) => {
+    const [value, setValue] = useState<string>(currentValue.value)
 
     return (
         <>
             <button className = "DatabaseTester"
-            onClick = {() => {
-                axios.get(GETEndPoint)
-                    .then(response => {
-                        setValue(response.data)
-                    })
-                    .catch(error => {
-                        setValue("Error: Could Not Connect")
-                            console.error(error)
-                    })
+            onClick = {async () => {
+                try{
+                    const response = await axios.get(GETEndPoint)
+                    setValue(response.data)
+                }
+                catch(error: any) {
+                    setValue(`Error: ${error.data}`)
+                    console.error(error)
+                }
                 }
             }>
                 Click
