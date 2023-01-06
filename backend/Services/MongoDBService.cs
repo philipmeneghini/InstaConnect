@@ -2,7 +2,6 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using InstaConnect.Models;
 using Backend.Services;
-using Util.AppSettings;
 using Util.Constants;
 using Backend.Models;
 using Microsoft.Extensions.Options;
