@@ -4,12 +4,12 @@ using MongoDB.Driver;
 
 namespace Backend.Services.InstaConnectServices
 {
-    public class InstaConnectServices
+    public class InstaConnectServices : IInstaConnectServices
     {
         private IMongoDBService _mongoDBService;
         public InstaConnectServices(IMongoDBService mongoDBService) 
         {
-            this._mongoDBService = mongoDBService;
+            _mongoDBService = mongoDBService;
         }
 
         public string? GetConnectionMessage()

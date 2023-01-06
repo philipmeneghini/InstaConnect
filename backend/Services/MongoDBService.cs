@@ -4,6 +4,8 @@ using InstaConnect.Models;
 using Backend.Services;
 using Util.AppSettings;
 using Util.Constants;
+using Backend.Models;
+using Microsoft.Extensions.Options;
 
 namespace InstaConnect.Services
 {
@@ -11,17 +13,17 @@ namespace InstaConnect.Services
     {
         private MongoClient dbClient;
         private IMongoDatabase database;
-        public MongoDBService()
+        private readonly ConnectionStrings _connectionStrings;
+        public MongoDBService(IOptions<ConnectionStrings> connectionstrings)
         {
+            _connectionStrings = connectionstrings.Value;
+            dbClient = new MongoClient(_connectionStrings.Local);
 
-            AppSettingsService appsettingservice = new AppSettingsService();
-            this.dbClient = new MongoClient(appsettingservice.GetLocalConnectionString());
-
-            this.database = this.dbClient.GetDatabase(ApplicationConstants.DatabaseName);
+            database = dbClient.GetDatabase(ApplicationConstants.DatabaseName);
         }
         public IMongoCollection<TestModel> GetCollection()
         {
-            return this.database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
+            return database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
         }
     }
 }
