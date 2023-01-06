@@ -9,8 +9,8 @@ export interface IProps {
     value : string
 }
 
-export const DatabaseTester = (currentValue: IProps) => {
-    const [value, setValue] = useState<string>(currentValue.value)
+export const DatabaseTester = (props: IProps) => {
+    const [value, setValue] = useState<string>(props.value)
 
     return (
         <>
