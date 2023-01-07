@@ -6,15 +6,16 @@ namespace Backend.Services.InstaConnectServices
 {
     public class InstaConnectServices : IInstaConnectServices
     {
-        private IMongoDBService _mongoDBService;
-        public InstaConnectServices(IMongoDBService mongoDBService) 
+        private IMongoDbService _mongoDbService;
+
+        public InstaConnectServices(IMongoDbService mongoDbService) 
         {
-            _mongoDBService = mongoDBService;
+            _mongoDbService = mongoDbService;
         }
 
         public string? GetConnectionMessage()
         {
-            var collection = _mongoDBService.GetCollection();
+            var collection = _mongoDbService.GetCollection();
             TestModel doc = collection.Find(new BsonDocument()).FirstOrDefault();
 
             return doc.Test;

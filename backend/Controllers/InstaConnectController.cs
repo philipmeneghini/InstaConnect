@@ -13,18 +13,18 @@ namespace InstaConnect.Controllers
     public class InstaConnectController : ControllerBase
     {
 
-        private IMongoDBService _mongoDBService;
+        private IMongoDbService _mongoDBService;
+        private IInstaConnectServices _instaConnectServices;
 
-        public InstaConnectController(IMongoDBService mongoDBService)
+        public InstaConnectController(IInstaConnectServices InstaConnectServices)
         {
-            this._mongoDBService = mongoDBService;
+            _instaConnectServices = InstaConnectServices;
         }
 
         [HttpGet(Name = "GetConnection")]
         public string? Get()
         {
-            InstaConnectServices connection = new(_mongoDBService);
-            return connection.GetConnectionMessage();
+            return _instaConnectServices.GetConnectionMessage();
         }
     }
 }

@@ -1,19 +1,20 @@
 using Backend.Services;
 using InstaConnect.Services;
 using Backend.Services.InstaConnectServices;
+using Util.Constants;
 using Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IMongoDBService, MongoDBService>();
-builder.Services.AddScoped<IInstaConnectServices, InstaConnectServices>();
+builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
+builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
 
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
