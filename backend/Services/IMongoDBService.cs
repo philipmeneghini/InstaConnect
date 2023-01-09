@@ -3,7 +3,7 @@ using MongoDB.Driver;
 
 namespace Backend.Services
 {
-    public interface IMongoDBService
+    public interface IMongoDbService
     {
         public IMongoCollection<TestModel> GetCollection();
     }

@@ -1,25 +1,28 @@
 using MongoDB.Driver;
-using MongoDB.Bson;
 using InstaConnect.Models;
 using Backend.Services;
+using Util.Constants;
+using Microsoft.Extensions.Options;
+using Backend.Models;
 
 namespace InstaConnect.Services
 {
-    public class MongoDBService : IMongoDBService
+    public class MongoDbService : IMongoDbService
     {
-        private MongoClient dbClient;
-        private IMongoDatabase database;
-        public MongoDBService()
-        {
-            string username = Environment.GetEnvironmentVariable("DB_USERNAME");
-            string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
-            this.dbClient = new MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0.zzrlv29.mongodb.net/test");
+        private MongoClient _dbClient;
+        private IMongoDatabase _database;
+        private readonly ConnectionStringModel _connectionStrings;
 
-            this.database = this.dbClient.GetDatabase ("InstaConnect");
+        public MongoDbService(IOptions<ConnectionStringModel> ConnectionStrings)
+        {
+            _connectionStrings = ConnectionStrings.Value;
+            _dbClient = new MongoClient(_connectionStrings.MongoDb);
+
+            _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
         }
         public IMongoCollection<TestModel> GetCollection()
         {
-            return this.database.GetCollection<TestModel>("InstaConnectCollection");
+            return _database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
         }
     }
 }
