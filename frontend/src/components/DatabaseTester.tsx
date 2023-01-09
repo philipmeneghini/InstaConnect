@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import axios from 'axios'
-import { GETEndPoint } from '../utils/validation.constants'
+import { TestApiClient } from '../api_views/TestApiClient'
+import { GETEndPoint } from '../utils/Constants'
 
 import './DatabaseTester.css'
 import React from 'react'
@@ -11,14 +11,14 @@ export interface IProps {
 
 export const DatabaseTester = (props: IProps) => {
     const [value, setValue] = useState<string>(props.value)
+    const apiClient = new TestApiClient(GETEndPoint)
 
     return (
         <>
             <button className = "DatabaseTester"
             onClick = {async () => {
                 try{
-                    const response = await axios.get(GETEndPoint)
-                    setValue(response.data)
+                    setValue(await apiClient.getMessage())
                 }
                 catch(error: any) {
                     setValue(`Error: ${error.data}`)
