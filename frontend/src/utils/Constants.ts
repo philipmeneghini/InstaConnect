@@ -1,0 +1,1 @@
+export const GETEndPoint = `https://localhost:7208/InstaConnect`
