@@ -5,6 +5,8 @@ namespace Backend.Services
 {
     public interface IMongoDbService
     {
-        public IMongoCollection<TestModel> GetCollection();
+        public TestModel GetTestCollectionDoc();
+
+        public IMongoCollection<UserModel> GetUserCollection();
     }
 }

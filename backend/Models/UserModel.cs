@@ -11,10 +11,10 @@ namespace InstaConnect.Models
         [BsonElement("_id")]
         public string? Id { get; set; }
 
-        [BsonElement("first name")]
+        [BsonElement("firstName")]
         public string? FirstName { get; set; }
 
-        [BsonElement("last name")]
+        [BsonElement("lastName")]
         public string? LastName { get; set; }
 
         [BsonElement("birthday")]
@@ -23,7 +23,7 @@ namespace InstaConnect.Models
         [BsonElement("email")]
         public string? Email { get; set; }
 
-        [BsonElement("profile picture")]
+        [BsonElement("profilePicture")]
         public string? ProfilePicture { get; set; }
     }
 }

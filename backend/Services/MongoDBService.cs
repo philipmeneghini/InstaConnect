@@ -4,6 +4,7 @@ using Backend.Services;
 using Util.Constants;
 using Microsoft.Extensions.Options;
 using Backend.Models;
+using MongoDB.Bson;
 
 namespace InstaConnect.Services
 {
@@ -20,9 +21,15 @@ namespace InstaConnect.Services
 
             _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
         }
-        public IMongoCollection<TestModel> GetCollection()
+        public TestModel GetTestCollectionDoc()
         {
-            return _database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
+            IMongoCollection <TestModel> collection = _database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
+            return collection.Find(new BsonDocument()).FirstOrDefault();
+        }
+
+        public IMongoCollection<UserModel> GetUserCollection()
+        {
+            return _database.GetCollection<UserModel>(ApplicationConstants.UserCollectionName);
         }
     }
 }

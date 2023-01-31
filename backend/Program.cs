@@ -3,6 +3,8 @@ using InstaConnect.Services;
 using Backend.Services.InstaConnectServices;
 using Util.Constants;
 using Backend.Models;
+using Backend.Interfaces;
+using Backend.UserServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
+builder.Services.AddSingleton<IUserServices, UserServices>();
 
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
