@@ -47,5 +47,11 @@ namespace InstaConnect.Controllers
         {
             return _userService.CreateUser(newUser);
         }
+
+        [HttpPost("Users")]
+        public List<UserModel> PostUser(List<UserModel> newUsers)
+        {
+            return _userService.CreateUsers(newUsers);
+        }
     }
 }

@@ -9,5 +9,7 @@ namespace Backend.Interfaces
         public UserModel GetUser(string email);
 
         public UserModel CreateUser(UserModel newUser);
+
+        public List<UserModel> CreateUsers(List<UserModel> newUsers);
     }
 }
