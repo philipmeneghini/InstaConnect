@@ -10,6 +10,8 @@ namespace Backend.Interfaces
 
         public UserModel CreateUser(UserModel newUser);
 
-        public List<UserModel> CreateUsers(List<UserModel> newUsers);
+        public UserModel UpdateUser(UserModel newUser);
+
+        public UserModel DeleteUser(string email);
     }
 }

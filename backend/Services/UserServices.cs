@@ -3,6 +3,7 @@ using Backend.Interfaces;
 using Backend.Services;
 using MongoDB.Driver;
 using Backend.Util;
+using MongoDB.Bson;
 
 namespace Backend.UserServices
 {
@@ -96,38 +97,69 @@ namespace Backend.UserServices
             }
         }
 
-        public List<UserModel> CreateUsers(List<UserModel> newUsers)
+        public UserModel UpdateUser(UserModel newUser)
         {
-            List<UserModel> usersAddedToDb = new List<UserModel>();
-            foreach (UserModel newUser in newUsers)
+            try
             {
-                try
+                string? email = newUser.Email;
+                if (!ContactValidator.isEmailValid(email))
                 {
-                    string? email = newUser.Email;
-                    if (!ContactValidator.isEmailValid(email))
-                    {
-                        throw new Exception($"Email address {email} is not valid or missing");
-                    }
-
-                    UserModel user = _mongoCollection.Find(user => user.Email == email).FirstOrDefault();
-                    if (user != null)
-                    {
-                        throw new Exception($"User with email address {email} already exists");
-                    }
-
-                    if (newUser.FirstName == null || newUser.LastName == null || newUser.BirthDate == null)
-                    {
-                        throw new Exception($"user entry with email address {email} needs a first name, last name and birthdate field");
-                    }
-                    _mongoCollection.InsertOne(newUser);
-                    usersAddedToDb.Add(newUser);
+                    throw new Exception($"Email address {email} is not valid or missing");
                 }
-                catch (Exception ex)
+
+                if (newUser.FirstName == null || newUser.LastName == null || newUser.BirthDate == null)
                 {
-                    Console.WriteLine(ex.Message);
+                    throw new Exception($"user entry needs a first name, last name and birthdate field");
                 }
+
+                UserModel user;
+                if (newUser.Id != null)
+                {
+                    var arrayFilter = Builders<UserModel>.Filter.Eq("Id", newUser.Id);
+                    user = _mongoCollection.FindOneAndReplace<UserModel>(arrayFilter, newUser);
+                    if (user == null)
+                    {
+                        throw new Exception($"No user with email address {newUser.Id} exists");
+                    }
+                }
+
+                else
+                {
+                    var arrayFilter = Builders<UserModel>.Filter.Eq("Email", newUser.Email);
+                    user = _mongoCollection.FindOneAndReplace<UserModel>(arrayFilter, newUser);
+
+                    if (user == null)
+                    {
+                        throw new Exception($"No user with email address {email} exists");
+                    }
+                }
+
+                return user;
             }
-            return usersAddedToDb;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public UserModel DeleteUser(string email)
+        {
+            try
+            {
+                FilterDefinition<UserModel>? deleteFilter = Builders<UserModel>.Filter.Eq("Email", email);
+                UserModel deletedUser = _mongoCollection.DeleteOne<UserModel>(deleteFilter);
+                if (deletedUser == null)
+                {
+                    throw new Exception("No user deleted");
+                }
+                return deletedUser;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
         }
     }
 }

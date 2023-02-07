@@ -30,16 +30,16 @@ namespace InstaConnect.Controllers
             return _instaConnectServices.GetConnectionMessage();
         }
 
-        [HttpGet("Users")]
-        public List<UserModel> GetUsers(string? firstName, string? lastName)
-        {
-            return _userService.GetUsers(firstName, lastName);
-        }
-
         [HttpGet("User")]
         public UserModel GetUser(string? email)
         {
             return _userService.GetUser(email);
+        }
+
+        [HttpGet("Users")]
+        public List<UserModel> GetUsers(string? firstName, string? lastName)
+        {
+            return _userService.GetUsers(firstName, lastName);
         }
 
         [HttpPost("User")]
@@ -48,10 +48,16 @@ namespace InstaConnect.Controllers
             return _userService.CreateUser(newUser);
         }
 
-        [HttpPost("Users")]
-        public List<UserModel> PostUser(List<UserModel> newUsers)
+        [HttpPut("User")]
+        public UserModel PutUser(UserModel newUser)
         {
-            return _userService.CreateUsers(newUsers);
+            return _userService.UpdateUser(newUser);
+        }
+
+        [HttpDelete("User")]
+        public UserModel DeleteUser(string email)
+        {
+            return _userService.DeleteUser(email);
         }
     }
 }
