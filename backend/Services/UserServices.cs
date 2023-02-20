@@ -3,8 +3,12 @@ using Backend.Interfaces;
 using Backend.Services;
 using MongoDB.Driver;
 using Backend.Util;
+using Util.Constants;
 using MongoDB.Bson;
 using Backend.Util.Exceptions;
+using Amazon.S3;
+using Amazon.Runtime;
+using Amazon;
 
 namespace Backend.UserServices
 {
@@ -19,7 +23,6 @@ namespace Backend.UserServices
             _mongoDbService = mongoDbService;
             _mongoCollection = _mongoDbService.GetUserCollection();
             _s3BucketService = s3BucketService;
-            
         }
         public List<UserModel> GetUsers(string? firstName, string? lastName)
         {
@@ -89,7 +92,7 @@ namespace Backend.UserServices
             {
                 throw new InstaBadRequestException($"user entry with email address {email} needs a first name, last name and birthdate field");
             }
-            string url = _s3BucketService.GeneratePresignedUrl(newUser.Email);
+            string url = _s3BucketService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName);
             newUser.ProfilePicture = url;
             _mongoCollection.InsertOne(newUser);
             return newUser;      
@@ -111,7 +114,8 @@ namespace Backend.UserServices
 
             UserModel user;
             if (newUser.Id != null)
-            {
+            { 
+                newUser.ProfilePicture = _mongoCollection.Find(user => user.Id == user.Id).FirstOrDefault().ProfilePicture;
                 var arrayFilter = Builders<UserModel>.Filter.Eq("Id", newUser.Id);
                 user = _mongoCollection.FindOneAndReplace<UserModel>(arrayFilter, newUser);
                 if (user == null)
@@ -122,6 +126,7 @@ namespace Backend.UserServices
 
             else
             {
+                newUser.ProfilePicture = _mongoCollection.Find(user => user.Email == newUser.Email).FirstOrDefault().ProfilePicture;
                 var arrayFilter = Builders<UserModel>.Filter.Eq("Email", newUser.Email);
                 user = _mongoCollection.FindOneAndReplace<UserModel>(arrayFilter, newUser);
 

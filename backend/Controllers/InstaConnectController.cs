@@ -31,7 +31,7 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("User")]
-        public UserModel GetUser(string? email)
+        public ActionResult<UserModel> GetUser(string? email)
         {
             return _userService.GetUser(email);
         }
