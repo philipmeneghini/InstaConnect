@@ -5,6 +5,7 @@ using Util.Constants;
 using Backend.Models;
 using Backend.Interfaces;
 using Backend.UserServices;
+using Backend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddSingleton<S3BucketService>();
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
 builder.Services.AddSingleton<IUserServices, UserServices>();
@@ -36,6 +39,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("corspolicy");
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 
