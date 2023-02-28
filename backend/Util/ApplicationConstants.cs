@@ -9,6 +9,6 @@ namespace Util.Constants
         static public readonly string UserCollectionName = "users";
         static public readonly string ConnectionStrings = "ConnectionString";
         static public readonly string S3BucketName = "instaconnect";
-        static public readonly string AmazonS3Credentials = "AmazonS3Credentials";
+        static public readonly string AmazonS3Credentials = nameof(AmazonS3Credentials);
     }
 }

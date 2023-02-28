@@ -11,19 +11,19 @@ namespace Backend.Services
 {
     public class S3BucketService: IS3BucketService
     {
-        private AmazonS3Client client;
+        private AmazonS3Client _client;
         private AmazonS3CredentialsModel _keys;
 
         public S3BucketService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
         {
             _keys = amazonS3CredentialsModel.Value;
             var credentials = new BasicAWSCredentials(_keys.AccessKey, _keys.SecretKey);
-            client = new AmazonS3Client(credentials, RegionEndpoint.USEast1);
+            _client = new AmazonS3Client(credentials, RegionEndpoint.USEast1);
         }
 
-        public async Task<bool> VerifyBucket(string name)
+        public async Task<bool> VerifyBucket(string bucketName)
         {
-            bool result = await AmazonS3Util.DoesS3BucketExistV2Async(client, name);
+            var result = await AmazonS3Util.DoesS3BucketExistV2Async(_client, bucketName);
             return result;
         }
 
@@ -35,7 +35,7 @@ namespace Backend.Services
                 Key = key,
                 Expires = DateTime.Now.AddDays(7)
             };
-            return client.GetPreSignedURL(request);
+            return _client.GetPreSignedURL(request);
         }
     }
 }

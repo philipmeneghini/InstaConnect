@@ -18,7 +18,7 @@ namespace Backend.Middleware
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("Internal Server Error");
+                await context.Response.WriteAsync("Internal Server Error: " + ex.Message);
             }
         }
     }

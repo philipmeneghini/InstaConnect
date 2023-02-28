@@ -16,9 +16,9 @@ namespace InstaConnect.Controllers
     {
 
         private IInstaConnectServices _instaConnectServices;
-        private IUserServices _userService;
+        private IUserService _userService;
 
-        public InstaConnectController(IInstaConnectServices InstaConnectServices, IUserServices UserService)
+        public InstaConnectController(IInstaConnectServices InstaConnectServices, IUserService UserService)
         {
             _instaConnectServices = InstaConnectServices;
             _userService = UserService;

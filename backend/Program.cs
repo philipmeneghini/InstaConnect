@@ -21,7 +21,7 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddSingleton<IS3BucketService, S3BucketService>();
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
-builder.Services.AddSingleton<IUserServices, UserServices>();
+builder.Services.AddSingleton<IUserServices, UserService>();
 
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
