@@ -15,9 +15,7 @@ namespace Backend.Services.InstaConnectServices
 
         public string? GetConnectionMessage()
         {
-            TestModel doc = _mongoDbService.GetTestCollectionDoc();
-
-            return doc.Test;
+            return _mongoDbService.GetTest();
         }
     }
 }

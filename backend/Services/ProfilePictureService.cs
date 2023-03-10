@@ -9,12 +9,12 @@ using Microsoft.Extensions.Options;
 
 namespace Backend.Services
 {
-    public class S3BucketService: IS3BucketService
+    public class ProfilePictureService: IProfilePictureService
     {
         private AmazonS3Client _client;
         private AmazonS3CredentialsModel _keys;
 
-        public S3BucketService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
+        public ProfilePictureService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
         {
             _keys = amazonS3CredentialsModel.Value;
             var credentials = new BasicAWSCredentials(_keys.AccessKey, _keys.SecretKey);

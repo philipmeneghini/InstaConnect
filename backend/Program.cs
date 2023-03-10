@@ -18,10 +18,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddSingleton<IS3BucketService, S3BucketService>();
+builder.Services.AddSingleton<IProfilePictureService, ProfilePictureService>();
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
-builder.Services.AddSingleton<IUserServices, UserService>();
+builder.Services.AddSingleton<IUserService, UserService>();
 
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {

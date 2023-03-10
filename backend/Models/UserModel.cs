@@ -1,9 +1,10 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Backend.Models;
 
 namespace InstaConnect.Models
 {
-    public class UserModel
+    public class UserModel : IInstaModel
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

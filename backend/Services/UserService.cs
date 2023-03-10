@@ -12,16 +12,14 @@ using Amazon;
 
 namespace Backend.UserServices
 {
-    public class UserServices : IUserServices
+    public class UserService : IUserService
     {
-        private IMongoDbService _mongoDbService;
-        private IMongoCollection<UserModel> _mongoCollection;
-        private IS3BucketService _s3BucketService;
+        private IMongoDbService<UserModel> _mongoDbService;
+        private IProfilePictureService _s3BucketService;
 
-        public UserServices(IMongoDbService mongoDbService, IS3BucketService s3BucketService)
+        public UserService(IMongoDbService<UserModel> mongoDbService, IProfilePictureService s3BucketService)
         {
             _mongoDbService = mongoDbService;
-            _mongoCollection = _mongoDbService.GetUserCollection();
             _s3BucketService = s3BucketService;
         }
         public List<UserModel> GetUsers(string? firstName, string? lastName)
