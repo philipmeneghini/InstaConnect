@@ -1,10 +1,14 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Backend.Models;
+using Util.Constants;
 
 namespace InstaConnect.Models
 {
-    public class TestModel
+    public class TestModel : IInstaModel
     {
+        public string CollectionName = ApplicationConstants.TestCollectionName;
+        
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
 

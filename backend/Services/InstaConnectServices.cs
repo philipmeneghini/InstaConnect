@@ -15,10 +15,7 @@ namespace Backend.Services.InstaConnectServices
 
         public string? GetConnectionMessage()
         {
-            var collection = _mongoDbService.GetCollection();
-            TestModel doc = collection.Find(new BsonDocument()).FirstOrDefault();
-
-            return doc.Test;
+            return _mongoDbService.GetTest();
         }
     }
 }
