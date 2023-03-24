@@ -7,8 +7,11 @@ namespace InstaConnect.Models
 {
     public class TestModel : IInstaModel
     {
-        public string CollectionName = ApplicationConstants.TestCollectionName;
-        
+        public string GetCollectionName()
+        {
+            return ApplicationConstants.TestCollectionName;
+        }
+
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
 

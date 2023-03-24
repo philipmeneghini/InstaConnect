@@ -1,17 +1,15 @@
 using InstaConnect.Models;
+using Backend.Services;
+using Backend.Models;
+using Backend.Validators.UserValidators;
 
 namespace Backend.Interfaces
 {
-    public interface IUserService
+    public interface IUserService : IMongoDbService<UserModel>
     {
-        public List<UserModel> GetUsers(string firstName, string lastName);
+        public List<UserModel> GetUsers(string? firstName, string? lastName, string? birthDate);
 
-        public UserModel GetUser(string email);
+        public Task<List<UserModel>> GetUsersAsync(string? firstName, string? lastName, string? birthDate);
 
-        public UserModel CreateUser(UserModel newUser);
-
-        public UserModel UpdateUser(UserModel newUser);
-
-        public UserModel DeleteUser(string email);
     }
 }

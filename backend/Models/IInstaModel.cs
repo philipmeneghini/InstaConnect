@@ -1,8 +1,7 @@
-﻿using Util.Constants;
-
-namespace Backend.Models
+﻿namespace Backend.Models
 {
     public interface IInstaModel 
     {
+        public object GetIndex();
     }
 }

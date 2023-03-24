@@ -5,7 +5,9 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Util.Exceptions;
 using Microsoft.Extensions.Options;
+using Util.Constants;
 
 namespace Backend.Services
 {
@@ -27,15 +29,30 @@ namespace Backend.Services
             return result;
         }
 
-        public string GeneratePresignedUrl(string key, string name)
+        public string GeneratePresignedUrl(string key, string bucketName)
         {
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
             {
-                BucketName = name,
+                BucketName = bucketName,
                 Key = key,
-                Expires = DateTime.Now.AddDays(7)
+                Expires = DateTime.UtcNow
             };
             return _client.GetPreSignedURL(request);
+        }
+
+        public async void DeleteProfilePicture(string key, string bucketName)
+        {
+            DeleteObjectRequest request = new DeleteObjectRequest
+            {
+                BucketName = bucketName,
+                Key = key
+            };
+            var response = await _client.DeleteObjectAsync(request);
+            if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new InstaGenericException((int)response.HttpStatusCode, string.Format(ApplicationConstants.ErrorDeletingProfilePicture, key));
+            }
+            return;
         }
     }
 }

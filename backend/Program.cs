@@ -6,20 +6,27 @@ using Backend.Models;
 using Backend.Interfaces;
 using Backend.UserServices;
 using Backend.Middleware;
+using InstaConnect.Models;
+using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Backend.Validators.UserValidators;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
+builder.Services.Configure<SettingsModel<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<AmazonS3CredentialsModel>(builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddScoped<IValidator<string>, GetUserValidator>();
+builder.Services.AddScoped<IValidator<string>, DeleteUserValidator>();
 builder.Services.AddSingleton<IProfilePictureService, ProfilePictureService>();
-builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
+builder.Services.AddSingleton<IMongoDbService<UserModel>, MongoDbService<UserModel>>();
 builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
 builder.Services.AddSingleton<IUserService, UserService>();
 

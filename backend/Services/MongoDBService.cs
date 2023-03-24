@@ -5,54 +5,47 @@ using Util.Constants;
 using Microsoft.Extensions.Options;
 using Backend.Models;
 using MongoDB.Bson;
-using Amazon.S3.Model;
-using Microsoft.VisualBasic;
+using System.Xml;
 
 namespace InstaConnect.Services
 {
-    public class MongoDbService<T> : IMongoDbService<T>
+    public class MongoDbService<T> : IMongoDbService<T> where T : IInstaModel
     {
         private MongoClient _dbClient;
         private IMongoDatabase _database;
         private IMongoCollection<T> _collection;
+        private string _index;
 
-        public MongoDbService(IOptions<ConnectionStringModel> connectionStrings)
+        public MongoDbService(IOptions<SettingsModel<T>> settings)
         {
-            _dbClient = new MongoClient(connectionStrings.Value.MongoDb);
+            _dbClient = new MongoClient(settings.Value.ConnectionString);
             _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
-            _collection = _database.GetCollection<T>(CollectionName[T]);
-        }
-        public string? GetTest()
-        {
-            IMongoCollection <TestModel> collection = _database.GetCollection<TestModel>(ApplicationConstants.TestCollectionName);
-            return collection.Find(new BsonDocument()).FirstOrDefault().Test;
+            _collection = _database.GetCollection<T>(settings.Value.Collection);
+            _index = settings.Value.Index;
         }
 
-        public IMongoCollection<UserModel> GetUserCollection()
+        public T GetModel(object id)
         {
-            return _database.GetCollection<UserModel>(ApplicationConstants.UserCollectionName);
-        }
-
-        public T GetModel(FilterDefinition<T> filter)
-        {
-            IFindFluent<T,T> result =  _collection.Find<T>(filter);
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            IFindFluent<T,T> result= _collection.Find(filter);
             return result.Single();
         }
-        public async Task<T> GetModelAsync(FilterDefinition<T> filter)
+        public async Task<T> GetModelAsync(object id)
         {
-            var result = await _collection.FindAsync<T>(filter);
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            var result = await _collection.FindAsync(filter);
             return result.Single();
         }
 
-        public List<T>? GetModels(FilterDefinition<T> filter)
+        public List<T> GetModels(FilterDefinition<T> filter) 
         {
             return _collection.Find(filter).ToList<T>();
         }
-        public async Task<List<T>?> GetModelsAsync(FilterDefinition<T> filter)
+        public async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
         {
             return await _collection.Find(filter).ToListAsync<T>();
         }
-
+        
         public T CreateModel(T model)
         {
             _collection.InsertOne(model);
@@ -75,41 +68,81 @@ namespace InstaConnect.Services
             return models;
         }
 
-        public UpdateResult UpdateModel(FilterDefinition<T> filter, UpdateDefinition<T> update)
+        public T? UpdateModel(T updatedModel)
         {
-            return _collection.UpdateOne(filter, update);
-        }
-        public async Task<UpdateResult> UpdateModelAsync(FilterDefinition<T> filter, UpdateDefinition<T> update)
-        {
-            return await _collection.UpdateOneAsync(filter, update);
-        }
-
-        public UpdateResult UpdateModels(FilterDefinition<T> filter, UpdateDefinition<T> update)
-        {
-            return _collection.UpdateMany(filter, update);
-        }
-        public async Task<UpdateResult> UpdateModelsAsync(FilterDefinition<T> filter, UpdateDefinition<T> update)
-        {
-            return await _collection.UpdateManyAsync(filter, update);
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), updatedModel.GetIndex());
+            var update = Builders<T>.Update.Set(t => t, updatedModel);
+            var result = _collection.UpdateOne(filter, update);
+            return (result.IsAcknowledged? updatedModel : default(T));
         }
 
-        public DeleteResult DeleteModel(FilterDefinition<T> filter)
+        public async Task<T?> UpdateModelAsync(T updatedModel)
         {
-            return _collection.DeleteOne(filter);
-       ;
-        }
-        public async Task<DeleteResult> DeleteModelAsync(FilterDefinition<T> filter)
-        {
-             return await _collection.DeleteOneAsync(filter);
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), updatedModel.GetIndex());
+            var update = Builders<T>.Update.Set(t => t, updatedModel);
+            var result = await _collection.UpdateOneAsync(filter, update);
+            return (result.IsAcknowledged ? updatedModel : default(T));
         }
 
-        public DeleteResult DeleteModels(FilterDefinition<T> filter)
+        public List<T> UpdateModels(List<T> updatedModels)
         {
-            return _collection.DeleteMany(filter);
+            List<T> finishedModels = new List<T> ();
+            foreach (var model in updatedModels)
+            {
+                var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), model.GetIndex());
+                var update = Builders<T>.Update.Set(t => t, model);
+                var result = _collection.UpdateOne(filter, update);
+                if (result.IsAcknowledged)
+                {
+                    finishedModels.Add(model);
+                }
+
+            }
+            return finishedModels;
         }
-        public async Task<DeleteResult> DeleteModelsAsync(FilterDefinition<T> filter)
+        public async Task<List<T>> UpdateModelsAsync(List<T> updatedModels)
         {
-            return await _collection.DeleteManyAsync(filter);
+            List<T> finishedModels = new List<T>();
+            foreach (var model in updatedModels)
+            {
+                var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), model.GetIndex());
+                var update = Builders<T>.Update.Set(t => t, model);
+                var result = await _collection.UpdateOneAsync(filter, update);
+                if (result.IsAcknowledged)
+                {
+                    finishedModels.Add(model);
+                }
+
+            }
+            return finishedModels;
+        }
+
+        public T? DeleteModel(object id)
+        {
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            T model = _collection.Find(filter).Single();
+            var result = _collection.DeleteOne(filter);
+            return result.IsAcknowledged ? model : default;
+        }
+        public async Task<T?> DeleteModelAsync(object id) 
+        {
+            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            T model = _collection.Find(filter).Single();
+             var result = await _collection.DeleteOneAsync(filter);
+            return result.IsAcknowledged ? model : default;
+        }
+
+        public List<T> DeleteModels(FilterDefinition<T> filter)
+        {
+            List<T> models = _collection.Find(filter).ToList();
+            var result = _collection.DeleteMany(filter);
+            return result.IsAcknowledged ? models : new List<T>();
+        }
+        public async Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter)
+        {
+            List<T> models = _collection.Find(filter).ToList();
+            var result = await _collection.DeleteManyAsync(filter);
+            return result.IsAcknowledged ? models : new List<T>();
         }
     }
 }

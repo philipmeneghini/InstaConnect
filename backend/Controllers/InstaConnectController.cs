@@ -31,33 +31,33 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("User")]
-        public ActionResult<UserModel> GetUser(string? email)
+        public async Task<ActionResult<UserModel>> GetUser(string? email)
         {
-            return _userService.GetUser(email);
+            return await _userService.GetModelAsync(email);
         }
 
         [HttpGet("Users")]
-        public List<UserModel> GetUsers(string? firstName, string? lastName)
+        public async Task<ActionResult<List<UserModel>>> GetUsers(string? firstName, string? lastName, string? birthdate)
         {
-            return _userService.GetUsers(firstName, lastName);
+            return await _userService.GetUsersAsync(firstName, lastName, null);
         }
 
         [HttpPost("User")]
-        public UserModel PostUser(UserModel newUser)
+        public async Task<ActionResult<UserModel>> PostUser(UserModel newUser)
         {
-            return _userService.CreateUser(newUser);
+            return await _userService.CreateModelAsync(newUser);
         }
 
         [HttpPut("User")]
-        public UserModel PutUser(UserModel newUser)
+        public async Task<ActionResult<UserModel>> PutUser(UserModel newUser)
         {
-            return _userService.UpdateUser(newUser);
+            return await _userService.UpdateModelAsync(newUser);
         }
 
         [HttpDelete("User")]
-        public UserModel DeleteUser(string email)
+        public async Task<ActionResult<UserModel>> DeleteUser(string email)
         {
-            return _userService.DeleteUser(email);
+            return await _userService.DeleteModelAsync(email);
         }
     }
 }

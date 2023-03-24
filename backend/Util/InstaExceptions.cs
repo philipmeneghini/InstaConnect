@@ -26,4 +26,12 @@ namespace Backend.Util.Exceptions
             this.statusCode = 400;
         }
     }
+
+    public class InstaGenericException: InstaException
+    {
+        public InstaGenericException(int statusCode, string message) : base(message)
+        {
+            this.statusCode = statusCode;
+        }
+    }
 }

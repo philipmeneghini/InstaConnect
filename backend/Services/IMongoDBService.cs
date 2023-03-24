@@ -6,28 +6,28 @@ namespace Backend.Services
 {
     public interface IMongoDbService<T> where T : IInstaModel
     {
-        public T GetModel(Guid id);
-        public Task<T> GetModelAsync(Guid id);
+        public T GetModel(object id);
+        public Task<T> GetModelAsync(object id);
 
-        public IEnumerable<T> GetModels(IEnumerable<Guid> ids);
-        public Task<IEnumerable<T>> GetModelsAsync(IEnumerable<Guid> ids);
+        public List<T> GetModels(FilterDefinition<T> filter);
+        public Task<List<T>> GetModelsAsync(FilterDefinition<T> filter);
 
         public T CreateModel(T model);
         public Task<T> CreateModelAsync(T model);
 
-        public IEnumerable<T> CreateModels(IEnumerable<T> models);
-        public Task<IEnumerable<T>> CreateModelsAsync(IEnumerable<T> models);
+        public List<T> CreateModels(List<T> models);
+        public Task<List<T>> CreateModelsAsync(List<T> models);
 
-        public T UpdateModel(T model);
-        public Task<T> UpdateModelAsync(T model);
+        public T UpdateModel(T updatedModels);
+        public Task<T> UpdateModelAsync(T updatedModels);
 
-        public IEnumerable<T> UpdateModels(IEnumerable<T> models);
-        public Task<IEnumerable<T>> UpdateModelsAsync(IEnumerable<T> models);
+        public List<T> UpdateModels(List<T> updatedModels);
+        public Task<List<T>> UpdateModelsAsync(List<T> updatedModels);
 
-        public T DeleteModel(Guid id);
-        public Task<T> DeleteModelAsync(Guid id);
+        public T? DeleteModel(object id);
+        public Task<T?> DeleteModelAsync(object id);
 
-        public IEnumerable<T> DeleteModels(IEnumerable<Guid> ids);
-        public Task<IEnumerable<T>> DeleteModelsAsync(IEnumerable<Guid> ids);
+        public List<T> DeleteModels(FilterDefinition<T> filter);
+        public Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter);
     }
 }
