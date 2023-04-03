@@ -27,6 +27,12 @@ namespace Util.Constants
         static public readonly string ErrorDeletingProfilePicture = "Error deleting profile picture with email {0}";
         static public readonly string NoArgumentsPassed = "no valid arguments have been passed into the endpoint";
         static public readonly string NoUsersFound = "no users found";
+        static public readonly string UserEmpty = "no user passed in";
+        #endregion
+
+        #region FluentValidatorErrorLists
+        static public readonly List<string> NotFoundErrorCodes = new List<string>() { "PredicateValidator" };
+        static public readonly List<string> BadRequestErrorCodes = new List<string>() { "EmailValidator" };
         #endregion
     }
 }

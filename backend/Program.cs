@@ -1,6 +1,5 @@
 using Backend.Services;
 using InstaConnect.Services;
-using Backend.Services.InstaConnectServices;
 using Util.Constants;
 using Backend.Models;
 using Backend.Interfaces;
@@ -23,11 +22,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddScoped<IValidator<string>, GetUserValidator>();
-builder.Services.AddScoped<IValidator<string>, DeleteUserValidator>();
+builder.Services.AddSingleton<IValidator<string>, GetUserValidator>();
+builder.Services.AddSingleton<IValidator<string>, DeleteUserValidator>();
+builder.Services.AddSingleton<IValidator<UserModel>, CreateUserValidator>();
+builder.Services.AddSingleton<IValidator<UserModel>, UpdateUserValidator>();
+builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<IProfilePictureService, ProfilePictureService>();
 builder.Services.AddSingleton<IMongoDbService<UserModel>, MongoDbService<UserModel>>();
-builder.Services.AddSingleton<IInstaConnectServices, InstaConnectServices>();
 builder.Services.AddSingleton<IUserService, UserService>();
 
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>

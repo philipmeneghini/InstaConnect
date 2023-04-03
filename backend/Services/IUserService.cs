@@ -10,6 +10,5 @@ namespace Backend.Interfaces
         public List<UserModel> GetUsers(string? firstName, string? lastName, string? birthDate);
 
         public Task<List<UserModel>> GetUsersAsync(string? firstName, string? lastName, string? birthDate);
-
     }
 }

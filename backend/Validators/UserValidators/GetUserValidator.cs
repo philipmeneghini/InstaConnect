@@ -10,7 +10,7 @@ namespace Backend.Validators.UserValidators
     {
         public GetUserValidator(ValidatorUserHelpers validator)
         {
-            RuleFor(email => email).Cascade(CascadeMode.StopOnFirstFailure)
+            RuleFor(email => email).Cascade(CascadeMode.Stop)
                                         .NotEmpty().WithMessage(ApplicationConstants.EmailEmpty)
                                         .EmailAddress().WithMessage(ApplicationConstants.EmailValid)
                                         .Must(validator.EmailExists).WithMessage(ApplicationConstants.EmailExists);

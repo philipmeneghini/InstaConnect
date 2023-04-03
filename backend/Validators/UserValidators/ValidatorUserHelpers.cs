@@ -10,7 +10,7 @@ namespace Backend.Validators.UserValidators
     {
         private IMongoDbService<UserModel> _mongoDbService;
 
-        ValidatorUserHelpers(IMongoDbService<UserModel> mongoDbService)
+        public ValidatorUserHelpers(IMongoDbService<UserModel> mongoDbService)
         {
             _mongoDbService = mongoDbService;
         }
@@ -27,7 +27,9 @@ namespace Backend.Validators.UserValidators
 
         public bool EmailExists(string email)
         {
-            int count = _mongoDbService.GetModels(Builders<UserModel>.Filter.Eq(nameof(email), email)).Count;
+            var filter = Builders<UserModel>.Filter.Eq(user => user.Email, email);
+            var users = _mongoDbService.GetModels(filter);
+            int count = users.Count;
             if (count != 1)
             {
                 return false;
@@ -37,7 +39,7 @@ namespace Backend.Validators.UserValidators
 
         public bool NoEmailExists(string email)
         {
-            int count = _mongoDbService.GetModels(Builders<UserModel>.Filter.Eq(nameof(email), email)).Count;
+            int count = _mongoDbService.GetModels(Builders<UserModel>.Filter.Eq(user => user.Email, email)).Count;
             if (count != 0)
             {
                 return false;

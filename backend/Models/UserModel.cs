@@ -39,8 +39,5 @@ namespace InstaConnect.Models
 
         [BsonElement("email")]
         public string? Email { get; set; }
-
-        [BsonElement("profilePicture")]
-        public string? ProfilePicture { get; set; }
     }
 }

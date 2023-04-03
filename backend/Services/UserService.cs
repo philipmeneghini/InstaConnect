@@ -40,6 +40,7 @@ namespace Backend.UserServices
 
         public UserModel GetModel(object email)
         {
+            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _getUserValidator.Validate((string)email);
             ThrowExceptions(validationResult);
 
@@ -52,6 +53,7 @@ namespace Backend.UserServices
 
         public async Task<UserModel> GetModelAsync(object email)
         {
+            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _getUserValidator.Validate((string)email);
             ThrowExceptions(validationResult);
 
@@ -93,11 +95,13 @@ namespace Backend.UserServices
             {
                 throw new InstaBadRequestException(ApplicationConstants.NoArgumentsPassed);
             }
+
             var builder = Builders<UserModel>.Filter;
-            var filter = builder.Eq(p => p.FirstName ?? null,  firstName) 
+            var filter = builder.Eq(p => p.FirstName ?? null, firstName)
                        & builder.Eq(p => p.LastName ?? null, lastName)
                        & builder.Eq(p => p.BirthDate ?? null, birthdate);
-            var users = await _mongoDbService.GetModelsAsync(filter);
+            var users = _mongoDbService.GetModels(filter);
+
             if (users.Count == 0)
             {
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
@@ -133,6 +137,7 @@ namespace Backend.UserServices
 
         public UserModel CreateModel(UserModel newUser)
         {
+            if (newUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUserValidator.Validate(newUser);
             ThrowExceptions(validationResult);
 
@@ -144,6 +149,7 @@ namespace Backend.UserServices
 
         public async Task<UserModel> CreateModelAsync(UserModel newUser)
         {
+            if (newUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUserValidator.Validate(newUser);
             ThrowExceptions(validationResult);
 
@@ -155,6 +161,7 @@ namespace Backend.UserServices
 
         public List<UserModel> CreateModels(List<UserModel> newUsers)
         {
+            if (newUsers == null || newUsers.Count ==0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
             foreach (var newUser in newUsers)
             {
@@ -172,6 +179,7 @@ namespace Backend.UserServices
 
         public async Task<List<UserModel>> CreateModelsAsync(List<UserModel> newUsers)
         {
+            if (newUsers == null || newUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
             foreach (var newUser in newUsers)
             {
@@ -189,6 +197,7 @@ namespace Backend.UserServices
 
         public UserModel UpdateModel(UserModel updatedUser)
         {
+            if (updatedUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _updateUserValidator.Validate(updatedUser);
             ThrowExceptions(validationResult);
 
@@ -197,6 +206,7 @@ namespace Backend.UserServices
 
         public async Task<UserModel> UpdateModelAsync(UserModel updatedUser)
         {
+            if (updatedUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _updateUserValidator.Validate(updatedUser);
             ThrowExceptions(validationResult);
 
@@ -205,6 +215,7 @@ namespace Backend.UserServices
 
         public List<UserModel> UpdateModels(List<UserModel> updatedUsers)
         {
+            if (updatedUsers == null || updatedUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             foreach (var user in updatedUsers)
             {
                 var validationResult = _updateUserValidator.Validate(user);
@@ -216,6 +227,7 @@ namespace Backend.UserServices
 
         public async Task<List<UserModel>> UpdateModelsAsync(List<UserModel> updatedUsers)
         {
+            if (updatedUsers == null || updatedUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             foreach (var user in updatedUsers)
             {
                 var validationResult = _updateUserValidator.Validate(user);
@@ -227,6 +239,7 @@ namespace Backend.UserServices
 
         public UserModel? DeleteModel(object email)
         {
+            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _deleteUserValidator.Validate((string)email);
             ThrowExceptions(validationResult);
 
@@ -238,6 +251,7 @@ namespace Backend.UserServices
 
         public async Task<UserModel?> DeleteModelAsync(object email)
         {
+            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _deleteUserValidator.Validate((string)email);
             ThrowExceptions(validationResult);
 
@@ -272,11 +286,11 @@ namespace Backend.UserServices
         {
             foreach (var failure in validationResult.Errors)
             {
-                if (failure.ErrorCode.Equals("400", StringComparison.OrdinalIgnoreCase))
+                if (ApplicationConstants.BadRequestErrorCodes.Contains(failure.ErrorCode, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InstaBadRequestException(failure.ErrorMessage);
                 }
-                else if (failure.ErrorCode.Equals("404", StringComparison.OrdinalIgnoreCase))
+                else if (ApplicationConstants.NotFoundErrorCodes.Contains(failure.ErrorCode, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InstaNotFoundException(failure.ErrorMessage);
                 }

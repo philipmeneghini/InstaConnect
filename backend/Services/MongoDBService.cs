@@ -26,24 +26,27 @@ namespace InstaConnect.Services
 
         public T GetModel(object id)
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            var filter = Builders<T>.Filter.Eq(_index, id);
             IFindFluent<T,T> result= _collection.Find(filter);
             return result.Single();
         }
         public async Task<T> GetModelAsync(object id)
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindAsync(filter);
             return result.Single();
         }
 
         public List<T> GetModels(FilterDefinition<T> filter) 
         {
-            return _collection.Find(filter).ToList<T>();
+            var users = _collection.Find(filter).ToList();
+            return users;
         }
+
         public async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
         {
-            return await _collection.Find(filter).ToListAsync<T>();
+            var users = await _collection.Find(filter).ToListAsync();
+            return users;
         }
         
         public T CreateModel(T model)
@@ -70,7 +73,7 @@ namespace InstaConnect.Services
 
         public T? UpdateModel(T updatedModel)
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), updatedModel.GetIndex());
+            var filter = Builders<T>.Filter.Eq(_index, updatedModel.GetIndex());
             var update = Builders<T>.Update.Set(t => t, updatedModel);
             var result = _collection.UpdateOne(filter, update);
             return (result.IsAcknowledged? updatedModel : default(T));
@@ -78,7 +81,7 @@ namespace InstaConnect.Services
 
         public async Task<T?> UpdateModelAsync(T updatedModel)
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), updatedModel.GetIndex());
+            var filter = Builders<T>.Filter.Eq(_index, updatedModel.GetIndex());
             var update = Builders<T>.Update.Set(t => t, updatedModel);
             var result = await _collection.UpdateOneAsync(filter, update);
             return (result.IsAcknowledged ? updatedModel : default(T));
@@ -89,7 +92,7 @@ namespace InstaConnect.Services
             List<T> finishedModels = new List<T> ();
             foreach (var model in updatedModels)
             {
-                var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), model.GetIndex());
+                var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
                 var update = Builders<T>.Update.Set(t => t, model);
                 var result = _collection.UpdateOne(filter, update);
                 if (result.IsAcknowledged)
@@ -105,7 +108,7 @@ namespace InstaConnect.Services
             List<T> finishedModels = new List<T>();
             foreach (var model in updatedModels)
             {
-                var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), model.GetIndex());
+                var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
                 var update = Builders<T>.Update.Set(t => t, model);
                 var result = await _collection.UpdateOneAsync(filter, update);
                 if (result.IsAcknowledged)
@@ -119,14 +122,14 @@ namespace InstaConnect.Services
 
         public T? DeleteModel(object id)
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            var filter = Builders<T>.Filter.Eq(_index, id);
             T model = _collection.Find(filter).Single();
             var result = _collection.DeleteOne(filter);
             return result.IsAcknowledged ? model : default;
         }
         public async Task<T?> DeleteModelAsync(object id) 
         {
-            var filter = Builders<T>.Filter.Eq(t => t.GetIndex(), id);
+            var filter = Builders<T>.Filter.Eq(_index, id);
             T model = _collection.Find(filter).Single();
              var result = await _collection.DeleteOneAsync(filter);
             return result.IsAcknowledged ? model : default;
