@@ -34,4 +34,12 @@ namespace Backend.Util.Exceptions
             this.statusCode = statusCode;
         }
     }
+
+    public class InstaInternalServerException : InstaException
+    {
+        public InstaInternalServerException(string message) : base(message)
+        {
+            this.statusCode = 500;
+        }
+    }
 }

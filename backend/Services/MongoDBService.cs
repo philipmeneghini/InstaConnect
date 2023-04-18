@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 using Backend.Models;
 using MongoDB.Bson;
 using System.Xml;
+using Backend.Util.Exceptions;
+using ZstdSharp.Unsafe;
 
 namespace InstaConnect.Services
 {
@@ -27,125 +29,253 @@ namespace InstaConnect.Services
         public T GetModel(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
-            IFindFluent<T,T> result= _collection.Find(filter);
-            return result.Single();
+            var result= _collection.Find(filter);
+            var model = result.FirstOrDefault();
+            if (model == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return model;
         }
+
         public async Task<T> GetModelAsync(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindAsync(filter);
-            return result.Single();
+            var model = result.FirstOrDefault();
+            if (model == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return model;
         }
 
-        public List<T> GetModels(FilterDefinition<T> filter) 
+        public List<T> GetModels(FilterDefinition<T> filter)
         {
             var users = _collection.Find(filter).ToList();
+            if (users.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return users;
         }
 
         public async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
         {
-            var users = await _collection.Find(filter).ToListAsync();
-            return users;
+            var users = await _collection.FindAsync(filter);
+            var userList = await users.ToListAsync();
+            if (userList.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return userList;
         }
         
         public T CreateModel(T model)
         {
+            var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
+            List<T> models = _collection.Find(filter).ToList();
+            if (models.Count != 0)
+                throw new InstaBadRequestException(ApplicationConstants.InsertModelExistsException);
             _collection.InsertOne(model);
             return model;
         }
         public async Task<T> CreateModelAsync(T model)
         {
+            var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
+            var modelsFound = await _collection.FindAsync(filter);
+            var modelsFoundList = await modelsFound.ToListAsync();
+            if (modelsFoundList.Count != 0)
+                throw new InstaBadRequestException(ApplicationConstants.InsertModelExistsException);
             await _collection.InsertOneAsync(model);
             return model;
         }
 
         public List<T> CreateModels(List<T> models)
         {
-           _collection.InsertMany(models);
+            if (models.Count == 0)
+                return new List<T>();
+            var filter = Builders<T>.Filter.Eq(_index, models.FirstOrDefault().GetIndex());
+            bool firstModel = true;
+            foreach (var model in models)
+            {
+                if (!firstModel)
+                    filter |= Builders<T>.Filter.Eq(_index, model);
+                firstModel = false;
+            }
+            List<T> modelsFound = _collection.Find(filter).ToList();
+            if (modelsFound.Count != 0)
+                throw new InstaBadRequestException(ApplicationConstants.InsertModelExistsException);
+            _collection.InsertMany(models);
            return models;
         }
+
         public async Task<List<T>> CreateModelsAsync(List<T> models)
         {
+            if (models.Count == 0)
+                return new List<T>();
+            var filter = Builders<T>.Filter.Eq(_index, models.FirstOrDefault().GetIndex());
+            bool firstModel = true;
+            foreach (var model in models)
+            {
+                if (!firstModel)
+                    filter |= Builders<T>.Filter.Eq(_index, model);
+                firstModel = false;
+            }
+            var modelsFound = await _collection.FindAsync(filter);
+            var modelsFoundList = await modelsFound.ToListAsync();
+            if (modelsFoundList.Count != 0)
+                throw new InstaBadRequestException(ApplicationConstants.InsertModelExistsException);
             await _collection.InsertManyAsync(models);
             return models;
         }
 
         public T? UpdateModel(T updatedModel)
         {
+            var update = Builders<T>.Update;
+            var updates = new List<UpdateDefinition<T>>();
             var filter = Builders<T>.Filter.Eq(_index, updatedModel.GetIndex());
-            var update = Builders<T>.Update.Set(t => t, updatedModel);
-            var result = _collection.UpdateOne(filter, update);
-            return (result.IsAcknowledged? updatedModel : default(T));
+            var options = new FindOneAndUpdateOptions<T>
+            {
+                ReturnDocument = ReturnDocument.After
+            };
+            var properties = from p in updatedModel.GetType().GetProperties()
+                             select p;
+
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(updatedModel, null);
+                if (value != null)
+                {
+                    updates.Add(update.Set(property.Name, value));
+                }
+            }
+
+            var result = _collection.FindOneAndUpdate(filter, update.Combine(updates), options);
+            if (result == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return result;
         }
 
         public async Task<T?> UpdateModelAsync(T updatedModel)
         {
+            var update = Builders<T>.Update;
+            var updates = new List<UpdateDefinition<T>>();
             var filter = Builders<T>.Filter.Eq(_index, updatedModel.GetIndex());
-            var update = Builders<T>.Update.Set(t => t, updatedModel);
-            var result = await _collection.UpdateOneAsync(filter, update);
-            return (result.IsAcknowledged ? updatedModel : default(T));
+            var options = new FindOneAndUpdateOptions<T>
+            {
+                ReturnDocument = ReturnDocument.After
+            };
+            var properties = from p in updatedModel.GetType().GetProperties()
+                             select p;
+
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(updatedModel, null);
+                if (value != null)
+                {
+                    updates.Add(update.Set(property.Name, value));
+                }
+            }
+
+            var result = await _collection.FindOneAndUpdateAsync(filter, update.Combine(updates), options);
+            if (result == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return result;
         }
 
         public List<T> UpdateModels(List<T> updatedModels)
         {
-            List<T> finishedModels = new List<T> ();
+            var updates = new List<WriteModel<T>>();
             foreach (var model in updatedModels)
             {
+                var update = Builders<T>.Update;
+                var modelUpdates = new List<UpdateDefinition<T>>();
                 var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
-                var update = Builders<T>.Update.Set(t => t, model);
-                var result = _collection.UpdateOne(filter, update);
-                if (result.IsAcknowledged)
-                {
-                    finishedModels.Add(model);
-                }
+                var properties = from p in model.GetType().GetProperties()
+                                 select p;
 
+                foreach (var property in properties)
+                {
+                    var value = property.GetValue(model, null);
+                    if (value != null)
+                    {
+                        modelUpdates.Add(update.Set(property.Name, value));
+                    }
+                }
+                updates.Add(new UpdateOneModel<T>(filter, update.Combine(modelUpdates)));
             }
-            return finishedModels;
+
+            var result = _collection.BulkWrite(updates, new BulkWriteOptions
+            {
+                IsOrdered = false
+            });
+            if (!result.IsAcknowledged)
+                throw new InstaBadRequestException(string.Format(ApplicationConstants.BadRequestBulkWriteMongoErrorMessage, ApplicationConstants.ModelNames.GetValueOrDefault(updatedModels[0].GetType())));
+            else
+                return updatedModels;
         }
         public async Task<List<T>> UpdateModelsAsync(List<T> updatedModels)
         {
-            List<T> finishedModels = new List<T>();
+            var updates = new List<WriteModel<T>>();
             foreach (var model in updatedModels)
             {
+                var update = Builders<T>.Update;
+                var modelUpdates = new List<UpdateDefinition<T>>();
                 var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
-                var update = Builders<T>.Update.Set(t => t, model);
-                var result = await _collection.UpdateOneAsync(filter, update);
-                if (result.IsAcknowledged)
-                {
-                    finishedModels.Add(model);
-                }
+                var properties = from p in model.GetType().GetProperties()
+                                 select p;
 
+                foreach (var property in properties)
+                {
+                    var value = property.GetValue(model, null);
+                    if (value != null)
+                    {
+                        modelUpdates.Add(update.Set(property.Name, value));
+                    }
+                }
+                updates.Add(new UpdateOneModel<T>(filter, update.Combine(modelUpdates)));
             }
-            return finishedModels;
+
+            var result = await _collection.BulkWriteAsync(updates, new BulkWriteOptions
+            {
+                IsOrdered = false
+            });
+            if (!result.IsAcknowledged)
+                throw new InstaBadRequestException(string.Format(ApplicationConstants.BadRequestBulkWriteMongoErrorMessage, ApplicationConstants.ModelNames.GetValueOrDefault(updatedModels[0].GetType())));
+            else
+                return updatedModels;
         }
 
-        public T? DeleteModel(object id)
+        public T DeleteModel(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
-            T model = _collection.Find(filter).Single();
-            var result = _collection.DeleteOne(filter);
-            return result.IsAcknowledged ? model : default;
+            var result = _collection.FindOneAndDelete(filter);
+            if (result == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return result;
         }
         public async Task<T?> DeleteModelAsync(object id) 
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
-            T model = _collection.Find(filter).Single();
-             var result = await _collection.DeleteOneAsync(filter);
-            return result.IsAcknowledged ? model : default;
+            var result = await _collection.FindOneAndDeleteAsync(filter);
+            if (result == null)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
+            return result;
         }
 
         public List<T> DeleteModels(FilterDefinition<T> filter)
         {
             List<T> models = _collection.Find(filter).ToList();
+            if (models.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             var result = _collection.DeleteMany(filter);
+            if (result.DeletedCount != models.Count)
+                throw new InstaInternalServerException(string.Format(ApplicationConstants.FailedToDeleteMongo, (models.Count - result.DeletedCount).ToString()));
             return result.IsAcknowledged ? models : new List<T>();
         }
         public async Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter)
         {
-            List<T> models = _collection.Find(filter).ToList();
+            var modelsFound = await _collection.FindAsync(filter);
+            var modelsFoundList = await modelsFound.ToListAsync();
+            if (modelsFoundList.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             var result = await _collection.DeleteManyAsync(filter);
-            return result.IsAcknowledged ? models : new List<T>();
+            if (result.DeletedCount != modelsFoundList.Count)
+                throw new InstaInternalServerException(string.Format(ApplicationConstants.FailedToDeleteMongo, (modelsFoundList.Count - result.DeletedCount).ToString()));
+            return result.IsAcknowledged ? modelsFoundList : new List<T>();
         }
     }
 }

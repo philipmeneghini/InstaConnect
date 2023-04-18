@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using Backend.Services;
 using Backend.UserServices;
 using Backend.Interfaces;
+using Backend.Models;
 
 namespace InstaConnect.Controllers
 {
@@ -16,12 +17,12 @@ namespace InstaConnect.Controllers
         private IUserService _userService;
 
         public InstaConnectController(IUserService UserService)
-        {
+        {   
             _userService = UserService;
         }
 
         [HttpGet("User")]
-        public async Task<ActionResult<UserModel>> GetUser(string? email)
+        public async Task<UserModel> GetUser(string? email)
         {
             return await _userService.GetModelAsync(email);
         }
@@ -29,7 +30,7 @@ namespace InstaConnect.Controllers
         [HttpGet("Users")]
         public async Task<ActionResult<List<UserModel>>> GetUsers(string? firstName, string? lastName, string? birthdate)
         {
-            return await _userService.GetUsersAsync(firstName, lastName, null);
+            return await _userService.GetUsersAsync(firstName, lastName, birthdate);
         }
 
         [HttpPost("User")]
