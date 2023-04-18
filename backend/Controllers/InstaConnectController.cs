@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using InstaConnect.Models;
 using MongoDB.Driver;
-using Backend.Services.InstaConnectServices;
 using Backend.Services;
+using Backend.UserServices;
+using Backend.Interfaces;
+using Backend.Models;
 
 namespace InstaConnect.Controllers
 {
@@ -12,19 +14,41 @@ namespace InstaConnect.Controllers
     [Route("[controller]")]
     public class InstaConnectController : ControllerBase
     {
+        private IUserService _userService;
 
-        private IMongoDbService _mongoDBService;
-        private IInstaConnectServices _instaConnectServices;
-
-        public InstaConnectController(IInstaConnectServices InstaConnectServices)
-        {
-            _instaConnectServices = InstaConnectServices;
+        public InstaConnectController(IUserService UserService)
+        {   
+            _userService = UserService;
         }
 
-        [HttpGet(Name = "GetConnection")]
-        public string? Get()
+        [HttpGet("User")]
+        public async Task<UserModel> GetUser(string? email)
         {
-            return _instaConnectServices.GetConnectionMessage();
+            return await _userService.GetModelAsync(email);
+        }
+
+        [HttpGet("Users")]
+        public async Task<ActionResult<List<UserModel>>> GetUsers(string? firstName, string? lastName, string? birthdate)
+        {
+            return await _userService.GetUsersAsync(firstName, lastName, birthdate);
+        }
+
+        [HttpPost("User")]
+        public async Task<ActionResult<UserModel>> PostUser(UserModel newUser)
+        {
+            return await _userService.CreateModelAsync(newUser);
+        }
+
+        [HttpPut("User")]
+        public async Task<ActionResult<UserModel>> PutUser(UserModel newUser)
+        {
+            return await _userService.UpdateModelAsync(newUser);
+        }
+
+        [HttpDelete("User")]
+        public async Task<ActionResult<UserModel>> DeleteUser(string email)
+        {
+            return await _userService.DeleteModelAsync(email);
         }
     }
 }
