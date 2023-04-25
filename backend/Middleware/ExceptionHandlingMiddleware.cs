@@ -1,4 +1,5 @@
-﻿using Backend.Util.Exceptions;
+﻿using Backend.Util;
+using Backend.Util.Exceptions;
 
 namespace Backend.Middleware
 {
@@ -11,6 +12,11 @@ namespace Backend.Middleware
                 await next(context);
             }
             catch (InstaException ex)
+            {
+                context.Response.StatusCode = ex.statusCode;
+                await context.Response.WriteAsync(ex.message);
+            }
+            catch (AuthException ex)
             {
                 context.Response.StatusCode = ex.statusCode;
                 await context.Response.WriteAsync(ex.message);
