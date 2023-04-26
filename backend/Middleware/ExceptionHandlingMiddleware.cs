@@ -16,11 +16,6 @@ namespace Backend.Middleware
                 context.Response.StatusCode = ex.statusCode;
                 await context.Response.WriteAsync(ex.message);
             }
-            catch (AuthException ex)
-            {
-                context.Response.StatusCode = ex.statusCode;
-                await context.Response.WriteAsync(ex.message);
-            }
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;

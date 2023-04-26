@@ -1,8 +1,7 @@
 ﻿using Backend.Interfaces;
 using Backend.Models;
-using Backend.Util;
+using Backend.Util.Exceptions;
 using InstaConnect.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -28,18 +27,17 @@ namespace Backend.Services
         public async Task<string> Login(LoginBody request)
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
-                throw new AuthBadRequestException("missing email or password");
+                throw new InstaBadRequestException("missing email or password");
             var user = await _userService.GetModelAsync(request.Email);
-            var hash = Hash(request.Password);
-            if (!CheckHash(hash, user.Password))
-                throw new AuthBadRequestException("invalid password");
+            if (!CheckHash(user.Password, request.Password))
+                throw new InstaBadRequestException("invalid password");
             return GenerateToken(user);
         }
 
         public async Task<UserModel> Register(LoginBody request)
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
-                throw new AuthBadRequestException("missing email or password");
+                throw new InstaBadRequestException("missing email or password");
             var user = await _userService.GetModelAsync(request.Email);
             var hash = Hash(request.Password);
             user.Password = hash;
@@ -61,14 +59,15 @@ namespace Backend.Services
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddHours(1),
                 signingCredentials: creds);
 
-            return jwtTokenHandler.WriteToken(token);
+            var jwt = jwtTokenHandler.WriteToken(token);
+            return jwt;
         }
 
         private string Hash(string password)
@@ -101,7 +100,7 @@ namespace Backend.Services
                 password,
                 salt,
                 iterations,
-                HashAlgorithmName.SHA512))
+                HashAlgorithmName.SHA256))
             {
                 var keyToCheck = algorithm.GetBytes(_hash.KeySize);
 
