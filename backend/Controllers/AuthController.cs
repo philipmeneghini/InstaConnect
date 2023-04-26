@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
