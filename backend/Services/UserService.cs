@@ -16,19 +16,21 @@ using Backend.Models;
 using Microsoft.Extensions.Options;
 using FluentValidation.Results;
 using System.ComponentModel.DataAnnotations;
+using Util.AwsDestination;
+
 namespace Backend.UserServices
 {
     public class UserService : IUserService
     {
         private IMongoDbService<UserModel> _mongoDbService;
-        private IProfilePictureService _profilePictureService;
+        private IMediaService _mediaService;
         private IValidator<string> _deleteGetUserValidator;
         private IValidator<UserModel> _createUpdateUserValidator;
 
-        public UserService(IMongoDbService<UserModel> mongoDbService, IProfilePictureService profilePictureService, IValidator<string> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator)
+        public UserService(IMongoDbService<UserModel> mongoDbService, IMediaService mediaService, IValidator<string> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator)
         {
             _mongoDbService = mongoDbService;
-            _profilePictureService = profilePictureService;
+            _mediaService = mediaService;
             _deleteGetUserValidator = deleteGetUserValidator;
             _createUpdateUserValidator = createUpdateUserValidator;
         }
@@ -40,8 +42,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = _mongoDbService.GetModel(email);
-            string url = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName);
-            user.ProfilePictureUrl = url;
+            string profilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
+            user.ProfilePictureUrl = profilePictureUrl;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -53,8 +61,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = await _mongoDbService.GetModelAsync(email);
-            string url = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName);
+            string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -65,8 +79,14 @@ namespace Backend.UserServices
 
             foreach (var user in users)
             {
-                string url = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName);
+                string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
                 user.ProfilePictureUrl = url;
+
+                string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+                user.PhotosUrl = photosUrl;
+
+                string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+                user.ReelsUrl = reelsUrl;
             }
 
             return users;
@@ -77,8 +97,14 @@ namespace Backend.UserServices
 
             foreach (var user in users)
             {
-                string url = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName);
+                string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
                 user.ProfilePictureUrl = url;
+
+                string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+                user.PhotosUrl = photosUrl;
+
+                string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+                user.ReelsUrl = reelsUrl;
             }
 
             return users;
@@ -104,7 +130,10 @@ namespace Backend.UserServices
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -128,7 +157,10 @@ namespace Backend.UserServices
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -139,8 +171,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = _mongoDbService.CreateModel(newUser);
-            string url = _profilePictureService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName);
+            string url = _mediaService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -152,8 +190,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = await _mongoDbService.CreateModelAsync(newUser);
-            string url = _profilePictureService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName);
+            string url = _mediaService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -171,7 +215,10 @@ namespace Backend.UserServices
             }
 
             var users = _mongoDbService.CreateModels(result);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -188,7 +235,10 @@ namespace Backend.UserServices
             }
 
             var users = await _mongoDbService.CreateModelsAsync(result);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -199,8 +249,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = _mongoDbService.UpdateModel(updatedUser);
-            string url = _profilePictureService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName);
+            string url = _mediaService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -212,8 +268,14 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = await _mongoDbService.UpdateModelAsync(updatedUser);
-            string url = _profilePictureService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName);
+            string url = _mediaService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
+
+            string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
+            user.PhotosUrl = photosUrl;
+
+            string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
+            user.ReelsUrl = reelsUrl;
 
             return user;
         }
@@ -231,7 +293,10 @@ namespace Backend.UserServices
             }
 
             var users = _mongoDbService.UpdateModels(result);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -248,7 +313,10 @@ namespace Backend.UserServices
             }
 
             var users = await _mongoDbService.CreateModelsAsync(result);
-            users.ForEach(user => user.ProfilePictureUrl = _profilePictureService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName));
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
+
             return users;
         }
 
@@ -259,7 +327,10 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = _mongoDbService.DeleteModel(email);
-            _profilePictureService.DeleteProfilePicture(ApplicationConstants.S3BucketName, (string)email);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.ProfilePicture);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Photos);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Reels);
+
 
             return user;
         }
@@ -271,7 +342,9 @@ namespace Backend.UserServices
             ThrowExceptions(validationResult);
 
             var user = await _mongoDbService.DeleteModelAsync(email);
-            _profilePictureService.DeleteProfilePicture(ApplicationConstants.S3BucketName, (string)email);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.ProfilePicture);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Photos);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Reels);
 
             return user;
         }
@@ -281,7 +354,9 @@ namespace Backend.UserServices
             var users = _mongoDbService.DeleteModels(filter);
             foreach (var user in users)
             {
-                _profilePictureService.DeleteProfilePicture(ApplicationConstants.S3BucketName, user.Email);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.ProfilePicture);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.Photos);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.Reels);
             }
             
             return users;
@@ -291,7 +366,9 @@ namespace Backend.UserServices
             var users = await _mongoDbService.DeleteModelsAsync(filter);
             foreach (var user in users)
             {
-                _profilePictureService.DeleteProfilePicture(ApplicationConstants.S3BucketName, user.Email);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.ProfilePicture);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.Photos);
+                _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.Reels);
             }
 
             return users;

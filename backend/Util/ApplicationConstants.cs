@@ -40,6 +40,7 @@ namespace Util.Constants
         static public readonly string FailedToDeleteMongo = "Failed to delete {0} models";
         static public readonly string InsertModelExistsException = "model with the same id already exists";
         static public readonly List<string> BadRequestErrorMessages = new List<string>() { FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
+        static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         #endregion
 
         #region CRUD Operations
@@ -49,5 +50,10 @@ namespace Util.Constants
         static public readonly string Delete = nameof(Delete);
         #endregion
 
+        #region AwsDestinations
+        static public readonly string ProfilePicture = "users/{0}/profilePictures";
+        static public readonly string Photos = "users/{0}/photos";
+        static public readonly string Reels = "users/{0}/reels";
+        #endregion
     }
 }

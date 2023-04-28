@@ -36,6 +36,12 @@ namespace InstaConnect.Models
         [NotMapped]
         public string? ProfilePictureUrl { get; set; }
 
+        [NotMapped]
+        public string? PhotosUrl { get; set; }
+
+        [NotMapped]
+        public string? ReelsUrl { get; set; }
+
         [BsonElement("Password")]
         public string? Password { get; set; }
 
