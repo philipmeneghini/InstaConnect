@@ -1,4 +1,5 @@
-﻿using Backend.Util.Exceptions;
+﻿using Backend.Util;
+using Backend.Util.Exceptions;
 
 namespace Backend.Middleware
 {

@@ -14,6 +14,8 @@ namespace Util.Constants
         static public readonly string S3BucketName = "instaconnect";
         static public readonly string AmazonS3Credentials = nameof(AmazonS3Credentials);
         static public readonly string UserModel = nameof(UserModel);
+        static public readonly string Hash = nameof(Hash);
+        static public readonly string Jwt = nameof(Jwt);
 
         #region Error Messages
         static public readonly string FirstNameEmpty = "first name cannot be empty";
