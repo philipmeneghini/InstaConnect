@@ -1,12 +1,6 @@
-using InstaConnect.Services;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using InstaConnect.Models;
-using MongoDB.Driver;
-using Backend.Services;
-using Backend.UserServices;
-using Backend.Interfaces;
 using Backend.Models;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace InstaConnect.Controllers

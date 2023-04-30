@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using InstaConnect.Models;
+using Backend.Models;
 using Util.Constants;
 
 namespace Backend.Validators.UserValidators

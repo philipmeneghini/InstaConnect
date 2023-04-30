@@ -1,14 +1,9 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Backend.Models;
-using System.Transactions;
 using Util.Constants;
-using System.Runtime.CompilerServices;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace InstaConnect.Models
+namespace Backend.Models
 {
     public class UserModel : IInstaModel
     {
@@ -33,15 +28,6 @@ namespace InstaConnect.Models
         [BsonElement("_id")]
         public string? Id { get; set; }
 
-        [NotMapped]
-        public string? ProfilePictureUrl { get; set; }
-
-        [NotMapped]
-        public string? PhotosUrl { get; set; }
-
-        [NotMapped]
-        public string? ReelsUrl { get; set; }
-
         [BsonElement("Password")]
         public string? Password { get; set; }
 
@@ -56,5 +42,14 @@ namespace InstaConnect.Models
 
         [BsonElement("email")]
         public string Email { get; set; }
+
+        [NotMapped]
+        public string? ProfilePictureUrl { get; set; }
+
+        [NotMapped]
+        public string? PhotosUrl { get; set; }
+
+        [NotMapped]
+        public string? ReelsUrl { get; set; }
     }
 }

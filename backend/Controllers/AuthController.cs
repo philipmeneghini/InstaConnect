@@ -1,10 +1,7 @@
 ﻿using Backend.Models;
-using Backend.Services;
-using InstaConnect.Models;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Controllers
 {

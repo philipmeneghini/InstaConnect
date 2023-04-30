@@ -3,11 +3,10 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
-using Backend.Interfaces;
-using Backend.Models;
-using Backend.Util.Exceptions;
+using Backend.Services.Interfaces;
+using Backend.Models.Config;
+using Util.Exceptions;
 using Microsoft.Extensions.Options;
-using System.Text;
 using Util.AwsDestination;
 using Util.Constants;
 

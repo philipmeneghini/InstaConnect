@@ -1,24 +1,12 @@
-using InstaConnect.Models;
-using Backend.Interfaces;
-using Backend.Services;
-using MongoDB.Driver;
-using Backend.Util;
-using Util.Constants;
-using MongoDB.Bson;
-using Backend.Util.Exceptions;
-using Amazon.S3;
-using Amazon.Runtime;
-using Amazon;
-using InstaConnect.Services;
-using FluentValidation;
-using Backend.Validators.UserValidators;
 using Backend.Models;
-using Microsoft.Extensions.Options;
-using FluentValidation.Results;
-using System.ComponentModel.DataAnnotations;
+using Backend.Services.Interfaces;
+using MongoDB.Driver;
+using Util.Constants;
+using Util.Exceptions;
+using FluentValidation;
 using Util.AwsDestination;
 
-namespace Backend.UserServices
+namespace Backend.Services
 {
     public class UserService : IUserService
     {
@@ -312,7 +300,7 @@ namespace Backend.UserServices
                 result.Add(user);
             }
 
-            var users = await _mongoDbService.CreateModelsAsync(result);
+            var users = await _mongoDbService.UpdateModelsAsync(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
@@ -320,7 +308,7 @@ namespace Backend.UserServices
             return users;
         }
 
-        public UserModel? DeleteModel(object email)
+        public UserModel DeleteModel(object email)
         {
             if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Delete));
@@ -335,7 +323,7 @@ namespace Backend.UserServices
             return user;
         }
 
-        public async Task<UserModel?> DeleteModelAsync(object email)
+        public async Task<UserModel> DeleteModelAsync(object email)
         {
             if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Delete));

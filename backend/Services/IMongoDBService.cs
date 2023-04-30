@@ -1,8 +1,7 @@
 ﻿using Backend.Models;
-using InstaConnect.Models;
 using MongoDB.Driver;
 
-namespace Backend.Services
+namespace Backend.Services.Interfaces
 {
     public interface IMongoDbService<T> where T : IInstaModel
     {
@@ -24,8 +23,8 @@ namespace Backend.Services
         public List<T> UpdateModels(List<T> updatedModels);
         public Task<List<T>> UpdateModelsAsync(List<T> updatedModels);
 
-        public T? DeleteModel(object id);
-        public Task<T?> DeleteModelAsync(object id);
+        public T DeleteModel(object id);
+        public Task<T> DeleteModelAsync(object id);
 
         public List<T> DeleteModels(FilterDefinition<T> filter);
         public Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter);

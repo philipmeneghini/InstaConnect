@@ -1,7 +1,6 @@
-﻿using InstaConnect.Models;
-using Util.AwsDestination;
+﻿using Util.AwsDestination;
 
-namespace Backend.Interfaces
+namespace Backend.Services.Interfaces
 {
     public interface IMediaService
     {

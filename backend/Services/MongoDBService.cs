@@ -1,13 +1,10 @@
 using MongoDB.Driver;
-using InstaConnect.Models;
-using Backend.Services;
+using Backend.Services.Interfaces;
 using Util.Constants;
 using Microsoft.Extensions.Options;
 using Backend.Models;
-using MongoDB.Bson;
-using System.Xml;
-using Backend.Util.Exceptions;
-using ZstdSharp.Unsafe;
+using Util.Exceptions;
+using Backend.Models.Config;
 
 namespace InstaConnect.Services
 {
@@ -18,7 +15,7 @@ namespace InstaConnect.Services
         private IMongoCollection<T> _collection;
         private string _index;
 
-        public MongoDbService(IOptions<SettingsModel<T>> settings)
+        public MongoDbService(IOptions<MongoSettings<T>> settings)
         {
             _dbClient = new MongoClient(settings.Value.ConnectionString);
             _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
@@ -122,7 +119,7 @@ namespace InstaConnect.Services
             return models;
         }
 
-        public T? UpdateModel(T updatedModel)
+        public T UpdateModel(T updatedModel)
         {
             var update = Builders<T>.Update;
             var updates = new List<UpdateDefinition<T>>();
@@ -149,7 +146,7 @@ namespace InstaConnect.Services
             return result;
         }
 
-        public async Task<T?> UpdateModelAsync(T updatedModel)
+        public async Task<T> UpdateModelAsync(T updatedModel)
         {
             var update = Builders<T>.Update;
             var updates = new List<UpdateDefinition<T>>();
@@ -247,7 +244,7 @@ namespace InstaConnect.Services
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return result;
         }
-        public async Task<T?> DeleteModelAsync(object id) 
+        public async Task<T> DeleteModelAsync(object id) 
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindOneAndDeleteAsync(filter);

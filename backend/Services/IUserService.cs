@@ -1,9 +1,6 @@
-using InstaConnect.Models;
-using Backend.Services;
 using Backend.Models;
-using Backend.Validators.UserValidators;
 
-namespace Backend.Interfaces
+namespace Backend.Services.Interfaces
 {
     public interface IUserService : IMongoDbService<UserModel>
     {

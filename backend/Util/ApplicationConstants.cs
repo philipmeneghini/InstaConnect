@@ -1,12 +1,10 @@
-﻿using InstaConnect.Models;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Net.NetworkInformation;
+﻿using Backend.Models;
 
 namespace Util.Constants
 {
     class ApplicationConstants
     {
+        #region Configuration
         static public readonly string DatabaseName = "InstaConnect";
         static public readonly string TestCollectionName = "Test";
         static public readonly string UserCollectionName = "users";
@@ -16,6 +14,10 @@ namespace Util.Constants
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
+        static public readonly string CorsPolicy = "corspolicy";
+        static public readonly string Star = "*";
+        static public readonly string JwtKey = "Jwt:Key";
+        #endregion
 
         #region Error Messages
         static public readonly string FirstNameEmpty = "first name cannot be empty";
@@ -39,8 +41,9 @@ namespace Util.Constants
         static public readonly string BadRequestBulkWriteMongoErrorMessage = "{0}s not properly updated";
         static public readonly string FailedToDeleteMongo = "Failed to delete {0} models";
         static public readonly string InsertModelExistsException = "model with the same id already exists";
-        static public readonly List<string> BadRequestErrorMessages = new List<string>() { FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
+        static public readonly List<string> BadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
+        static public readonly string InternalServerError = "Internal Server Error: ";
         #endregion
 
         #region CRUD Operations

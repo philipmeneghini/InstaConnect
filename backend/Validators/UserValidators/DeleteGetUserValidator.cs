@@ -1,6 +1,6 @@
 ﻿using Backend.Services;
 using FluentValidation;
-using InstaConnect.Models;
+using Backend.Models;
 using MongoDB.Driver;
 using Util.Constants;
 

@@ -1,7 +1,7 @@
-﻿using Backend.Interfaces;
+﻿using Backend.Services.Interfaces;
 using Backend.Models;
-using Backend.Util.Exceptions;
-using InstaConnect.Models;
+using Backend.Models.Config;
+using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

@@ -1,24 +1,22 @@
 using Backend.Services;
 using InstaConnect.Services;
 using Util.Constants;
-using Backend.Models;
-using Backend.Interfaces;
-using Backend.UserServices;
+using Backend.Services.Interfaces;
 using Backend.Middleware;
-using InstaConnect.Models;
+using Backend.Models;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Backend.Validators.UserValidators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Backend.Models.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
-builder.Services.Configure<SettingsModel<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
+builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<AmazonS3CredentialsModel>(builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(ApplicationConstants.Jwt));
@@ -35,9 +33,9 @@ builder.Services.AddSingleton<IMongoDbService<UserModel>, MongoDbService<UserMod
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 
-builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
+builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {
-    build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    build.WithOrigins(ApplicationConstants.Star).AllowAnyMethod().AllowAnyHeader();
 }));
 
 builder.Services.AddAuthorization();
@@ -54,7 +52,7 @@ builder.Services.AddAuthentication(options =>
     jwt.TokenValidationParameters = new TokenValidationParameters
     {
         IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        (Encoding.UTF8.GetBytes(builder.Configuration[ApplicationConstants.JwtKey])),
 
         ValidateIssuer = false,
         ValidateAudience = false,
@@ -73,7 +71,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("corspolicy");
+app.UseCors(ApplicationConstants.CorsPolicy);
 
 app.UseHttpsRedirection();
 
