@@ -2,6 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Util.Constants;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Models
 {
@@ -40,6 +41,7 @@ namespace Backend.Models
         [BsonElement("birthday")]
         public string? BirthDate { get; set; }
 
+        [Required, EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; }
 

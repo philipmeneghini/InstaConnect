@@ -29,7 +29,6 @@ builder.Services.AddSingleton<IValidator<string>, DeleteGetUserValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, CreateUpdateUserValidator>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<IMediaService, MediaService>();
-builder.Services.AddSingleton<IMongoDbService<UserModel>, MongoDbService<UserModel>>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 

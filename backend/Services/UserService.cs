@@ -5,31 +5,32 @@ using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
 using Util.AwsDestination;
+using InstaConnect.Services;
+using Backend.Models.Config;
+using Microsoft.Extensions.Options;
 
 namespace Backend.Services
 {
-    public class UserService : IUserService
+    public class UserService : MongoDbService<UserModel>, IUserService
     {
-        private IMongoDbService<UserModel> _mongoDbService;
         private IMediaService _mediaService;
         private IValidator<string> _deleteGetUserValidator;
         private IValidator<UserModel> _createUpdateUserValidator;
 
-        public UserService(IMongoDbService<UserModel> mongoDbService, IMediaService mediaService, IValidator<string> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator)
+        public UserService(IMediaService mediaService, IValidator<string> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator, IOptions<MongoSettings<UserModel>> settings): base(settings)
         {
-            _mongoDbService = mongoDbService;
             _mediaService = mediaService;
             _deleteGetUserValidator = deleteGetUserValidator;
             _createUpdateUserValidator = createUpdateUserValidator;
         }
 
-        public UserModel GetModel(object email)
+        public UserModel GetUser(string email)
         {
-            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Get));
+            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            var validationResult = _deleteGetUserValidator.Validate(email, options => options.IncludeRuleSets(ApplicationConstants.Get));
             ThrowExceptions(validationResult);
 
-            var user = _mongoDbService.GetModel(email);
+            var user = GetModel(email);
             string profilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = profilePictureUrl;
 
@@ -42,13 +43,13 @@ namespace Backend.Services
             return user;
         }
 
-        public async Task<UserModel> GetModelAsync(object email)
+        public async Task<UserModel> GetUserAsync(string email)
         {
-            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Get));
+            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            var validationResult = _deleteGetUserValidator.Validate(email, options => options.IncludeRuleSets(ApplicationConstants.Get));
             ThrowExceptions(validationResult);
 
-            var user = await _mongoDbService.GetModelAsync(email);
+            var user = await GetModelAsync(email);
             string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
 
@@ -59,43 +60,6 @@ namespace Backend.Services
             user.ReelsUrl = reelsUrl;
 
             return user;
-        }
-
-        public List<UserModel> GetModels(FilterDefinition<UserModel> filter)
-        {
-            var users = _mongoDbService.GetModels(filter);
-
-            foreach (var user in users)
-            {
-                string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
-                user.ProfilePictureUrl = url;
-
-                string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
-                user.PhotosUrl = photosUrl;
-
-                string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
-                user.ReelsUrl = reelsUrl;
-            }
-
-            return users;
-        }
-        public async Task<List<UserModel>> GetModelsAsync(FilterDefinition<UserModel> filter)
-        {
-            var users = await _mongoDbService.GetModelsAsync(filter);
-
-            foreach (var user in users)
-            {
-                string url = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
-                user.ProfilePictureUrl = url;
-
-                string photosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos);
-                user.PhotosUrl = photosUrl;
-
-                string reelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels);
-                user.ReelsUrl = reelsUrl;
-            }
-
-            return users;
         }
 
         public async Task<List<UserModel>> GetUsersAsync(string? firstName, string? lastName, string? birthdate)
@@ -114,7 +78,7 @@ namespace Backend.Services
                     filters.Add(Builders<UserModel>.Filter.Eq(p => p.BirthDate, birthdate));
             }
             var finalFilter = filter.And((IEnumerable<FilterDefinition<UserModel>>)filters);
-            var users = await _mongoDbService.GetModelsAsync(finalFilter);
+            var users = await GetModelsAsync(finalFilter);
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
@@ -141,7 +105,7 @@ namespace Backend.Services
                     filters.Add(Builders<UserModel>.Filter.Eq(p => p.BirthDate, birthdate));
             }
             var finalFilter = filter.And((IEnumerable<FilterDefinition<UserModel>>)filters);
-            var users = _mongoDbService.GetModels(finalFilter);
+            var users = GetModels(finalFilter);
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
@@ -152,13 +116,13 @@ namespace Backend.Services
             return users;
         }
 
-        public UserModel CreateModel(UserModel newUser)
+        public UserModel CreateUser(UserModel newUser)
         {
             if (newUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
-            var user = _mongoDbService.CreateModel(newUser);
+            var user = CreateModel(newUser);
             string url = _mediaService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
 
@@ -171,13 +135,13 @@ namespace Backend.Services
             return user;
         }
 
-        public async Task<UserModel> CreateModelAsync(UserModel newUser)
+        public async Task<UserModel> CreateUserAsync(UserModel newUser)
         {
             if (newUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
-            var user = await _mongoDbService.CreateModelAsync(newUser);
+            var user = await CreateModelAsync(newUser);
             string url = _mediaService.GeneratePresignedUrl(newUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
 
@@ -190,7 +154,7 @@ namespace Backend.Services
             return user;
         }
 
-        public List<UserModel> CreateModels(List<UserModel> newUsers)
+        public List<UserModel> CreateUsers(List<UserModel> newUsers)
         {
             if (newUsers == null || newUsers.Count ==0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
@@ -202,7 +166,7 @@ namespace Backend.Services
                 result.Add(newUser);
             }
 
-            var users = _mongoDbService.CreateModels(result);
+            var users = CreateModels(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
@@ -210,7 +174,7 @@ namespace Backend.Services
             return users;
         }
 
-        public async Task<List<UserModel>> CreateModelsAsync(List<UserModel> newUsers)
+        public async Task<List<UserModel>> CreateUsersAsync(List<UserModel> newUsers)
         {
             if (newUsers == null || newUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
@@ -222,7 +186,7 @@ namespace Backend.Services
                 result.Add(newUser);
             }
 
-            var users = await _mongoDbService.CreateModelsAsync(result);
+            var users = await CreateModelsAsync(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
@@ -230,13 +194,13 @@ namespace Backend.Services
             return users;
         }
 
-        public UserModel UpdateModel(UserModel updatedUser)
+        public UserModel UpdateUser(UserModel updatedUser)
         {
             if (updatedUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUpdateUserValidator.Validate(updatedUser, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
 
-            var user = _mongoDbService.UpdateModel(updatedUser);
+            var user = UpdateModel(updatedUser);
             string url = _mediaService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
 
@@ -249,13 +213,13 @@ namespace Backend.Services
             return user;
         }
 
-        public async Task<UserModel> UpdateModelAsync(UserModel updatedUser)
+        public async Task<UserModel> UpdateUserAsync(UserModel updatedUser)
         {
             if (updatedUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _createUpdateUserValidator.Validate(updatedUser, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
 
-            var user = await _mongoDbService.UpdateModelAsync(updatedUser);
+            var user = await UpdateModelAsync(updatedUser);
             string url = _mediaService.GeneratePresignedUrl(updatedUser.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture);
             user.ProfilePictureUrl = url;
 
@@ -268,7 +232,7 @@ namespace Backend.Services
             return user;
         }
 
-        public List<UserModel> UpdateModels(List<UserModel> updatedUsers)
+        public List<UserModel> UpdateUsers(List<UserModel> updatedUsers)
         {
             if (updatedUsers == null || updatedUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
@@ -280,7 +244,7 @@ namespace Backend.Services
                 result.Add(user);
             }
 
-            var users = _mongoDbService.UpdateModels(result);
+            var users = UpdateModels(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
@@ -288,7 +252,7 @@ namespace Backend.Services
             return users;
         }
 
-        public async Task<List<UserModel>> UpdateModelsAsync(List<UserModel> updatedUsers)
+        public async Task<List<UserModel>> UpdateUsersAsync(List<UserModel> updatedUsers)
         {
             if (updatedUsers == null || updatedUsers.Count == 0) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             List<UserModel> result = new List<UserModel>();
@@ -300,7 +264,7 @@ namespace Backend.Services
                 result.Add(user);
             }
 
-            var users = await _mongoDbService.UpdateModelsAsync(result);
+            var users = await UpdateModelsAsync(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Photos));
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(user.Email, ApplicationConstants.S3BucketName, AwsDestination.Reels));
@@ -308,38 +272,38 @@ namespace Backend.Services
             return users;
         }
 
-        public UserModel DeleteModel(object email)
+        public UserModel DeleteUser(string email)
         {
-            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Delete));
+            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            var validationResult = _deleteGetUserValidator.Validate(email, options => options.IncludeRuleSets(ApplicationConstants.Delete));
             ThrowExceptions(validationResult);
 
-            var user = _mongoDbService.DeleteModel(email);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.ProfilePicture);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Photos);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Reels);
+            var user = DeleteModel(email);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.ProfilePicture);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.Photos);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.Reels);
 
 
             return user;
         }
 
-        public async Task<UserModel> DeleteModelAsync(object email)
+        public async Task<UserModel> DeleteUserAsync(string email)
         {
-            if (string.IsNullOrEmpty((string)email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationResult = _deleteGetUserValidator.Validate((string)email, options => options.IncludeRuleSets(ApplicationConstants.Delete));
+            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            var validationResult = _deleteGetUserValidator.Validate(email, options => options.IncludeRuleSets(ApplicationConstants.Delete));
             ThrowExceptions(validationResult);
 
-            var user = await _mongoDbService.DeleteModelAsync(email);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.ProfilePicture);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Photos);
-            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, (string)email, AwsDestination.Reels);
+            var user = await DeleteModelAsync(email);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.ProfilePicture);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.Photos);
+            _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, email, AwsDestination.Reels);
 
             return user;
         }
 
-        public List<UserModel> DeleteModels(FilterDefinition<UserModel> filter)
+        public List<UserModel> DeleteUsers(FilterDefinition<UserModel> filter)
         {
-            var users = _mongoDbService.DeleteModels(filter);
+            var users = DeleteModels(filter);
             foreach (var user in users)
             {
                 _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.ProfilePicture);
@@ -349,9 +313,9 @@ namespace Backend.Services
             
             return users;
         }
-        public async Task<List<UserModel>> DeleteModelsAsync(FilterDefinition<UserModel> filter)
+        public async Task<List<UserModel>> DeleteUsersAsync(FilterDefinition<UserModel> filter)
         {
-            var users = await _mongoDbService.DeleteModelsAsync(filter);
+            var users = await DeleteModelsAsync(filter);
             foreach (var user in users)
             {
                 _mediaService.DeleteMedia(ApplicationConstants.S3BucketName, user.Email, AwsDestination.ProfilePicture);

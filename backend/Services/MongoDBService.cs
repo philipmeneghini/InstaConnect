@@ -8,14 +8,14 @@ using Backend.Models.Config;
 
 namespace InstaConnect.Services
 {
-    public class MongoDbService<T> : IMongoDbService<T> where T : IInstaModel
+    public abstract class MongoDbService<T> : IMongoDbService<T> where T:IInstaModel
     {
         private MongoClient _dbClient;
         private IMongoDatabase _database;
         private IMongoCollection<T> _collection;
         private string _index;
 
-        public MongoDbService(IOptions<MongoSettings<T>> settings)
+        protected MongoDbService(IOptions<MongoSettings<T>> settings)
         {
             _dbClient = new MongoClient(settings.Value.ConnectionString);
             _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
@@ -23,7 +23,7 @@ namespace InstaConnect.Services
             _index = settings.Value.Index;
         }
 
-        public T GetModel(object id)
+        protected T GetModel(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result= _collection.Find(filter);
@@ -33,7 +33,7 @@ namespace InstaConnect.Services
             return model;
         }
 
-        public async Task<T> GetModelAsync(object id)
+        protected async Task<T> GetModelAsync(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindAsync(filter);
@@ -43,7 +43,7 @@ namespace InstaConnect.Services
             return model;
         }
 
-        public List<T> GetModels(FilterDefinition<T> filter)
+        protected List<T> GetModels(FilterDefinition<T> filter)
         {
             var users = _collection.Find(filter).ToList();
             if (users.Count == 0)
@@ -51,7 +51,7 @@ namespace InstaConnect.Services
             return users;
         }
 
-        public async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
+        protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
         {
             var users = await _collection.FindAsync(filter);
             var userList = await users.ToListAsync();
@@ -60,7 +60,7 @@ namespace InstaConnect.Services
             return userList;
         }
         
-        public T CreateModel(T model)
+        protected T CreateModel(T model)
         {
             var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
             List<T> models = _collection.Find(filter).ToList();
@@ -69,7 +69,7 @@ namespace InstaConnect.Services
             _collection.InsertOne(model);
             return model;
         }
-        public async Task<T> CreateModelAsync(T model)
+        protected async Task<T> CreateModelAsync(T model)
         {
             var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
             var modelsFound = await _collection.FindAsync(filter);
@@ -80,7 +80,7 @@ namespace InstaConnect.Services
             return model;
         }
 
-        public List<T> CreateModels(List<T> models)
+        protected List<T> CreateModels(List<T> models)
         {
             if (models.Count == 0)
                 return new List<T>();
@@ -99,7 +99,7 @@ namespace InstaConnect.Services
            return models;
         }
 
-        public async Task<List<T>> CreateModelsAsync(List<T> models)
+        protected async Task<List<T>> CreateModelsAsync(List<T> models)
         {
             if (models.Count == 0)
                 return new List<T>();
@@ -119,7 +119,7 @@ namespace InstaConnect.Services
             return models;
         }
 
-        public T UpdateModel(T updatedModel)
+        protected T UpdateModel(T updatedModel)
         {
             var update = Builders<T>.Update;
             var updates = new List<UpdateDefinition<T>>();
@@ -146,7 +146,7 @@ namespace InstaConnect.Services
             return result;
         }
 
-        public async Task<T> UpdateModelAsync(T updatedModel)
+        protected async Task<T> UpdateModelAsync(T updatedModel)
         {
             var update = Builders<T>.Update;
             var updates = new List<UpdateDefinition<T>>();
@@ -173,7 +173,7 @@ namespace InstaConnect.Services
             return result;
         }
 
-        public List<T> UpdateModels(List<T> updatedModels)
+        protected List<T> UpdateModels(List<T> updatedModels)
         {
             var updates = new List<WriteModel<T>>();
             foreach (var model in updatedModels)
@@ -204,7 +204,7 @@ namespace InstaConnect.Services
             else
                 return updatedModels;
         }
-        public async Task<List<T>> UpdateModelsAsync(List<T> updatedModels)
+        protected async Task<List<T>> UpdateModelsAsync(List<T> updatedModels)
         {
             var updates = new List<WriteModel<T>>();
             foreach (var model in updatedModels)
@@ -236,7 +236,7 @@ namespace InstaConnect.Services
                 return updatedModels;
         }
 
-        public T DeleteModel(object id)
+        protected T DeleteModel(object id)
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result = _collection.FindOneAndDelete(filter);
@@ -244,7 +244,7 @@ namespace InstaConnect.Services
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return result;
         }
-        public async Task<T> DeleteModelAsync(object id) 
+        protected async Task<T> DeleteModelAsync(object id) 
         {
             var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindOneAndDeleteAsync(filter);
@@ -253,7 +253,7 @@ namespace InstaConnect.Services
             return result;
         }
 
-        public List<T> DeleteModels(FilterDefinition<T> filter)
+        protected List<T> DeleteModels(FilterDefinition<T> filter)
         {
             List<T> models = _collection.Find(filter).ToList();
             if (models.Count == 0)
@@ -263,7 +263,7 @@ namespace InstaConnect.Services
                 throw new InstaInternalServerException(string.Format(ApplicationConstants.FailedToDeleteMongo, (models.Count - result.DeletedCount).ToString()));
             return result.IsAcknowledged ? models : new List<T>();
         }
-        public async Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter)
+        protected async Task<List<T>> DeleteModelsAsync(FilterDefinition<T> filter)
         {
             var modelsFound = await _collection.FindAsync(filter);
             var modelsFoundList = await modelsFound.ToListAsync();
