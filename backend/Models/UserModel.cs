@@ -1,7 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Util.Constants;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Models
@@ -45,13 +44,13 @@ namespace Backend.Models
         [BsonElement("email")]
         public string Email { get; set; }
 
-        [NotMapped]
+        [BsonIgnore]
         public string? ProfilePictureUrl { get; set; }
 
-        [NotMapped]
+        [BsonIgnore]
         public string? PhotosUrl { get; set; }
 
-        [NotMapped]
+        [BsonIgnore]
         public string? ReelsUrl { get; set; }
     }
 }

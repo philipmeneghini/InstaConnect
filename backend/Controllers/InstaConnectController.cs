@@ -56,7 +56,7 @@ namespace InstaConnect.Controllers
         [HttpPut("Users")]
         public async Task<ActionResult<List<UserModel>>> PutUsers(List<UserModel> newUsers)
         {
-            return await _userService.UpdateUsersAsync(newUsers);
+            return await _userService.UpdateUsersAsync(newUsers); 
         }
 
         [Authorize]
