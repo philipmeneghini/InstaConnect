@@ -52,9 +52,9 @@ namespace Backend.Services
 
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, fullName),    
-                new Claim(ClaimTypes.DateOfBirth, user.BirthDate)
+                new Claim("email", user.Email),
+                new Claim("name", fullName),    
+                new Claim("DateOfBirth", user.BirthDate)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));

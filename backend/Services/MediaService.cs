@@ -7,14 +7,13 @@ using Backend.Services.Interfaces;
 using Backend.Models.Config;
 using Util.Exceptions;
 using Microsoft.Extensions.Options;
-using Util.AwsDestination;
 using Util.Constants;
 
 namespace Backend.Services
 {
     public class MediaService: IMediaService
     {
-        private AmazonS3Client _client;
+        private IAmazonS3 _client;
         private AmazonS3CredentialsModel _keys;
 
         public MediaService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
@@ -30,21 +29,20 @@ namespace Backend.Services
             return result;
         }
 
-        public string GeneratePresignedUrl(string id, string bucketName, AwsDestination destination)
-        {
-            string key = GenerateKey(id, destination);
+        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action)
+        {  
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
                 Key = key,
+                Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.AddMinutes(2)
             };
             return _client.GetPreSignedURL(request);
         }
 
-        public async void DeleteMedia(string id, string bucketName, AwsDestination destination)
+        public async void DeleteMedia(string key, string bucketName)
         {
-            string key = GenerateKey(id, destination);
             DeleteObjectRequest request = new DeleteObjectRequest
             {
                 BucketName = bucketName,
@@ -56,26 +54,6 @@ namespace Backend.Services
                 throw new InstaGenericException((int)response.HttpStatusCode, string.Format(ApplicationConstants.ErrorDeletingProfilePicture, key));
             }
             return;
-        }
-
-        private string GenerateKey(string id, AwsDestination destination)
-        {
-            string res = string.Empty;
-            switch (destination)
-            {
-                case AwsDestination.ProfilePicture:
-                    res = string.Format(ApplicationConstants.ProfilePicture, id);
-                    break;
-                case AwsDestination.Photos:
-                    res = string.Format(ApplicationConstants.Photos, id);
-                    break;
-                case AwsDestination.Reels:
-                    res = string.Format(ApplicationConstants.Reels, id);
-                    break;
-                default:
-                    throw new InstaInternalServerException(ApplicationConstants.AwsDestinationNotFound);
-            }
-            return res;
         }
     }
 }

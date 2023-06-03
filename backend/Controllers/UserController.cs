@@ -7,11 +7,11 @@ namespace InstaConnect.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InstaConnectController : ControllerBase
+    public class UserController : ControllerBase
     {
         private IUserService _userService;
 
-        public InstaConnectController(IUserService UserService)
+        public UserController(IUserService UserService)
         {   
             _userService = UserService;
         }
@@ -32,14 +32,14 @@ namespace InstaConnect.Controllers
 
         [Authorize]
         [HttpPost("User")]
-        public async Task<ActionResult<UserModel>> PostUser(UserModel newUser)
+        public async Task<ActionResult<UserModel>> PostUser([FromBody] UserModel? newUser)
         {
             return await _userService.CreateUserAsync(newUser);
         }
 
         [Authorize]
         [HttpPost("Users")]
-        public async Task<ActionResult<List<UserModel>>> PostUsers(List<UserModel> newUsers)
+        public async Task<ActionResult<List<UserModel>>> PostUsers([FromBody] List<UserModel>? newUsers)
         {
             return await _userService.CreateUsersAsync(newUsers);
         }
@@ -47,21 +47,21 @@ namespace InstaConnect.Controllers
 
         [Authorize]
         [HttpPut("User")]
-        public async Task<ActionResult<UserModel>> PutUser(UserModel newUser)
+        public async Task<ActionResult<UserModel>> PutUser([FromBody] UserModel? newUser)
         {
             return await _userService.UpdateUserAsync(newUser);
         }
 
         [Authorize]
         [HttpPut("Users")]
-        public async Task<ActionResult<List<UserModel>>> PutUsers(List<UserModel> newUsers)
+        public async Task<ActionResult<List<UserModel>>> PutUsers([FromBody] List<UserModel>? newUsers)
         {
             return await _userService.UpdateUsersAsync(newUsers); 
         }
 
         [Authorize]
         [HttpDelete("User")]
-        public async Task<ActionResult<UserModel>> DeleteUser(string email)
+        public async Task<ActionResult<UserModel>> DeleteUser(string? email)
         {
             return await _userService.DeleteUserAsync(email);
         }

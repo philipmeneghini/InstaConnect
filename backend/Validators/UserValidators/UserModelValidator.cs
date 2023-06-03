@@ -4,9 +4,9 @@ using Util.Constants;
 
 namespace Backend.Validators.UserValidators
 {
-    public class CreateUpdateUserValidator: AbstractValidator<UserModel>
+    public class UserModelValidator: AbstractValidator<UserModel>
     {
-        public CreateUpdateUserValidator(ValidatorUserHelpers validator)
+        public UserModelValidator(ValidatorUserHelpers validator)
         {
             RuleSet(ApplicationConstants.Create, () =>
             {

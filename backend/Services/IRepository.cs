@@ -2,7 +2,7 @@
 
 namespace Backend.Services.Interfaces
 {
-    public interface IMongoDbService<T> where T : IInstaModel
+    public interface IRepository<T> where T : IInstaModel
     {
     }
 }

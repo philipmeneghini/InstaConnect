@@ -1,25 +1,23 @@
-﻿using Backend.Services;
+﻿using Backend.Models.Validation;
 using FluentValidation;
-using Backend.Models;
-using MongoDB.Driver;
 using Util.Constants;
 
 namespace Backend.Validators.UserValidators
 {
-    public class DeleteGetUserValidator : AbstractValidator<string>
+    public class UserEmailValidator : AbstractValidator<UserEmailValidationModel>
     {
-        public DeleteGetUserValidator(ValidatorUserHelpers validator)
+        public UserEmailValidator()
         {
             RuleSet(ApplicationConstants.Delete, () =>
             {
-                RuleFor(email => email).Cascade(CascadeMode.Stop)
+                RuleFor(model => model.Email).Cascade(CascadeMode.Stop)
                                         .NotEmpty().WithMessage(ApplicationConstants.EmailEmpty)
                                         .EmailAddress().WithMessage(ApplicationConstants.EmailValid);
             });
 
             RuleSet(ApplicationConstants.Get, () =>
             {
-                RuleFor(email => email).Cascade(CascadeMode.Stop)
+                RuleFor(model => model.Email).Cascade(CascadeMode.Stop)
                                         .NotEmpty().WithMessage(ApplicationConstants.EmailEmpty)
                                         .EmailAddress().WithMessage(ApplicationConstants.EmailValid);
             });

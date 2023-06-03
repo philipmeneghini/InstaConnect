@@ -1,15 +1,16 @@
 using Backend.Services;
-using InstaConnect.Services;
 using Util.Constants;
 using Backend.Services.Interfaces;
 using Backend.Middleware;
 using Backend.Models;
 using FluentValidation;
 using Backend.Validators.UserValidators;
+using Backend.Validators.ContentValidators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Models.Config;
+using Backend.Models.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
+builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
 builder.Services.Configure<AmazonS3CredentialsModel>(builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(ApplicationConstants.Jwt));
@@ -25,12 +27,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddSingleton<IValidator<string>, DeleteGetUserValidator>();
-builder.Services.AddSingleton<IValidator<UserModel>, CreateUpdateUserValidator>();
+
+builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
+builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
+builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
+builder.Services.AddSingleton<IValidator<ContentEmailValidationModel>, ContentEmailValidator>();
+builder.Services.AddSingleton<IValidator<ContentModel>, ContentModelValidator>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
+builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
 builder.Services.AddSingleton<IMediaService, MediaService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
+builder.Services.AddSingleton<IContentService, ContentService>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {
@@ -60,6 +68,7 @@ builder.Services.AddAuthentication(options =>
         RequireExpirationTime = false
     };
 });
+
 
 var app = builder.Build();
 

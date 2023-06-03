@@ -1,13 +1,13 @@
-﻿using Util.AwsDestination;
+﻿using Amazon.S3;
 
 namespace Backend.Services.Interfaces
 {
     public interface IMediaService
     {
         public Task<bool> VerifyBucket(string name);
-
-        public string GeneratePresignedUrl(string id, string name, AwsDestination destination);
-
-        public void DeleteMedia(string id, string bucketName, AwsDestination destination);
+        
+        public string GeneratePresignedUrl(string key, string name, HttpVerb action);
+        
+        public void DeleteMedia(string key, string bucketName);
     }
 }

@@ -8,14 +8,14 @@ using Backend.Models.Config;
 
 namespace InstaConnect.Services
 {
-    public abstract class MongoDbService<T> : IMongoDbService<T> where T:IInstaModel
+    public abstract class Repository<T> : IRepository<T> where T:IInstaModel
     {
         private MongoClient _dbClient;
         private IMongoDatabase _database;
         private IMongoCollection<T> _collection;
         private string _index;
 
-        protected MongoDbService(IOptions<MongoSettings<T>> settings)
+        protected Repository(IOptions<MongoSettings<T>> settings)
         {
             _dbClient = new MongoClient(settings.Value.ConnectionString);
             _database = _dbClient.GetDatabase(ApplicationConstants.DatabaseName);
@@ -23,9 +23,8 @@ namespace InstaConnect.Services
             _index = settings.Value.Index;
         }
 
-        protected T GetModel(object id)
+        protected T GetModel(FilterDefinition<T> filter)
         {
-            var filter = Builders<T>.Filter.Eq(_index, id);
             var result= _collection.Find(filter);
             var model = result.FirstOrDefault();
             if (model == null)
@@ -33,9 +32,8 @@ namespace InstaConnect.Services
             return model;
         }
 
-        protected async Task<T> GetModelAsync(object id)
+        protected async Task<T> GetModelAsync(FilterDefinition<T> filter)
         {
-            var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindAsync(filter);
             var model = result.FirstOrDefault();
             if (model == null)
@@ -236,17 +234,15 @@ namespace InstaConnect.Services
                 return updatedModels;
         }
 
-        protected T DeleteModel(object id)
+        protected T DeleteModel(FilterDefinition<T> filter)
         {
-            var filter = Builders<T>.Filter.Eq(_index, id);
             var result = _collection.FindOneAndDelete(filter);
             if (result == null)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return result;
         }
-        protected async Task<T> DeleteModelAsync(object id) 
+        protected async Task<T> DeleteModelAsync(FilterDefinition<T> filter) 
         {
-            var filter = Builders<T>.Filter.Eq(_index, id);
             var result = await _collection.FindOneAndDeleteAsync(filter);
             if (result == null)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
