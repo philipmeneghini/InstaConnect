@@ -1,6 +1,4 @@
-﻿using System.Transactions;
-
-namespace Backend.Util.Exceptions
+﻿namespace Util.Exceptions
 {
     public abstract class InstaException : Exception
     {

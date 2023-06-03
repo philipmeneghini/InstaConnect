@@ -1,5 +1,5 @@
-﻿using Backend.Util;
-using Backend.Util.Exceptions;
+﻿using Util.Constants;
+using Util.Exceptions;
 
 namespace Backend.Middleware
 {
@@ -19,7 +19,7 @@ namespace Backend.Middleware
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("Internal Server Error: " + ex.Message);
+                await context.Response.WriteAsync(ApplicationConstants.InternalServerError + ex.Message);
             }
         }
     }

@@ -3,20 +3,20 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
-using Backend.Interfaces;
-using Backend.Models;
-using Backend.Util.Exceptions;
+using Backend.Services.Interfaces;
+using Backend.Models.Config;
+using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Util.Constants;
 
 namespace Backend.Services
 {
-    public class ProfilePictureService: IProfilePictureService
+    public class MediaService: IMediaService
     {
-        private AmazonS3Client _client;
+        private IAmazonS3 _client;
         private AmazonS3CredentialsModel _keys;
 
-        public ProfilePictureService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
+        public MediaService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
         {
             _keys = amazonS3CredentialsModel.Value;
             var credentials = new BasicAWSCredentials(_keys.AccessKey, _keys.SecretKey);
@@ -29,18 +29,19 @@ namespace Backend.Services
             return result;
         }
 
-        public string GeneratePresignedUrl(string key, string bucketName)
-        {
+        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action)
+        {  
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
                 Key = key,
+                Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.AddMinutes(2)
             };
             return _client.GetPreSignedURL(request);
         }
 
-        public async void DeleteProfilePicture(string key, string bucketName)
+        public async void DeleteMedia(string key, string bucketName)
         {
             DeleteObjectRequest request = new DeleteObjectRequest
             {

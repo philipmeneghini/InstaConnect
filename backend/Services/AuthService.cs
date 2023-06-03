@@ -1,7 +1,7 @@
-﻿using Backend.Interfaces;
+﻿using Backend.Services.Interfaces;
 using Backend.Models;
-using Backend.Util.Exceptions;
-using InstaConnect.Models;
+using Backend.Models.Config;
+using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -28,7 +28,7 @@ namespace Backend.Services
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
                 throw new InstaBadRequestException("missing email or password");
-            var user = await _userService.GetModelAsync(request.Email);
+            var user = await _userService.GetUserAsync(request.Email);
             if (!CheckHash(user.Password, request.Password))
                 throw new InstaBadRequestException("invalid password");
             return GenerateToken(user);
@@ -38,10 +38,10 @@ namespace Backend.Services
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
                 throw new InstaBadRequestException("missing email or password");
-            var user = await _userService.GetModelAsync(request.Email);
+            var user = await _userService.GetUserAsync(request.Email);
             var hash = Hash(request.Password);
             user.Password = hash;
-            return await _userService.UpdateModelAsync(user);
+            return await _userService.UpdateUserAsync(user);
         }
 
         private string GenerateToken(UserModel user)
@@ -52,9 +52,9 @@ namespace Backend.Services
 
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, fullName),
-                new Claim(ClaimTypes.DateOfBirth, user.BirthDate)
+                new Claim("email", user.Email),
+                new Claim("name", fullName),    
+                new Claim("DateOfBirth", user.BirthDate)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));

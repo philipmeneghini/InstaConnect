@@ -1,6 +1,6 @@
-﻿namespace Backend.Models
+﻿namespace Backend.Models.Config
 {
-    public class SettingsModel<T> where T : IInstaModel
+    public class MongoSettings<T> where T : IInstaModel
     {
         public string? Collection { get; set; }
 

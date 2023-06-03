@@ -2,10 +2,12 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Util.Constants;
 using System.ComponentModel.DataAnnotations;
+using Util.MediaType;
+using System.ComponentModel;
 
 namespace Backend.Models
 {
-    public class UserModel : IInstaModel
+    public class ContentModel : IInstaModel
     {
         public static string GetCollectionName()
         {
@@ -14,12 +16,12 @@ namespace Backend.Models
 
         public object GetIndex()
         {
-            return Email;
+            return Id;
         }
 
         public Type GetType()
         {
-            return typeof(UserModel);
+            return typeof(ContentModel);
         }
 
         [BsonId]
@@ -28,29 +30,27 @@ namespace Backend.Models
         [BsonElement("_id")]
         public string? Id { get; set; }
 
-        [BsonElement("Password")]
-        public string? Password { get; set; }
+        [BsonElement("dateCreated")]
+        public DateTime? DateCreated { get; set; }
 
-        [BsonElement("firstName")]
-        public string? FirstName { get; set; }
+        [BsonElement("dateUpdated")]
+        public DateTime? DateUpdated { get; set; }
 
-        [BsonElement("lastName")]
-        public string? LastName { get; set; }
+        [BsonElement("caption")]
+        public string? Caption { get; set; }
 
-        [BsonElement("birthday")]
-        public string? BirthDate { get; set; }
+        [BsonElement("likes")]
+        public int Likes { get; set; }
+
+        [DefaultValue(typeof(MediaType), "Unknown")]
+        [BsonElement("mediaType")]
+        public MediaType MediaType { get; set; }
 
         [Required, EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; }
 
         [BsonIgnore]
-        public string? ProfilePictureUrl { get; set; }
-
-        [BsonIgnore]
-        public string? PhotosUrl { get; set; }
-
-        [BsonIgnore]
-        public string? ReelsUrl { get; set; }
+        public string? MediaUrl { get; set; }
     }
 }
