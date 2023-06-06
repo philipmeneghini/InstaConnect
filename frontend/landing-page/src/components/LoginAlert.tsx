@@ -1,6 +1,6 @@
 import {Alert, AlertColor, Snackbar} from '@mui/material'
 import React from 'react'
-import { LoginProperties } from './LoginPage'
+import { LoginProperties } from '../pages/LoginPage'
 
 interface AlertProps {
   login: LoginProperties,

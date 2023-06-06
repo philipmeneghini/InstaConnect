@@ -5,7 +5,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
 import { _authenticationApiClient } from '../App'
 import { LoginResponse } from '../api_views/IAuthenticationApiClient'
-import LoginAlert from './LoginAlert'
+import LoginAlert from '../components/LoginAlert'
+import LoginHeader from '../components/LoginHeader'
 
 export interface LoginProperties {
   isOpen: boolean,
@@ -77,60 +78,59 @@ export const LoginPage = () => {
     }
 
     return (
-      <Grid
-        container
-        spacing={3}
-        direction="column"
-        alignItems="center"
-        justifyContent="center"
-        sx={{ minHeight: '100vh' }}
-      >
-        <Grid item xs={10}>
-        <TextField
-          style = {{width: '60ch'}}
-          label="Email"
-          variant="outlined"
-          value={email}
-          onChange={onChangeEmail}
-        />
-        </Grid>
-        <Grid item xs={5}>
-        <FormControl sx={{ m: 1, width: '60ch' }} variant="outlined">
-          <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-          <OutlinedInput
-            id="outlined-adornment-password"
-            type={showPassword ? 'text' : 'password'}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={handleClickShowPassword}
-                  onMouseDown={handleMouseDownPassword}
-                  edge="end"
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
-            label="Password"
-            onChange={onChangePassword}
-          />
-        </FormControl>
-        </Grid>
-        <Grid item xs={3}>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          onClick={handleClickLogin}
+      <>
+        <LoginHeader />
+        <Grid
+          container
+          spacing={3}
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ minHeight: '100vh' }}
         >
-          <Typography variant="h5" display="block" align="center">
-            Log in
-          </Typography>
-        </Button>
-        <LoginAlert login={login} setLogin={setLogin}/>
+          <Grid item xs={10}>
+            <TextField
+              style={{ width: '60ch' }}
+              label="Email"
+              variant="outlined"
+              value={email}
+              onChange={onChangeEmail} />
+          </Grid>
+          <Grid item xs={5}>
+            <FormControl sx={{ m: 1, width: '60ch' }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+              <OutlinedInput
+                id="outlined-adornment-password"
+                type={showPassword ? 'text' : 'password'}
+                endAdornment={<InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>}
+                label="Password"
+                onChange={onChangePassword} />
+            </FormControl>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={handleClickLogin}
+            >
+              <Typography variant="h5" display="block" align="center">
+                Log in
+              </Typography>
+            </Button>
+            <LoginAlert login={login} setLogin={setLogin} />
+          </Grid>
         </Grid>
-      </Grid>)
+      </>)
 }
 
 export default LoginPage

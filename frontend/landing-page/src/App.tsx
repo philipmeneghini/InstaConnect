@@ -1,6 +1,6 @@
 import './App.css';
 import React from 'react'
-import { LoginPage } from './components/LoginPage';
+import { LoginPage } from './pages/LoginPage';
 import { AuthenticationApiClient } from './api_views/AuthenticationApiClient'
 
 export const _authenticationApiClient = new AuthenticationApiClient()
