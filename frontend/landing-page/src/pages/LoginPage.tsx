@@ -7,6 +7,7 @@ import { _authenticationApiClient } from '../App'
 import { LoginResponse } from '../api_views/IAuthenticationApiClient'
 import LoginAlert from '../components/LoginAlert'
 import LoginHeader from '../components/LoginHeader'
+import { SideButton } from '../utils/Constants'
 
 export interface LoginProperties {
   isOpen: boolean,
@@ -79,7 +80,7 @@ export const LoginPage = () => {
 
     return (
       <>
-        <LoginHeader />
+        <LoginHeader sideButton='Register' sideButtonPath={SideButton['Register']}/>
         <Grid
           container
           spacing={3}

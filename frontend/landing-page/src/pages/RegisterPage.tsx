@@ -1,14 +1,15 @@
 import React from 'react'
-import { _authenticationApiClient } from '../App'
 import LoginHeader from '../components/LoginHeader'
 import RegisterForm from '../components/RegisterForm'
+import { SideButton } from '../utils/Constants'
+
 
 export const RegisterPage = () => {
     return (
-      <div>
-        <LoginHeader />
-        <RegisterForm/>
-      </div>)
-}
+        <div>
+            <LoginHeader sideButton='Login' sideButtonPath={SideButton['Login']}/>
+            <RegisterForm/>
+        </div>
+)}
 
 export default RegisterPage
