@@ -1,29 +1,37 @@
 import React from 'react'
-import { Formik, Form } from 'formik'
+import { Field, Formik, Form, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { Button, Grid, Paper } from '@mui/material'
+import { Button, Grid, Paper, TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
+import dayjs from 'dayjs'
+
+interface InitialValues {
+    firstName: string
+    lastName: string
+    email: string
+    dateOfBirth: string
+}
 
 export const RegisterForm = () => {
 
-    const initialValues = {
+    const maxDate = dayjs().subtract(18, "year").format("YYYY-MM-DD")
+    const minDate = dayjs().subtract(120, "year").format("YYYY-MM-DD")
+
+    const initialValues : InitialValues = {
         firstName: '',
         lastName: '',
         email: '',
-        dateOfBirth: ''
+        dateOfBirth: 'YYYY-MM-DD'
     }
-
-    const maxDate = new Date().setUTCFullYear(new Date().getUTCFullYear()-18)
 
     const validation = Yup.object({
         firstName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid First Name').required('Required'),
         lastName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid Last Name').required('Required'),
-        email: Yup.string().email('Invalid Email').required('Required')
-        //dateOfBirth: Yup.date().max(maxDate, 'You Must be at Least 18 Years Old').required('Required')
+        email: Yup.string().email('Invalid Email').required('Required'),
+        dateOfBirth: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required')//Yup.string().matches(/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/, 'Please Enter a Valid Date (YYY-MM-DD)').required('Required').isValid(maxDate<)
     })
 
-    const paperStyle = {padding:20, height:'50vh', width:380, marginLeft:'35%', marginTop:'150px'}
-    const inputStyle = {padding:'5px', borderRadius:'10px', marginRight:'30px', marginLeft:'30px', marginBottom:'15px'}
+    const paperStyle = {padding:20, height:'60vh', width:380, marginLeft:'35%', marginTop:'150px'}
 
     return (
         <Grid>
@@ -32,44 +40,15 @@ export const RegisterForm = () => {
                 <Formik initialValues={initialValues} validationSchema={validation} onSubmit={values => {console.log(values)}}>
                 {
                     formik => (
-                    <Form style={{ display: 'flex', verticalAlign: 'middle', marginTop: '15px', flexDirection: 'column'}}autoComplete='off'>
-                        <label htmlFor='firstName'>First Name</label>
-                        <input
-                            value={formik.values.firstName}
-                            onChange={formik.handleChange}
-                            id='firstName'
-                            type='firstName'
-                            placeholder='Enter Your First Name'
-                            required={true}
-                            style={{padding: '5px',borderRadius: '10px',textAlign: 'center', marginRight: '30px', marginLeft: '30px', marginBottom: '15px' }}
-                        />
-                        <label htmlFor='lastName'>Last Name</label>
-                        <input
-                            value={formik.values.lastName}
-                            onChange={formik.handleChange}
-                            id='lastName'
-                            type='lastName'
-                            placeholder='Enter Your Last Name'
-                            style={{padding: '5px',borderRadius: '10px',textAlign: 'center', marginRight: '30px', marginLeft: '30px', marginBottom: '15px' }}
-                        />
-                        <label htmlFor='email'>Email</label>
-                        <input
-                            value={formik.values.email}
-                            onChange={formik.handleChange}
-                            id='email'
-                            type='email'
-                            placeholder='Enter Your Email'
-                            style={{padding: '5px',borderRadius: '10px',textAlign: 'center', marginRight: '30px', marginLeft: '30px', marginBottom: '15px' }}
-                        />
-                        <label htmlFor='dateOfBirth'>Date Of Birth</label>
-                        <input
-                            value={formik.values.dateOfBirth}
-                            onChange={formik.handleChange}
-                            id='dateOfBirth'
-                            type='dateOfBirth'
-                            placeholder='Enter Your Date of Birth'
-                            style={{padding: '5px',borderRadius: '10px',textAlign: 'center', marginRight: '30px', marginLeft: '30px', marginBottom: '15px' }}
-                        />
+                    <Form style={{display: 'flex', verticalAlign: 'middle', marginTop: '15px', flexDirection: 'column'}}autoComplete='off'>
+                        <Field as={TextField} label='First Name' name='firstName' placeholder='Enter Your First Name' fullWidth required
+                        helperText={<ErrorMessage name='firstName'/>}/>
+                        <Field style={{marginTop:'10px'}} as={TextField} label='Last Name' name='lastName' placeholder='Enter Your Last Name' fullWidth required
+                        helperText={<ErrorMessage name='lastName'/>}/>
+                        <Field style={{marginTop:'10px'}} as={TextField} label='Email' name='email' placeholder='Enter Your Email' fullWidth required
+                        helperText={<ErrorMessage name='email'/>}/>
+                        <Field style={{marginTop:'10px'}} as={TextField} label='Date of Birth' name='dateOfBirth' placeholder='Enter Your Date of Birth' fullWidth required
+                        helperText={<ErrorMessage name='dateOfBirth'/>}/>
                         <div style={{display: 'block'}}>
                             <Button type='submit'>Register</Button>
                         </div>
