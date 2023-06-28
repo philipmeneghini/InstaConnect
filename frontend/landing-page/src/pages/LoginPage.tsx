@@ -4,23 +4,17 @@ import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
 import { _authenticationApiClient } from '../App'
-import { LoginResponse } from '../api_views/IAuthenticationApiClient'
-import LoginAlert from '../components/LoginAlert'
+import LoginRegisterAlert from '../components/LoginRegisterAlert'
 import LoginHeader from '../components/LoginHeader'
 import { SideButton } from '../utils/Constants'
-
-export interface LoginProperties {
-  isOpen: boolean,
-  isSuccess: boolean,
-  message: string,
-  statusCode?: number | undefined
-}
+import { FormProperties } from '../utils/FormProperties'
+import { GenericResponse } from '../api_views/IBaseApiClient'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [showPassword, setShowPassword] = useState(false);
-    const [login, setLogin] = useState<LoginProperties>({
+    const [login, setLogin] = useState<FormProperties>({
       isOpen: false,
       isSuccess: false,
       message: ''
@@ -37,9 +31,10 @@ export const LoginPage = () => {
           isSuccess: false,
           message: "An email or password has not been entered yet"
         })
+        return
       }
-      const response: LoginResponse = await _authenticationApiClient.login(email, password)
-      if (response.token) {
+      const response: GenericResponse<string> = await _authenticationApiClient.login(email, password)
+      if (response.data) {
         setLogin({
           isOpen: true,
           isSuccess: true,
@@ -47,7 +42,7 @@ export const LoginPage = () => {
         })
       }
       else {
-        let loginProperties: LoginProperties = {
+        let loginProperties: FormProperties = {
           isOpen: true,
           isSuccess: false,
           message: String(response.statusCode)
@@ -128,7 +123,7 @@ export const LoginPage = () => {
                 Log in
               </Typography>
             </Button>
-            <LoginAlert login={login} setLogin={setLogin} />
+            <LoginRegisterAlert login={login} setLogin={setLogin} />
           </Grid>
         </Grid>
       </>)

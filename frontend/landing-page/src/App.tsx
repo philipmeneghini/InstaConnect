@@ -4,8 +4,10 @@ import { LoginPage } from './pages/LoginPage';
 import { AuthenticationApiClient } from './api_views/AuthenticationApiClient'
 import RegisterPage from './pages/RegisterPage';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { UserApiClient } from './api_views/UserApiClient';
 
 export const _authenticationApiClient = new AuthenticationApiClient()
+export const _userApiClient = new UserApiClient()
 
 function App() {
   return (

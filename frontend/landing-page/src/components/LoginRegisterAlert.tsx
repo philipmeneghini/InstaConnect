@@ -1,13 +1,13 @@
 import {Alert, AlertColor, Snackbar} from '@mui/material'
 import React from 'react'
-import { LoginProperties } from '../pages/LoginPage'
+import { FormProperties } from '../utils/FormProperties'
 
 interface AlertProps {
-  login: LoginProperties,
-  setLogin: React.Dispatch<React.SetStateAction<LoginProperties>>
+  login: FormProperties,
+  setLogin: React.Dispatch<React.SetStateAction<FormProperties>>
 }
 
-export const LoginAlert = (props: AlertProps) => {
+export const LoginRegisterAlert = (props: AlertProps) => {
 
   const handleClose = () => {
     props.setLogin({
@@ -40,4 +40,4 @@ export const LoginAlert = (props: AlertProps) => {
   )
 }
 
-export default LoginAlert
+export default LoginRegisterAlert
