@@ -3,6 +3,7 @@ import { GenericResponse, UserModel } from './IBaseApiClient'
 import { IAuthenticationApiClient, LoginBody } from './IAuthenticationApiClient'
 import { AuthEndpoint } from '../utils/Constants'
 import { RegisterFormValues } from '../components/RegisterForm'
+import { AxiosRequestConfig } from 'axios'
 
 export class AuthenticationApiClient extends BaseApiClient implements IAuthenticationApiClient{
 
@@ -19,11 +20,20 @@ export class AuthenticationApiClient extends BaseApiClient implements IAuthentic
         }
     }
 
-    register = async(registerForm: RegisterFormValues): Promise<GenericResponse<UserModel>> => {
-        const response = await this.postApi<RegisterFormValues, UserModel>("Register", {firstName: registerForm.firstName,
-            lastName: registerForm.lastName,
-            email: registerForm.email,
-            dateOfBirth: registerForm.dateOfBirth})
+    register = async(registerForm: RegisterFormValues, header?: AxiosRequestConfig): Promise<GenericResponse<UserModel>> => {
+        let response: GenericResponse<UserModel>
+        if (typeof header !== 'undefined') {
+            response = await this.postApi<RegisterFormValues, UserModel>("Register", {firstName: registerForm.firstName,
+                lastName: registerForm.lastName,
+                email: registerForm.email,
+                birthDate: registerForm.birthDate}, header)
+        }
+        else {
+            response = await this.postApi<RegisterFormValues, UserModel>("Register", {firstName: registerForm.firstName,
+                lastName: registerForm.lastName,
+                email: registerForm.email,
+                birthDate: registerForm.birthDate})
+        }
         return {
             data: response.data as UserModel,
             message: response.message ?? "",

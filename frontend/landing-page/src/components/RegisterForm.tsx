@@ -6,14 +6,16 @@ import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import { FormProperties } from '../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _userApiClient } from '../App'
+import { _userApiClient, _authenticationApiClient} from '../App'
 import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
+import { AxiosRequestConfig } from 'axios'
+import { GuestEmail, GuestPassword } from '../utils/Constants'
 
 export interface RegisterFormValues {
     firstName: string
     lastName: string
     email: string
-    dateOfBirth: string
+    birthDate: string
 }
 
 export const RegisterForm = () => {
@@ -30,7 +32,7 @@ export const RegisterForm = () => {
         firstName: '',
         lastName: '',
         email: '',
-        dateOfBirth: 'YYYY-MM-DD'
+        birthDate: 'YYYY-MM-DD'
     }
 
     const handleClickRegister = async(formik: FormikProps<RegisterFormValues>) => {
@@ -38,10 +40,10 @@ export const RegisterForm = () => {
             firstName: formik.values.firstName,
             lastName: formik.values.lastName,
             email: formik.values.email,
-            dateOfBirth: formik.values.dateOfBirth
+            birthDate: formik.values.birthDate
         }
 
-        if (!registerForm.firstName || !registerForm.lastName || !registerForm.email || !registerForm.dateOfBirth) {
+        if (!registerForm.firstName || !registerForm.lastName || !registerForm.email || !registerForm.birthDate) {
             setRegister({
                 isOpen: true,
                 isSuccess: false,
@@ -49,35 +51,46 @@ export const RegisterForm = () => {
             })
             return
         }
-        else if (formik.errors.firstName || formik.errors.lastName || formik.errors.email || formik.errors.dateOfBirth) {
+        else if (formik.errors.firstName || formik.errors.lastName || formik.errors.email || formik.errors.birthDate) {
             setRegister({
                 isOpen: true,
                 isSuccess: false,
-                message: "Registration Failed! One Or More Fields Are Invalid"
+                message: 'Registration Failed! One Or More Fields Are Invalid'
             })
             return
         }
-        const response: GenericResponse<UserModel>  = await _userApiClient.createUser(registerForm)
-        if (response.data) {
-            setRegister({
-                isOpen: true,
-                isSuccess: true,
-                message: `Registration Success! An Email Has Been Sent To ${response.data?.email}`
-            })
-        }
-        else {
-            let registerProperties: FormProperties = {
-                isOpen: true,
-                isSuccess: false,
-                message: response.message ? String(response.statusCode) : String(response.statusCode) + ': ' + response.message
-            }
-            if (response.statusCode === undefined) {
-                registerProperties.message = "Network Error"
-                setRegister(registerProperties)
+        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(GuestEmail, GuestPassword)
+        if (jwtResponse.data) {
+            const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
+            const response: GenericResponse<UserModel>  = await _userApiClient.createUser(registerForm, header)
+            if (response.data) {
+                setRegister({
+                    isOpen: true,
+                    isSuccess: true,
+                    message: `Registration Success! An Email Has Been Sent To ${response.data?.email}`
+                })
             }
             else {
-                setRegister(registerProperties)
+                let registerProperties: FormProperties = {
+                    isOpen: true,
+                    isSuccess: false,
+                    message: response.message ? String(response.statusCode) : String(response.statusCode) + ': ' + response.message
+                }
+                if (response.statusCode === undefined) {
+                    registerProperties.message = 'Network Error'
+                    setRegister(registerProperties)
+                }
+                else {
+                    setRegister(registerProperties)
+                }
             }
+        }
+        else {
+            setRegister({
+                isOpen: true,
+                isSuccess: false,
+                message: 'Internal Authentication Error'
+            })
         }
     }
 
@@ -85,7 +98,7 @@ export const RegisterForm = () => {
         firstName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid First Name').required('Required'),
         lastName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid Last Name').required('Required'),
         email: Yup.string().email('Invalid Email').required('Required'),
-        dateOfBirth: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required') /*Yup.string().matches(/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/, 'Please Enter a Valid Date (YYY-MM-DD)').required('Required')*/
+        birthDate: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required') /*Yup.string().matches(/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/, 'Please Enter a Valid Date (YYY-MM-DD)').required('Required')*/
     })
 
     const paperStyle = {padding:20, height:'60vh', width:380, marginLeft:'35%', marginTop:'150px'}
@@ -104,8 +117,8 @@ export const RegisterForm = () => {
                         helperText={<ErrorMessage name='lastName'/>}/>
                         <Field style={{marginTop:'10px'}} as={TextField} label='Email' name='email' placeholder='Enter Your Email' fullWidth required
                         helperText={<ErrorMessage name='email'/>}/>
-                        <Field style={{marginTop:'10px'}} as={TextField} label='Date of Birth' name='dateOfBirth' placeholder='Enter Your Date of Birth' fullWidth required
-                        helperText={<ErrorMessage name='dateOfBirth'/>}/>
+                        <Field style={{marginTop:'10px'}} as={TextField} label='Date of Birth' name='birthDate' placeholder='Enter Your Date of Birth' fullWidth required
+                        helperText={<ErrorMessage name='birthDate'/>}/>
                         <div style={{display: 'block'}}>
                             <Button type='submit' onClick={() => handleClickRegister(formik)}>Register </Button>
                         </div>

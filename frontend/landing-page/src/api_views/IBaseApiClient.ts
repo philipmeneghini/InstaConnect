@@ -1,3 +1,5 @@
+import { AxiosRequestConfig } from "axios"
+
 export interface GenericResponse<T> {
     data?: T,
     message?: string,
@@ -15,5 +17,5 @@ export interface UserModel {
 
 export interface IBaseApiClient {
 
-    postApi: <T1, T2>(endpoint: string, requestBody: T1) => Promise<GenericResponse<T2>>
+    postApi: <T1, T2>(endpoint: string, requestBody: T1, header?: AxiosRequestConfig) => Promise<GenericResponse<T2>>
 }

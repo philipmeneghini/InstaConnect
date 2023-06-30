@@ -6,6 +6,8 @@ import RegisterPage from './pages/RegisterPage';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { UserApiClient } from './api_views/UserApiClient';
 
+export const GUEST_EMAIL = process.env.GUEST_EMAIL!
+export const GUEST_PASSWORD = process.env.GUEST_PASSWORD!
 export const _authenticationApiClient = new AuthenticationApiClient()
 export const _userApiClient = new UserApiClient()
 

@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { GenericResponse, IBaseApiClient } from './IBaseApiClient'
 
 export class BaseApiClient implements IBaseApiClient {
@@ -9,9 +9,15 @@ export class BaseApiClient implements IBaseApiClient {
         this.url = url
     }
 
-    postApi = async<T1, T2>(endpoint: string, requestBody: T1): Promise<GenericResponse<T2>> => {
+    postApi = async<T1, T2>(endpoint: string, requestBody: T1, header?: AxiosRequestConfig): Promise<GenericResponse<T2>> => {
         try {
-            const response = await axios.post(this.url + endpoint, requestBody)
+            let response: AxiosResponse<T2>
+            if (typeof header !== 'undefined') {
+                response = await axios.post(this.url + endpoint, requestBody, header)
+            }
+            else {
+                response = await axios.post(this.url + endpoint, requestBody)
+            }
             return { 
                 data: response?.data, 
                 statusCode: response?.status
