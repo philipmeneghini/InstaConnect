@@ -13,6 +13,7 @@ namespace Util.Constants
         static public readonly string AmazonS3Credentials = nameof(AmazonS3Credentials);
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string ContentModel = nameof(ContentModel);
+        static public readonly string EmailConfig = "AmazonSES";
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
         static public readonly string CorsPolicy = "corspolicy";

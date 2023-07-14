@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
+builder.Services.Configure<AmazonEmailSettings>(builder.Configuration.GetSection(ApplicationConstants.EmailConfig));
 builder.Services.Configure<AmazonS3CredentialsModel>(builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(ApplicationConstants.Jwt));
@@ -35,6 +36,7 @@ builder.Services.AddSingleton<IValidator<ContentEmailValidationModel>, ContentEm
 builder.Services.AddSingleton<IValidator<ContentModel>, ContentModelValidator>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<IMediaService, MediaService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
