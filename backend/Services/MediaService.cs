@@ -14,11 +14,11 @@ namespace Backend.Services
     public class MediaService: IMediaService
     {
         private IAmazonS3 _client;
-        private AmazonS3CredentialsModel _keys;
+        private AmazonCredentialsModel _keys;
 
-        public MediaService (IOptions<AmazonS3CredentialsModel> amazonS3CredentialsModel)
+        public MediaService (IOptionsSnapshot<AmazonCredentialsModel> amazonS3CredentialsModel)
         {
-            _keys = amazonS3CredentialsModel.Value;
+            _keys = amazonS3CredentialsModel.Get(ApplicationConstants.S3);
             var credentials = new BasicAWSCredentials(_keys.AccessKey, _keys.SecretKey);
             _client = new AmazonS3Client(credentials, RegionEndpoint.USEast1);
         }

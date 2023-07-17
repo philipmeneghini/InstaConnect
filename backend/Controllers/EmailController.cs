@@ -1,4 +1,5 @@
-﻿using Backend.Services;
+﻿using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -15,9 +16,9 @@ namespace Backend.Controllers
         }
 
         [HttpPost("Registration")]
-        public async Task SendRegistrationEmail(string? email)
+        public async Task SendRegistrationEmail([FromBody] UserModel user)
         {
-            await _emailService.SendEmail(email, "test", "Sent an email with .NET!!!");
+            await _emailService.SendRegistrationEmailAsync(user);
         }
     }
 }

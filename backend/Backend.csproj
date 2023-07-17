@@ -19,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.108.2" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.108" />
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="3.7.100.153" />
     <PackageReference Include="FluentValidation" Version="11.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.9" />
     <PackageReference Include="MongoDB.Driver" Version="2.20.0" />

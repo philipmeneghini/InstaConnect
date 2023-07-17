@@ -1,40 +1,52 @@
 ﻿using Backend.Models.Config;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
+using Amazon.SimpleEmail;
+using Util.Constants;
+using Amazon.Runtime;
+using Amazon;
+using Amazon.SimpleEmail.Model;
+using Backend.Models;
+using Backend.Services.Interfaces;
 
 namespace Backend.Services
 {
     public class EmailService : IEmailService
     {
-        private string _email;
-        private string _host;
-        private int _port;
-        private string _username;
-        private string _password;
+        private IAmazonSimpleEmailService _client;
+        private AmazonCredentialsModel _keys;
+        private IAuthService _authService;
 
-        public EmailService(IOptions<AmazonEmailSettings> settings)
+        public EmailService(IOptionsSnapshot<AmazonCredentialsModel> settings, IAuthService authService)
         {
-            _email = settings.Value.Email;
-            _host = settings.Value.Host;
-            _port = settings.Value.Port;
-            _username = settings.Value.Username;
-            _password = settings.Value.Password;
+            _keys = settings.Get(ApplicationConstants.SES);
+            var credentials = new BasicAWSCredentials(_keys.AccessKey, _keys.SecretKey);
+            _client = new AmazonSimpleEmailServiceClient(credentials, RegionEndpoint.USEast1);
+            _authService = authService;
         }
 
-        public async Task SendEmail(string reciever, string subject, string message)
+        public async Task SendRegistrationEmailAsync(UserModel user)
         {
-            var smtpClient = new SmtpClient(_host, _port)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(_username, _password)
-            };
-
-            await smtpClient.SendMailAsync(
-                new MailMessage(from: _email,
-                                to: reciever,
-                                subject,
-                                message));
-        }
+            string jwt = _authService.GenerateToken(user);
+            string url = string.Format(ApplicationConstants.RegistrationURL, jwt);
+            var sendEmailRequest = new SendEmailRequest(ApplicationConstants.InstaConnectEmail,
+                new Destination(new List<string>() { user.Email }),
+                new Message
+                {
+                    Subject = new Content
+                    {
+                        Charset = ApplicationConstants.UTF8,
+                        Data = ApplicationConstants.RegistrationSubject
+                    },
+                    Body = new Body
+                    {
+                        Text = new Content
+                        {
+                            Charset = ApplicationConstants.UTF8,
+                            Data = string.Format(ApplicationConstants.RegistrationBody, user.FirstName, url)
+                        }
+                    }
+                });
+            var emailResponse = await _client.SendEmailAsync(sendEmailRequest);
+        }        
     }
 }

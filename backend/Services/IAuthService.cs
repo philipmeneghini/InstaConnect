@@ -7,5 +7,7 @@ namespace Backend.Services.Interfaces
         public Task<string> Login(LoginBody request);
 
         public Task<UserModel> Register(LoginBody request);
+
+        public string GenerateToken(UserModel user);
     }
 }

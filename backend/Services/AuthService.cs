@@ -44,7 +44,7 @@ namespace Backend.Services
             return await _userService.UpdateUserAsync(user);
         }
 
-        private string GenerateToken(UserModel user)
+        public string GenerateToken(UserModel user)
         {
             string fullName = user.FirstName + " " + user.LastName;
 
