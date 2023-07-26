@@ -4,7 +4,7 @@ export const EmailEndpoint = "https://localhost:7208/email/"
 export const GuestEmail = "guest@instaconnect.com"
 export const GuestPassword = "test123"
 
-export const SideButton = {
+export const Paths = {
     "Login" : "/",
     "Register": "/register"
 }

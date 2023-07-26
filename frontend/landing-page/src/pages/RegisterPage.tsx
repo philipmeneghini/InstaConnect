@@ -1,13 +1,13 @@
 import React from 'react'
 import LoginHeader from '../components/LoginHeader'
 import RegisterForm from '../components/RegisterForm'
-import { SideButton } from '../utils/Constants'
+import { Paths } from '../utils/Constants'
 
 
 export const RegisterPage = () => {
     return (
         <div>
-            <LoginHeader sideButton='Login' sideButtonPath={SideButton['Login']}/>
+            <LoginHeader sideButton='Login' sideButtonPath={Paths['Login']}/>
             <RegisterForm/>
         </div>
 )}
