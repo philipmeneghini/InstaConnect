@@ -1,5 +1,6 @@
 ﻿using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -15,6 +16,7 @@ namespace Backend.Controllers
             _emailService = emailService;
         }
 
+        [Authorize]
         [HttpPost("Registration")]
         public async Task SendRegistrationEmail([FromBody] UserModel user)
         {

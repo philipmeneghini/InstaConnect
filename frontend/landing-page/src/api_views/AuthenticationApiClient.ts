@@ -40,4 +40,14 @@ export class AuthenticationApiClient extends BaseApiClient implements IAuthentic
             statusCode: response.statusCode
         }
     }
+
+    verifyToken = async(token: string): Promise<GenericResponse<boolean>> => {
+        const response = await this.getApi<boolean>("VerifyToken?token=" + token)
+
+        return {
+            data: response.data as boolean,
+            message: response.message ?? "",
+            statusCode: response.statusCode
+        }
+    }
 }

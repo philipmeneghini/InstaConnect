@@ -4,6 +4,6 @@ namespace Backend.Services
 {
     public interface IEmailService
     {
-        public Task SendRegistrationEmailAsync(UserModel user);
+        public Task<bool> SendRegistrationEmailAsync(UserModel user);
     }
 }

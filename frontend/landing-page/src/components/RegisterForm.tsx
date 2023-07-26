@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import { FormProperties } from '../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _userApiClient, _authenticationApiClient} from '../App'
+import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
 import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
 import { AxiosRequestConfig } from 'axios'
 import { GuestEmail, GuestPassword } from '../utils/Constants'
@@ -64,11 +64,21 @@ export const RegisterForm = () => {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             const response: GenericResponse<UserModel>  = await _userApiClient.createUser(registerForm, header)
             if (response.data) {
-                setRegister({
-                    isOpen: true,
-                    isSuccess: true,
-                    message: `Registration Success! An Email Has Been Sent To ${response.data?.email}`
-                })
+                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header)
+                if (emailResponse.data) {
+                    setRegister({
+                        isOpen: true,
+                        isSuccess: true,
+                        message: `Registration Success! An Email Has Been Sent To ${response.data?.email}`
+                    })
+                }
+                else {
+                    setRegister({
+                        isOpen: true,
+                        isSuccess: false,
+                        message: `Email To ${response.data?.email} Failed to Send`
+                    })
+                }
             }
             else {
                 let registerProperties: FormProperties = {

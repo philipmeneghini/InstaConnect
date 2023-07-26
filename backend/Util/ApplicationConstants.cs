@@ -24,6 +24,7 @@ namespace Util.Constants
         static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
         static public readonly string S3 = nameof(S3);
         static public readonly string SES = nameof(SES);
+        static public readonly string EmailService = "Email Service";
         #endregion
 
         #region Error Messages
@@ -57,6 +58,7 @@ namespace Util.Constants
         static public readonly string InsertModelExistsException = "model with the same id already exists";
         static public readonly List<string> UserBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly List<string> ContentBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, ContentIdEmpty, ContentIdNotHexadecimal, MediaTypeEmpty, MediaTypeNotValid };
+        static public readonly List<string> EmailServicerBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
         #endregion
@@ -89,7 +91,15 @@ namespace Util.Constants
             "We look forward to your use and support of InstaConnect! \n\n" +
             "Kind Regards, \n" +
             "InstaConnect Team";
-        static public readonly string RegistrationURL = "http://localhost:3000/Register?token={0}";
+        static public readonly string RegistrationURL = "http://localhost:3000/setPassword?token={0}";
+        #endregion
+
+        #region Authentication
+        static public readonly string DateOfBirth = nameof(DateOfBirth);
+        static public readonly string Name = nameof(Name);
+        static public readonly string MisingEmailOrPassword = "missing email or password";
+        static public readonly string InvalidPassword = "invalid password";
+        static public readonly string NoToken = "no token passed in";
         #endregion
     }
 }
