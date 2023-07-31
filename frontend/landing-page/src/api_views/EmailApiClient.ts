@@ -10,9 +10,8 @@ export class EmailApiClient extends BaseApiClient implements IEmailApiClient{
         super(EmailEndpoint)
     }
 
-    sendRegistrationEmail = async (user: UserModel, header?: AxiosRequestConfig) : Promise<GenericResponse<boolean>> => {
+    sendRegistrationEmail = async (user: UserModel, header: AxiosRequestConfig) : Promise<GenericResponse<boolean>> => {
         const response = await this.postApi("registration", user, header)
-
         return {
             data: response.data as boolean,
             message: response.message ?? '',
