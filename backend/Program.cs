@@ -19,7 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
-builder.Services.Configure<AmazonEmailSettings>(builder.Configuration.GetSection(ApplicationConstants.EmailConfig));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.S3, builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.SES, builder.Configuration.GetSection(ApplicationConstants.AmazonSESCredentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
