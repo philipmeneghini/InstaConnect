@@ -18,9 +18,9 @@ namespace Backend.Controllers
 
         [Authorize]
         [HttpPost("Registration")]
-        public async Task SendRegistrationEmail([FromBody] UserModel user)
+        public async Task<bool> SendRegistrationEmail([FromBody] UserModel user)
         {
-            await _emailService.SendRegistrationEmailAsync(user);
+            return await _emailService.SendRegistrationEmailAsync(user);
         }
     }
 }

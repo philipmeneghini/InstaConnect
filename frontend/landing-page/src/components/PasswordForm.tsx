@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Formik, ErrorMessage, FormikProps } from 'formik'
+import { Formik, ErrorMessage, FormikProps, FormikHelpers, FormikErrors, Form } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid, TextField } from '@mui/material'
 import { FormProperties } from '../utils/FormProperties'
@@ -38,38 +38,37 @@ export const PasswordForm = (prop: PasswordProps) => {
         navigate(Paths['Login'], { replace: true })
     }
 
-    const handleClickSubmit = async(formik: FormikProps<PasswordFormValues>) => {
-        const passwordForm: PasswordFormValues = {
-            password: formik.values.password,
-            confirmPassword: formik.values.confirmPassword
-        }
-
-        if (!passwordForm.password || !passwordForm.confirmPassword) {
+    const onSubmit = async(values: PasswordFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<PasswordFormValues>): Promise<void> => {
+        if (!values.password || !values.confirmPassword) {
             setPasswordResult({
                 isOpen: true,
                 isSuccess: false,
                 message: 'Password Submission Failed! One Or More Fields Missing'
             })
+            setSubmitting(false)
             return
         }
-        else if (formik.errors.password || formik.errors.confirmPassword) {
+        const errors: FormikErrors<PasswordFormValues>  = await validateForm(values)
+        if (errors.password || errors.confirmPassword) {
             setPasswordResult({
                 isOpen: true,
                 isSuccess: false,
                 message: 'Password Submission Failed! One Or More Fields Are Invalid'
             })
+            setSubmitting(false)
             return
         }
         const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(GuestEmail, GuestPassword)
         if (jwtResponse.data) {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
-            const response: GenericResponse<UserModel>  = await _authenticationApiClient.register(prop.email, formik.values.confirmPassword, header)
+            const response: GenericResponse<UserModel>  = await _authenticationApiClient.register(prop.email, values.confirmPassword, header)
             if (response.data) {
                 setPasswordResult({
                     isOpen: true,
                     isSuccess: true,
                     message: 'Password Submission Success!'
                 })
+                resetForm()
                 setTimeout(() => 
                 { navigate(Paths['Login'], { replace: true })}, 
                 5000);
@@ -96,6 +95,7 @@ export const PasswordForm = (prop: PasswordProps) => {
                 message: `Password Submission Failed! ${jwtResponse.statusCode}: ${jwtResponse.message}`
             })
         }
+        setSubmitting(false)
     }
 
     const validation = Yup.object({
@@ -105,11 +105,12 @@ export const PasswordForm = (prop: PasswordProps) => {
 
     return (
         <>
-            <Formik initialValues={initialValues} validationSchema={validation} onSubmit={values => {console.log(values)}}>
+            <Formik initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
                 {
                     formik => (
                         <>
                             <LoginHeader sideButton='Login' sideButtonPath={Paths['Login']}/>
+                            <Form>
                             <Grid container spacing={5} direction='column' justifyContent='center' alignItems='center' sx={{ minHeight: '100vh' }}>
                                 <Grid item xs={12} sx={{maxHeight:'100px'}}>
                                     <FormControl sx={{ verticalAlign: 'center', m: 1, width: '60ch' }} variant='outlined'>
@@ -121,7 +122,6 @@ export const PasswordForm = (prop: PasswordProps) => {
                                         value={formik.values.password}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
-                                        onClick= {() => console.log(formik)}
                                         error={formik.errors.password && formik.touched.password ? true : false}
                                         helperText={formik.errors.password && <ErrorMessage name='password'/>}
                                         />
@@ -137,16 +137,16 @@ export const PasswordForm = (prop: PasswordProps) => {
                                         value={formik.values.confirmPassword}
                                         onChange={formik.handleChange}
                                         onBlur={formik.handleBlur}
-                                        onClick= {() => console.log(formik)}
                                         error={formik.errors.confirmPassword && formik.touched.confirmPassword ? true : false}
                                         helperText={formik.errors.confirmPassword && <ErrorMessage name='confirmPassword'/>}
                                         />
                                     </FormControl>
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <Button variant='contained' onClick={() => handleClickSubmit(formik)}>Submit</Button>
+                                    <Button disabled={formik.isSubmitting} variant='contained' type='submit'>Submit</Button>
                                 </Grid>
                             </Grid>
+                            </Form>
                         </>)
                 }
             </Formik>

@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Util.Constants;
+using Backend.Util;
 
 namespace Backend.Services
 {
@@ -40,6 +41,7 @@ namespace Backend.Services
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
                 throw new InstaBadRequestException(ApplicationConstants.MisingEmailOrPassword);
             var user = await _userService.GetUserAsync(request.Email);
+            Helpers.RemoveUrls(ref user);
             var hash = Hash(request.Password);
             user.Password = hash;
             return await _userService.UpdateUserAsync(user);

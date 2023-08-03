@@ -11,7 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Models.Config;
 using Backend.Models.Validation;
-using Amazon.SimpleEmail;
 
 var builder = WebApplication.CreateBuilder(args);
 
