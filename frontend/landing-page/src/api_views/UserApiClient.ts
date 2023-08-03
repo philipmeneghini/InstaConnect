@@ -10,14 +10,8 @@ export class UserApiClient extends BaseApiClient implements IUserApiClient{
         super(UserEndpoint)
     }
 
-    createUser = async(user: UserModel, header?: AxiosRequestConfig): Promise<GenericResponse<UserModel>> => {
-        let response: GenericResponse<UserModel>
-        if (typeof header !== 'undefined') {
-            response = await this.postApi<UserModel, UserModel>("user", user, header)
-        }
-        else {
-            response = await this.postApi<UserModel, UserModel>("user", user)
-        }
+    createUser = async(user: UserModel, header: AxiosRequestConfig): Promise<GenericResponse<UserModel>> => {
+        const response = await this.postApi<UserModel, UserModel>("user", user, header)
         return {
             data: response.data,
             message: response.message ?? "",

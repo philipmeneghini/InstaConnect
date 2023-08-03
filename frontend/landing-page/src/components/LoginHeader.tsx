@@ -1,6 +1,7 @@
 import {AppBar, Button, Toolbar, Typography} from '@mui/material'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Paths } from '../utils/Constants'
 
 interface LoginProps {
   sideButton: string
@@ -17,9 +18,9 @@ export const LoginHeader = (props: LoginProps) => {
         <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
           InstaConnect
         </Typography>
-        <Button color="inherit" onClick={() => navigate(props.sideButtonPath, { replace: true })}>
+        {Paths && <Button color="inherit" onClick={() => navigate(props.sideButtonPath, { replace: true })}>
           {props.sideButton}
-        </Button>
+        </Button>}
       </Toolbar>
     </AppBar>
   )

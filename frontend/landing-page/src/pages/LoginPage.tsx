@@ -6,7 +6,7 @@ import React from 'react'
 import { _authenticationApiClient } from '../App'
 import LoginRegisterAlert from '../components/LoginRegisterAlert'
 import LoginHeader from '../components/LoginHeader'
-import { SideButton } from '../utils/Constants'
+import { Paths } from '../utils/Constants'
 import { FormProperties } from '../utils/FormProperties'
 import { GenericResponse } from '../api_views/IBaseApiClient'
 
@@ -75,7 +75,7 @@ export const LoginPage = () => {
 
     return (
       <>
-        <LoginHeader sideButton='Register' sideButtonPath={SideButton['Register']}/>
+        <LoginHeader sideButton='Register' sideButtonPath={Paths['Register']}/>
         <Grid
           container
           spacing={3}

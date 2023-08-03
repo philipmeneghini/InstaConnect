@@ -10,9 +10,10 @@ namespace Util.Constants
         static public readonly string UserCollectionName = "users";
         static public readonly string ConnectionStrings = "ConnectionString";
         static public readonly string S3BucketName = "instaconnect";
-        static public readonly string AmazonS3Credentials = nameof(AmazonS3Credentials);
+        static public readonly string AmazonS3Credentials = "AmazonCredentials:S3";
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string ContentModel = nameof(ContentModel);
+        static public readonly string EmailConfig = "AmazonSES";
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
         static public readonly string CorsPolicy = "corspolicy";
@@ -20,6 +21,10 @@ namespace Util.Constants
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
         static public readonly string Id = nameof(Id);
+        static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
+        static public readonly string S3 = nameof(S3);
+        static public readonly string SES = nameof(SES);
+        static public readonly string EmailService = "Email Service";
         #endregion
 
         #region Error Messages
@@ -53,6 +58,7 @@ namespace Util.Constants
         static public readonly string InsertModelExistsException = "model with the same id already exists";
         static public readonly List<string> UserBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly List<string> ContentBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, ContentIdEmpty, ContentIdNotHexadecimal, MediaTypeEmpty, MediaTypeNotValid };
+        static public readonly List<string> EmailServicerBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
         #endregion
@@ -74,6 +80,26 @@ namespace Util.Constants
         static public readonly string ProfilePicture = "Profile Picture";
         static public readonly string Photos = "Photos";
         static public readonly string Reels = "Reels";
+        #endregion
+
+        #region Registration Email
+        static public readonly string InstaConnectEmail = "instaconnect22@gmail.com";
+        static public readonly string UTF8 = "UTF-8";
+        static public readonly string RegistrationSubject = "Welcome to InstaConnect!";
+        static public readonly string RegistrationBody = "Dear {0}, \n\n " +
+            "Thank you for signing up to join InstaConnect! You are almost finished registering and just need to verify this email is yours by clicking {1}. \n" +
+            "We look forward to your use and support of InstaConnect! \n\n" +
+            "Kind Regards, \n" +
+            "InstaConnect Team";
+        static public readonly string RegistrationURL = "http://localhost:3000/setPassword?token={0}";
+        #endregion
+
+        #region Authentication
+        static public readonly string DateOfBirth = nameof(DateOfBirth);
+        static public readonly string Name = nameof(Name);
+        static public readonly string MisingEmailOrPassword = "missing email or password";
+        static public readonly string InvalidPassword = "invalid password";
+        static public readonly string NoToken = "no token passed in";
         #endregion
     }
 }

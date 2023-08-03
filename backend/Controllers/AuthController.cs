@@ -30,5 +30,12 @@ namespace Backend.Controllers
         {
             return await _authService.Register(request);
         }
+
+        [AllowAnonymous]
+        [HttpGet("VerifyToken")]
+        public JwtModel VerifyToken(string token)
+        {
+            return _authService.VerifyToken(token);
+        }
     }
 }

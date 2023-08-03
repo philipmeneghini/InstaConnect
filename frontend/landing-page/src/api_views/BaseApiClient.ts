@@ -9,6 +9,29 @@ export class BaseApiClient implements IBaseApiClient {
         this.url = url
     }
 
+    getApi = async<T2>(endpoint: string, header?: AxiosRequestConfig): Promise<GenericResponse<T2>> => {
+        try {
+            let response: AxiosResponse<T2>
+            if (typeof header !== 'undefined') {
+                response = await axios.get(this.url + endpoint, header)
+            }
+            else {
+                response = await axios.get(this.url + endpoint)
+            }
+            return { 
+                data: response?.data, 
+                statusCode: response?.status
+            }
+        }
+        catch(error: any) {
+            const err = error as AxiosError
+            return {
+                message: err?.message,
+                statusCode: err?.response?.status
+            }
+        }
+    }
+
     postApi = async<T1, T2>(endpoint: string, requestBody: T1, header?: AxiosRequestConfig): Promise<GenericResponse<T2>> => {
         try {
             let response: AxiosResponse<T2>

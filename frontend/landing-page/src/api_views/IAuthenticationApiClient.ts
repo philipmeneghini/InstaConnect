@@ -1,5 +1,4 @@
 import { AxiosRequestConfig } from "axios"
-import { RegisterFormValues } from "../components/RegisterForm"
 import { GenericResponse, UserModel } from "./IBaseApiClient"
 
 export interface LoginBody {
@@ -7,9 +6,17 @@ export interface LoginBody {
     password: string
 }
 
+export interface JwtToken {
+    email: string,
+    fullName: string,
+    birthDate: string
+}
+
 export interface IAuthenticationApiClient {
 
     login: (email: string, password: string) => Promise<GenericResponse<string>>
 
-    register: (RegisterFormValues: RegisterFormValues, header?: AxiosRequestConfig) => Promise<GenericResponse<UserModel>>
+    register: (email: string, password: string, header: AxiosRequestConfig) => Promise<GenericResponse<UserModel>>
+
+    verifyToken: (token: string) => Promise<GenericResponse<JwtToken>>
 }
