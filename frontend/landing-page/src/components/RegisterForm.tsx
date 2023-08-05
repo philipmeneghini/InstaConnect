@@ -62,9 +62,8 @@ export const RegisterForm = () => {
         if (jwtResponse.data) {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             const response: GenericResponse<UserModel>  = await _userApiClient.createUser(values as UserModel, header)
-            const header2: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             if (response.data) {
-                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header2)
+                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header)
                 if (emailResponse.data) {
                     setRegister({
                         isOpen: true,

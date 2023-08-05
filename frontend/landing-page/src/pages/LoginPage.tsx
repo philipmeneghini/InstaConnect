@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField, Typography} from '@mui/material'
+import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link, OutlinedInput, TextField, Typography} from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
@@ -112,17 +112,23 @@ export const LoginPage = () => {
                 onChange={onChangePassword} />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              onClick={handleClickLogin}
-            >
-              <Typography variant="h5" display="block" align="center">
-                Log in
-              </Typography>
-            </Button>
+          <Grid item container direction='row' alignItems='center' justifyContent='center' xs={11}>
+            <Grid item xs={4.75}></Grid>
+            <Grid item xs={1.5}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                onClick={handleClickLogin}
+              >
+                <Typography variant="h5" display="block" align="center">
+                  Log in
+                </Typography>
+              </Button>
+            </Grid>
+            <Grid item xs={4.75}>
+              <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
+            </Grid>
             <LoginRegisterAlert login={login} setLogin={setLogin} />
           </Grid>
         </Grid>

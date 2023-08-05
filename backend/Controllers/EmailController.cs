@@ -22,5 +22,12 @@ namespace Backend.Controllers
         {
             return await _emailService.SendRegistrationEmailAsync(user);
         }
+
+        [Authorize]
+        [HttpPost("ResetPassword")]
+        public async Task<bool> SendResetPasswordEmail([FromBody] UserModel user)
+        {
+            return await _emailService.SendResetPasswordEmailAsync(user);
+        }
     }
 }
