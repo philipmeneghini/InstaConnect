@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { Formik, ErrorMessage, FormikProps, FormikHelpers, FormikErrors, Form } from 'formik'
+import { Formik, ErrorMessage, FormikHelpers, FormikErrors, Form } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid, TextField } from '@mui/material'
 import { FormProperties } from '../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
+import { _authenticationApiClient } from '../App'
 import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
 import { AxiosRequestConfig } from 'axios'
-import { GuestEmail, GuestPassword, Paths } from '../utils/Constants'
+import { Paths } from '../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { useNavigate } from 'react-router-dom'
 
@@ -34,10 +34,6 @@ export const PasswordForm = (prop: PasswordProps) => {
         confirmPassword: ''
     }
 
-    const goToLoginScreen = () => {
-        navigate(Paths['Login'], { replace: true })
-    }
-
     const onSubmit = async(values: PasswordFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<PasswordFormValues>): Promise<void> => {
         if (!values.password || !values.confirmPassword) {
             setPasswordResult({
@@ -58,7 +54,7 @@ export const PasswordForm = (prop: PasswordProps) => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(GuestEmail, GuestPassword)
+        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
         if (jwtResponse.data) {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             const response: GenericResponse<UserModel>  = await _authenticationApiClient.register(prop.email, values.confirmPassword, header)
@@ -111,41 +107,41 @@ export const PasswordForm = (prop: PasswordProps) => {
                         <>
                             <LoginHeader sideButton='Login' sideButtonPath={Paths['Login']}/>
                             <Form>
-                            <Grid container spacing={5} direction='column' justifyContent='center' alignItems='center' sx={{ minHeight: '100vh' }}>
-                                <Grid item xs={12} sx={{maxHeight:'100px'}}>
-                                    <FormControl sx={{ verticalAlign: 'center', m: 1, width: '60ch' }} variant='outlined'>
-                                        <TextField
-                                        id='outlined-adornment-password'
-                                        type='password'
-                                        label='Password'
-                                        name='password'
-                                        value={formik.values.password}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        error={formik.errors.password && formik.touched.password ? true : false}
-                                        helperText={formik.errors.password && <ErrorMessage name='password'/>}
-                                        />
-                                    </FormControl>
+                                <Grid container spacing={5} direction='column' justifyContent='center' alignItems='center' sx={{ minHeight: '100vh' }}>
+                                    <Grid item xs={12} sx={{maxHeight:'100px'}}>
+                                        <FormControl sx={{ verticalAlign: 'center', m: 1, width: '60ch' }} variant='outlined'>
+                                            <TextField
+                                            id='outlined-adornment-password'
+                                            type='password'
+                                            label='Password'
+                                            name='password'
+                                            value={formik.values.password}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            error={formik.errors.password && formik.touched.password ? true : false}
+                                            helperText={formik.errors.password && <ErrorMessage name='password'/>}
+                                            />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sx={{maxHeight:'100px'}}>
+                                        <FormControl sx={{ m: 1, width: '60ch' }} variant="outlined">
+                                            <TextField
+                                            id='outlined-adornment-confirmPassword'
+                                            type='password'
+                                            label='Confirm Password'
+                                            name='confirmPassword'
+                                            value={formik.values.confirmPassword}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            error={formik.errors.confirmPassword && formik.touched.confirmPassword ? true : false}
+                                            helperText={formik.errors.confirmPassword && <ErrorMessage name='confirmPassword'/>}
+                                            />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Button disabled={formik.isSubmitting} variant='contained' type='submit'>Submit</Button>
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={12} sx={{maxHeight:'100px'}}>
-                                    <FormControl sx={{ m: 1, width: '60ch' }} variant="outlined">
-                                        <TextField
-                                        id='outlined-adornment-confirmPassword'
-                                        type='password'
-                                        label='Confirm Password'
-                                        name='confirmPassword'
-                                        value={formik.values.confirmPassword}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        error={formik.errors.confirmPassword && formik.touched.confirmPassword ? true : false}
-                                        helperText={formik.errors.confirmPassword && <ErrorMessage name='confirmPassword'/>}
-                                        />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Button disabled={formik.isSubmitting} variant='contained' type='submit'>Submit</Button>
-                                </Grid>
-                            </Grid>
                             </Form>
                         </>)
                 }

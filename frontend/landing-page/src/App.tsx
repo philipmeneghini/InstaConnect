@@ -13,6 +13,8 @@ export const _authenticationApiClient = new AuthenticationApiClient()
 export const _userApiClient = new UserApiClient()
 export const _emailApiClient = new EmailApiClient()
 
+console.log(process.env.REACT_APP_GUEST_PASSWORD!)
+
 function App() {
   return (
     <div className = "App">

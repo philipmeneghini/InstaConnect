@@ -7,7 +7,7 @@ import LoginRegisterAlert from './LoginRegisterAlert'
 import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
 import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
 import { AxiosRequestConfig } from 'axios'
-import { GuestEmail, GuestPassword, Paths } from '../utils/Constants'
+import { Paths } from '../utils/Constants'
 import LoginHeader from './LoginHeader'
 
 export interface ResetPasswordFormValues {
@@ -45,7 +45,7 @@ export const ResetPasswordForm = () => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(GuestEmail, GuestPassword)
+        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
         if (jwtResponse.data) {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             const response: GenericResponse<UserModel>  = await _userApiClient.getUser(values.email, header)
