@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Util.Constants;
+using Backend.Util;
 
 namespace Backend.Services
 {
@@ -27,24 +29,25 @@ namespace Backend.Services
         public async Task<string> Login(LoginBody request)
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
-                throw new InstaBadRequestException("missing email or password");
+                throw new InstaBadRequestException(ApplicationConstants.MisingEmailOrPassword);
             var user = await _userService.GetUserAsync(request.Email);
             if (!CheckHash(user.Password, request.Password))
-                throw new InstaBadRequestException("invalid password");
+                throw new InstaBadRequestException(ApplicationConstants.InvalidPassword);
             return GenerateToken(user);
         }
 
         public async Task<UserModel> Register(LoginBody request)
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
-                throw new InstaBadRequestException("missing email or password");
+                throw new InstaBadRequestException(ApplicationConstants.MisingEmailOrPassword);
             var user = await _userService.GetUserAsync(request.Email);
+            Helpers.RemoveUrls(ref user);
             var hash = Hash(request.Password);
             user.Password = hash;
             return await _userService.UpdateUserAsync(user);
         }
 
-        private string GenerateToken(UserModel user)
+        public string GenerateToken(UserModel user)
         {
             string fullName = user.FirstName + " " + user.LastName;
 
@@ -52,9 +55,9 @@ namespace Backend.Services
 
             List<Claim> claims = new List<Claim>()
             {
-                new Claim("email", user.Email),
-                new Claim("name", fullName),    
-                new Claim("DateOfBirth", user.BirthDate)
+                new Claim(ApplicationConstants.Email, user.Email),
+                new Claim(ApplicationConstants.Name, fullName),    
+                new Claim(ApplicationConstants.DateOfBirth, user.BirthDate)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -68,6 +71,31 @@ namespace Backend.Services
 
             var jwt = jwtTokenHandler.WriteToken(token);
             return jwt;
+        }
+
+        public JwtModel VerifyToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                throw new InstaBadRequestException(ApplicationConstants.NoToken);
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            TokenValidationParameters validationParameters = new TokenValidationParameters()
+            {
+                ValidateLifetime = true,
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key))
+            };
+            SecurityToken verifiedToken;
+            try
+            {
+                var res = jwtTokenHandler.ValidateToken(token, validationParameters, out verifiedToken);
+                var jwtModel = PopulateModel(res);
+                return jwtModel;
+            }
+            catch (Exception ex)
+            {
+                throw new InstaBadRequestException(ex.Message);
+            }
         }
 
         private string Hash(string password)
@@ -84,6 +112,21 @@ namespace Backend.Services
 
                 return $"{_hash.Iterations}.{salt}.{key}";
             }
+        }
+
+        private JwtModel PopulateModel(ClaimsPrincipal claims)
+        {
+            var res = new JwtModel();
+            foreach (var claim in claims.Claims)
+            {
+                if (claim.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))
+                    res.Email = claim.Value;
+                else if (claim.Type.Equals(ApplicationConstants.Name, StringComparison.OrdinalIgnoreCase))
+                    res.FullName = claim.Value;
+                else if (claim.Type.Equals(ApplicationConstants.DateOfBirth, StringComparison.OrdinalIgnoreCase))
+                    res.BirthDate = claim.Value;
+            }
+            return res;
         }
 
         private bool CheckHash(string hash, string password)

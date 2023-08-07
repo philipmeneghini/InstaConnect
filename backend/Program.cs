@@ -19,7 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
-builder.Services.Configure<AmazonS3CredentialsModel>(builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
+builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.S3, builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
+builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.SES, builder.Configuration.GetSection(ApplicationConstants.AmazonSESCredentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(ApplicationConstants.Jwt));
 builder.Services.AddControllers();
@@ -35,10 +36,11 @@ builder.Services.AddSingleton<IValidator<ContentEmailValidationModel>, ContentEm
 builder.Services.AddSingleton<IValidator<ContentModel>, ContentModelValidator>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
-builder.Services.AddSingleton<IMediaService, MediaService>();
-builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddSingleton<IAuthService, AuthService>();
-builder.Services.AddSingleton<IContentService, ContentService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IContentService, ContentService>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {

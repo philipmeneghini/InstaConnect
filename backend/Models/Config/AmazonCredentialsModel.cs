@@ -1,6 +1,6 @@
 ﻿namespace Backend.Models.Config
 {
-    public class AmazonS3CredentialsModel
+    public class AmazonCredentialsModel
     {
         public string? AccessKey { get; set; }
 
