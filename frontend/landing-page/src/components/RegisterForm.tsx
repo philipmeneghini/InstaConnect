@@ -9,7 +9,6 @@ import LoginRegisterAlert from './LoginRegisterAlert'
 import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
 import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
 import { AxiosRequestConfig } from 'axios'
-import { GuestEmail, GuestPassword } from '../utils/Constants'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import DatePickerField from './DatePickerField'
@@ -26,10 +25,10 @@ export const RegisterForm = () => {
         isOpen: false,
         isSuccess: false,
         message: ''
-      });
+      })
 
-    const maxDate = dayjs().subtract(18, "year").format("MM/DD/YYYY")
-    const minDate = dayjs().subtract(120, "year").format("MM/DD/YYYY")
+    const maxDate = dayjs().subtract(18, 'year').format('MM/DD/YYYY')
+    const minDate = dayjs().subtract(120, 'year').format('MM/DD/YYYY')
 
     const initialValues : RegisterFormValues = {
         firstName: '',
@@ -58,13 +57,12 @@ export const RegisterForm = () => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(GuestEmail, GuestPassword)
+        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
         if (jwtResponse.data) {
             const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             const response: GenericResponse<UserModel>  = await _userApiClient.createUser(values as UserModel, header)
-            const header2: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
             if (response.data) {
-                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header2)
+                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header)
                 if (emailResponse.data) {
                     setRegister({
                         isOpen: true,

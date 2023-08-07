@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField, Typography} from '@mui/material'
+import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link, OutlinedInput, TextField, Typography} from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
@@ -29,7 +29,7 @@ export const LoginPage = () => {
         setLogin({
           isOpen: true,
           isSuccess: false,
-          message: "An email or password has not been entered yet"
+          message: 'An email or password has not been entered yet'
         })
         return
       }
@@ -38,7 +38,7 @@ export const LoginPage = () => {
         setLogin({
           isOpen: true,
           isSuccess: true,
-          message: "User Has Successfully Logged In!"
+          message: 'User Has Successfully Logged In!'
         })
       }
       else {
@@ -48,11 +48,11 @@ export const LoginPage = () => {
           message: String(response.statusCode)
         }
         if (response.statusCode === undefined) {
-          loginProperties.message = "Network Error"
+          loginProperties.message = 'Network Error'
           setLogin(loginProperties)
         }
         else if (response.statusCode === 400) {
-          loginProperties.message = "Invalid Email or Password"
+          loginProperties.message = 'Invalid Email or Password'
           setLogin(loginProperties)
         }
         else {
@@ -79,50 +79,56 @@ export const LoginPage = () => {
         <Grid
           container
           spacing={3}
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
+          direction='column'
+          alignItems='center'
+          justifyContent='center'
           sx={{ minHeight: '100vh' }}
         >
           <Grid item xs={10}>
             <TextField
               style={{ width: '60ch' }}
-              label="Email"
-              variant="outlined"
+              label='Email'
+              variant='outlined'
               value={email}
               onChange={onChangeEmail} />
           </Grid>
           <Grid item xs={5}>
-            <FormControl sx={{ m: 1, width: '60ch' }} variant="outlined">
-              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+            <FormControl sx={{ m: 1, width: '60ch' }} variant='outlined'>
+              <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
               <OutlinedInput
-                id="outlined-adornment-password"
+                id='outlined-adornment-password'
                 type={showPassword ? 'text' : 'password'}
-                endAdornment={<InputAdornment position="end">
+                endAdornment={<InputAdornment position='end'>
                   <IconButton
-                    aria-label="toggle password visibility"
+                    aria-label='toggle password visibility'
                     onClick={handleClickShowPassword}
                     onMouseDown={handleMouseDownPassword}
-                    edge="end"
+                    edge='end'
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>}
-                label="Password"
+                label='Password'
                 onChange={onChangePassword} />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              onClick={handleClickLogin}
-            >
-              <Typography variant="h5" display="block" align="center">
-                Log in
-              </Typography>
-            </Button>
+          <Grid item container direction='row' alignItems='center' justifyContent='center' xs={11}>
+            <Grid item xs={4.75}></Grid>
+            <Grid item xs={1.5}>
+              <Button
+                type='submit'
+                variant='contained'
+                color='primary'
+                onClick={handleClickLogin}
+              >
+                <Typography variant='h5' display='block' align='center'>
+                  Log in
+                </Typography>
+              </Button>
+            </Grid>
+            <Grid item xs={4.75}>
+              <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
+            </Grid>
             <LoginRegisterAlert login={login} setLogin={setLogin} />
           </Grid>
         </Grid>

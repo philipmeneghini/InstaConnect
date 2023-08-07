@@ -20,6 +20,8 @@ namespace Backend.Services
         private IAuthService _authService;
         private IValidator<UserModel> _emailServiceValidator;
 
+        delegate Task<bool> SendEmailAsync(UserModel user);
+
         public EmailService(IOptionsSnapshot<AmazonCredentialsModel> settings, IValidator<UserModel> emailServiceValidator,  IAuthService authService)
         {
             _keys = settings.Get(ApplicationConstants.SES);
@@ -51,6 +53,38 @@ namespace Backend.Services
                         {
                             Charset = ApplicationConstants.UTF8,
                             Data = string.Format(ApplicationConstants.RegistrationBody, user.FirstName, url)
+                        }
+                    }
+                });
+            var emailResponse = await _client.SendEmailAsync(sendEmailRequest);
+            if (emailResponse.HttpStatusCode == HttpStatusCode.OK)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> SendResetPasswordEmailAsync(UserModel user)
+        {
+            if (user == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
+            var validationResult = _emailServiceValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.EmailService));
+            ThrowExceptions(validationResult);
+            string jwt = _authService.GenerateToken(user);
+            string url = string.Format(ApplicationConstants.RegistrationURL, jwt);
+            var sendEmailRequest = new SendEmailRequest(ApplicationConstants.InstaConnectEmail,
+                new Destination(new List<string>() { user.Email }),
+                new Message
+                {
+                    Subject = new Content
+                    {
+                        Charset = ApplicationConstants.UTF8,
+                        Data = ApplicationConstants.ResetPasswordSubject
+                    },
+                    Body = new Body
+                    {
+                        Text = new Content
+                        {
+                            Charset = ApplicationConstants.UTF8,
+                            Data = string.Format(ApplicationConstants.ResetPasswordBody, user.FirstName, url)
                         }
                     }
                 });

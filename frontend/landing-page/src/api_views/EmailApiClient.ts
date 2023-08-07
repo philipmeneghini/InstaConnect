@@ -18,4 +18,13 @@ export class EmailApiClient extends BaseApiClient implements IEmailApiClient{
             statusCode: response.statusCode
         }
     }
+
+    sendResetPasswordEmail = async(user: UserModel, header: AxiosRequestConfig): Promise<GenericResponse<boolean>> => {
+        const response = await this.postApi("resetPassword", user, header)
+        return {
+            data: response.data as boolean,
+            message: response.message ?? '',
+            statusCode: response.statusCode
+        }
+    }
 }

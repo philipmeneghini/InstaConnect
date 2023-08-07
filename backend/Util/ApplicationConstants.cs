@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Amazon.S3.Model;
+using Backend.Models;
 
 namespace Util.Constants
 {
@@ -92,6 +93,15 @@ namespace Util.Constants
             "Kind Regards, \n" +
             "InstaConnect Team";
         static public readonly string RegistrationURL = "http://localhost:3000/setPassword?token={0}";
+        #endregion
+
+        #region Reset Password Email
+        static public readonly string ResetPasswordSubject = "Reset your InstaConnect Password";
+        static public readonly string ResetPasswordBody = "Dear {0}, \n\n" +
+            "We've receved a request to reset the password for your InstaConnect account. If you did not make this request please ignore this email. \n\n" +
+            "In order to finish resetting your password please click the following link {1}. \n\n" +
+            "Kind regards, \n" +
+            "InstaConnect Team";
         #endregion
 
         #region Authentication
