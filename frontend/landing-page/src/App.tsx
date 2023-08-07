@@ -13,17 +13,15 @@ export const _authenticationApiClient = new AuthenticationApiClient()
 export const _userApiClient = new UserApiClient()
 export const _emailApiClient = new EmailApiClient()
 
-console.log(process.env.REACT_APP_GUEST_PASSWORD!)
-
 function App() {
   return (
-    <div className = "App">
+    <div className = 'App'>
       <Router>
         <Routes>
-          <Route path="/" element={<LoginPage/>}/>
-          <Route path="/register" element={<RegisterPage/>}/>
-          <Route path="/setPassword" element={<SetPasswordPage/>}/>
-          <Route path="/resetPassword" element={<ResetPasswordPage/>}/>
+          <Route path='/' element={<LoginPage/>}/>
+          <Route path='/register' element={<RegisterPage/>}/>
+          <Route path='/setPassword' element={<SetPasswordPage/>}/>
+          <Route path='/resetPassword' element={<ResetPasswordPage/>}/>
         </Routes>
       </Router>
     </div>
