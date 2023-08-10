@@ -15,10 +15,10 @@ export const LoginHeader = (props: LoginProps) => {
   return (
     <AppBar>
       <Toolbar>
-        <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant='h4' component='div' sx={{ flexGrow: 1 }}>
           InstaConnect
         </Typography>
-        {Paths && <Button color="inherit" onClick={() => navigate(props.sideButtonPath, { replace: true })}>
+        {Paths && <Button color='inherit' onClick={() => navigate(props.sideButtonPath, { replace: true })}>
           {props.sideButton}
         </Button>}
       </Toolbar>
