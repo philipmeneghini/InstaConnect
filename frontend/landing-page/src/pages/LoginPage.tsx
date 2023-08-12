@@ -9,6 +9,7 @@ import LoginHeader from '../components/LoginHeader'
 import { Paths } from '../utils/Constants'
 import { FormProperties } from '../utils/FormProperties'
 import { GenericResponse } from '../api_views/IBaseApiClient'
+import { NavigateFunction, useNavigate } from 'react-router'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
@@ -18,10 +19,17 @@ export const LoginPage = () => {
       isOpen: false,
       isSuccess: false,
       message: ''
-    });
+    })
+
+    //const navigate = useNavigate()
 
     const handleClickShowPassword = () => {
       setShowPassword(!showPassword)
+    }
+
+    const handleSuccessfulLogin = ( jwt: string ) => {
+      window.location.port = '3001'
+      localStorage.setItem('user', jwt)
     }
 
     const handleClickLogin = async() => {
@@ -40,6 +48,9 @@ export const LoginPage = () => {
           isSuccess: true,
           message: 'User Has Successfully Logged In!'
         })
+        setTimeout(() => 
+        { handleSuccessfulLogin(response.data as string)}, 
+        3000)
       }
       else {
         let loginProperties: FormProperties = {

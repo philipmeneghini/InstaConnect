@@ -4,10 +4,12 @@ import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import React, { useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 export const Header = () => {
 
     const [anchorUser, setAnchorUser] = useState<HTMLElement | null>(null)
+    const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorUser(event.currentTarget)
@@ -17,14 +19,19 @@ export const Header = () => {
         setAnchorUser(null)
     }
 
+    const handleMenuItemClick = () => {
+        console.log(localStorage.getItem('user'))
+        setMenuOpen(!menuOpen)
+    }
+
     return (
         <AppBar position='static'>
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
                     <Grid container xs={12}>
                         <Grid item xs = {5} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'start' }}>
-                            <IconButton color='inherit'>
-                                <MenuIcon />
+                            <IconButton onClick={handleMenuItemClick} color='inherit'>
+                                {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
                             </IconButton>
                         </Grid>
                         <Grid item xs={2}>
