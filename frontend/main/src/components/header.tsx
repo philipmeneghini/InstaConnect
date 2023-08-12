@@ -28,7 +28,7 @@ export const Header = () => {
         <AppBar position='static'>
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
-                    <Grid container xs={12}>
+                    <Grid container>
                         <Grid item xs = {5} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'start' }}>
                             <IconButton onClick={handleMenuItemClick} color='inherit'>
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}

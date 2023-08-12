@@ -18,20 +18,20 @@ export const LoginRegisterAlert = (props: AlertProps) => {
 
   const handleSeverity = () => {
     if(props.login.isSuccess) {
-      return "success" as AlertColor
+      return 'success' as AlertColor
     }
     else {
-      return "error" as AlertColor
+      return 'error' as AlertColor
     }
   }
 
   return (
     <Snackbar 
-      anchorOrigin={{vertical: "bottom", horizontal: "center"}} 
+      anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} 
       open={props.login.isOpen} 
       autoHideDuration={6000} 
       onClose={handleClose}
-      key={"bottomcenter"}
+      key={'bottomcenter'}
       >
         <Alert severity={handleSeverity()} sx={{ width: '100%' }}>
           {props.login.message}

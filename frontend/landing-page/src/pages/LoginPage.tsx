@@ -9,7 +9,6 @@ import LoginHeader from '../components/LoginHeader'
 import { Paths } from '../utils/Constants'
 import { FormProperties } from '../utils/FormProperties'
 import { GenericResponse } from '../api_views/IBaseApiClient'
-import { NavigateFunction, useNavigate } from 'react-router'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
@@ -21,15 +20,12 @@ export const LoginPage = () => {
       message: ''
     })
 
-    //const navigate = useNavigate()
-
     const handleClickShowPassword = () => {
       setShowPassword(!showPassword)
     }
 
     const handleSuccessfulLogin = ( jwt: string ) => {
-      window.location.port = '3001'
-      localStorage.setItem('user', jwt)
+      window.location.href = `http://localhost:3001/validation?token=${jwt}`
     }
 
     const handleClickLogin = async() => {
