@@ -3,12 +3,12 @@ import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
-import { _authenticationApiClient } from '../App'
+import { _apiClient } from '../App'
 import LoginRegisterAlert from '../components/LoginRegisterAlert'
 import LoginHeader from '../components/LoginHeader'
 import { Paths } from '../utils/Constants'
 import { FormProperties } from '../utils/FormProperties'
-import { GenericResponse } from '../api_views/IBaseApiClient'
+import { ApiException, LoginResponse } from '../api/Client'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
@@ -37,32 +37,30 @@ export const LoginPage = () => {
         })
         return
       }
-      const response: GenericResponse<string> = await _authenticationApiClient.login(email, password)
-      if (response.data) {
+      try {
+        const response: LoginResponse = await _apiClient.login({ email, password })
         setLogin({
           isOpen: true,
           isSuccess: true,
           message: 'User Has Successfully Logged In!'
         })
         setTimeout(() => 
-        { handleSuccessfulLogin(response.data as string)}, 
+        { handleSuccessfulLogin(response.token as string) }, 
         3000)
       }
-      else {
+      catch(err: any) {
+        console.log(err.message)
         let loginProperties: FormProperties = {
           isOpen: true,
           isSuccess: false,
-          message: String(response.statusCode)
+          message: ''
         }
-        if (response.statusCode === undefined) {
-          loginProperties.message = 'Network Error'
-          setLogin(loginProperties)
-        }
-        else if (response.statusCode === 400) {
-          loginProperties.message = 'Invalid Email or Password'
+        if (err instanceof ApiException) {
+          loginProperties.message = err.response
           setLogin(loginProperties)
         }
         else {
+          loginProperties.message = 'Internal Server Error'
           setLogin(loginProperties)
         }
       }

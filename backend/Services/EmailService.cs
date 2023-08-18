@@ -31,7 +31,7 @@ namespace Backend.Services
             _emailServiceValidator = emailServiceValidator;
         }
 
-        public async Task<bool> SendRegistrationEmailAsync(UserModel user)
+        public async Task<EmailResponse> SendRegistrationEmailAsync(UserModel user)
         {
             if (user == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _emailServiceValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.EmailService));
@@ -58,12 +58,12 @@ namespace Backend.Services
                 });
             var emailResponse = await _client.SendEmailAsync(sendEmailRequest);
             if (emailResponse.HttpStatusCode == HttpStatusCode.OK)
-                return true;
+                return new EmailResponse { Sent = true };
             else
-                return false;
+                return new EmailResponse { Sent = false };
         }
 
-        public async Task<bool> SendResetPasswordEmailAsync(UserModel user)
+        public async Task<EmailResponse> SendResetPasswordEmailAsync(UserModel user)
         {
             if (user == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);
             var validationResult = _emailServiceValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.EmailService));
@@ -90,9 +90,9 @@ namespace Backend.Services
                 });
             var emailResponse = await _client.SendEmailAsync(sendEmailRequest);
             if (emailResponse.HttpStatusCode == HttpStatusCode.OK)
-                return true;
+                return new EmailResponse { Sent = true }; 
             else
-                return false;
+                return new EmailResponse { Sent = false };
         }
 
         private void ThrowExceptions(FluentValidation.Results.ValidationResult validationResult)

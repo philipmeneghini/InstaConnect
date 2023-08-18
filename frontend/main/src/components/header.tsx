@@ -18,9 +18,12 @@ export const Header = () => {
     const handleCloseUserMenu = () => {
         setAnchorUser(null)
     }
+    const handleLogout = () => {
+        setAnchorUser(null)
+        window.location.href = process.env.REACT_APP_LOGIN_PAGE!
+    }
 
     const handleMenuItemClick = () => {
-        console.log(localStorage.getItem('user'))
         setMenuOpen(!menuOpen)
     }
 
@@ -69,7 +72,7 @@ export const Header = () => {
                                 <MenuItem key='Account' onClick={handleCloseUserMenu}>
                                     <Typography textAlign='center'> Account </Typography>
                                 </MenuItem>
-                                <MenuItem key='Logout' onClick={handleCloseUserMenu}>
+                                <MenuItem key='Logout' onClick={handleLogout}>
                                     <Typography textAlign='center'> Logout </Typography>
                                 </MenuItem>
                             </Menu>

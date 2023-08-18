@@ -8,10 +8,12 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { UserApiClient } from './api_views/UserApiClient'
 import { EmailApiClient } from './api_views/EmailApiClient'
+import { Client } from './api/Client'
 
 export const _authenticationApiClient = new AuthenticationApiClient()
 export const _userApiClient = new UserApiClient()
 export const _emailApiClient = new EmailApiClient()
+export const _apiClient = new Client(process.env.REACT_APP_API_URL!)
 
 function App() {
   return (

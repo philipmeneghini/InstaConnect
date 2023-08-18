@@ -4,12 +4,11 @@ import * as Yup from 'yup'
 import { Button, FormControl, Grid, TextField } from '@mui/material'
 import { FormProperties } from '../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _authenticationApiClient } from '../App'
-import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
-import { AxiosRequestConfig } from 'axios'
+import { _apiClient } from '../App'
 import { Paths } from '../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { useNavigate } from 'react-router-dom'
+import { ApiException, LoginResponse } from '../api/Client'
 
 export interface PasswordFormValues {
     password: string
@@ -54,44 +53,34 @@ export const PasswordForm = (prop: PasswordProps) => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
-        if (jwtResponse.data) {
-            const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
-            const response: GenericResponse<UserModel>  = await _authenticationApiClient.register(prop.email, values.confirmPassword, header)
-            if (response.data) {
-                setPasswordResult({
-                    isOpen: true,
-                    isSuccess: true,
-                    message: 'Password Submission Success!'
-                })
-                resetForm()
-                setTimeout(() => 
-                { navigate(Paths['Login'], { replace: true })}, 
-                5000);
-            }
-            else {
-                setPasswordResult({
-                    isOpen: true,
-                    isSuccess: false,
-                    message: `Password Submission Failed! ${response.statusCode}: ${response.message}`
-                })
-            }
-        }
-        else if (jwtResponse.statusCode === undefined) {
+        try {
+            const jwtResponse: LoginResponse = await _apiClient.login({ email: process.env.REACT_APP_GUEST_EMAIL!, password: process.env.REACT_APP_GUEST_PASSWORD! })
+            localStorage.setItem('token', jwtResponse.token ?? '')
+            await _apiClient.register({ email: prop.email, password: values.confirmPassword})
             setPasswordResult({
                 isOpen: true,
-                isSuccess: false,
-                message: 'Network Error'
+                isSuccess: true,
+                message: 'Password Submission Success!'
             })
+            resetForm()
+            setTimeout(() => 
+            { navigate(Paths['Login'], { replace: true })}, 
+            5000)
         }
-        else {
-            setPasswordResult({
+        catch(err: any){
+            let failedPasswordResult: FormProperties = {
                 isOpen: true,
                 isSuccess: false,
-                message: `Password Submission Failed! ${jwtResponse.statusCode}: ${jwtResponse.message}`
-            })
+                message: 'Password Submission Failed!'
+            }
+            if (err instanceof ApiException)
+                failedPasswordResult.message = failedPasswordResult.message + '' + err.response
+            else
+                failedPasswordResult.message = failedPasswordResult.message + ' Internal Server Error'
+            setPasswordResult(failedPasswordResult)
         }
         setSubmitting(false)
+        localStorage.setItem('token', '')
     }
 
     const validation = Yup.object({
