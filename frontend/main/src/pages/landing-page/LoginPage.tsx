@@ -3,12 +3,13 @@ import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
-import { _apiClient } from '../App'
-import LoginRegisterAlert from '../components/LoginRegisterAlert'
-import LoginHeader from '../components/LoginHeader'
-import { Paths } from '../utils/Constants'
-import { FormProperties } from '../utils/FormProperties'
-import { ApiException, LoginResponse } from '../api/Client'
+import { _apiClient } from '../../App'
+import LoginRegisterAlert from '../../components/landing-page/LoginRegisterAlert'
+import LoginHeader from '../../components/landing-page/LoginHeader'
+import { Paths } from '../../utils/Constants'
+import { FormProperties } from '../../utils/FormProperties'
+import { ApiException, LoginResponse } from '../../api/Client'
+import { useNavigate } from 'react-router-dom'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
@@ -20,12 +21,15 @@ export const LoginPage = () => {
       message: ''
     })
 
+    const navigate = useNavigate()
+
     const handleClickShowPassword = () => {
       setShowPassword(!showPassword)
     }
 
     const handleSuccessfulLogin = ( jwt: string ) => {
-      window.location.href = `http://localhost:3001/validation?token=${jwt}`
+      localStorage.setItem('token', jwt)
+      navigate(Paths['Home'], { replace: true })
     }
 
     const handleClickLogin = async() => {
@@ -49,7 +53,6 @@ export const LoginPage = () => {
         3000)
       }
       catch(err: any) {
-        console.log(err.message)
         let loginProperties: FormProperties = {
           isOpen: true,
           isSuccess: false,

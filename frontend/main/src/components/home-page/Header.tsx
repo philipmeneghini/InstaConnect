@@ -5,11 +5,15 @@ import Tooltip from '@mui/material/Tooltip'
 import React, { useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { useNavigate } from 'react-router-dom'
+import { Paths } from '../../utils/Constants'
 
 export const Header = () => {
 
     const [anchorUser, setAnchorUser] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
+
+    const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorUser(event.currentTarget)
@@ -20,7 +24,7 @@ export const Header = () => {
     }
     const handleLogout = () => {
         setAnchorUser(null)
-        window.location.href = process.env.REACT_APP_LOGIN_PAGE!
+        navigate(Paths['Login'], { replace: true })
     }
 
     const handleMenuItemClick = () => {

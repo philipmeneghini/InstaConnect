@@ -4,14 +4,13 @@ import * as Yup from 'yup'
 import { Button, Grid, Paper, TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
-import { FormProperties } from '../utils/FormProperties'
+import { FormProperties } from '../../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
-import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
-import { AxiosRequestConfig } from 'axios'
+import { _apiClient} from '../../App'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import DatePickerField from './DatePickerField'
+import { ApiException } from '../../api/Client'
 
 export interface RegisterFormValues {
     firstName: string
@@ -57,51 +56,41 @@ export const RegisterForm = () => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
-        if (jwtResponse.data) {
-            const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
-            const response: GenericResponse<UserModel>  = await _userApiClient.createUser(values as UserModel, header)
-            if (response.data) {
-                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendRegistrationEmail(response.data, header)
-                if (emailResponse.data) {
-                    setRegister({
-                        isOpen: true,
-                        isSuccess: true,
-                        message: `Registration Success! An Email Has Been Sent To ${response.data?.email}`
-                    })
-                    resetForm()
-                }
-                else {
-                    setRegister({
-                        isOpen: true,
-                        isSuccess: false,
-                        message: `Email To ${response.data?.email} Failed to Send`
-                    })
-                }
+        try {
+            const jwtResponse = await _apiClient.login({ email: process.env.REACT_APP_GUEST_EMAIL!, password: process.env.REACT_APP_GUEST_PASSWORD! })
+            localStorage.setItem('token', jwtResponse.token ?? '')
+            const userResponse = await _apiClient.userPOST({firstName: values.firstName, lastName: values.lastName, email: values.email, birthDate: values.birthDate ?? ''})
+            const emailResponse = await _apiClient.registration(userResponse)
+            if (emailResponse.sent) {
+                setRegister({
+                    isOpen: true,
+                    isSuccess: true,
+                    message: `Registration Success! An Email Has Been Sent To ${userResponse.email}`
+                })
+                resetForm()
             }
             else {
-                let registerProperties: FormProperties = {
+                setRegister({
                     isOpen: true,
                     isSuccess: false,
-                    message: response.message ? String(response.statusCode) : String(response.statusCode) + ': ' + response.message
-                }
-                if (response.statusCode === undefined) {
-                    registerProperties.message = 'Network Error'
-                    setRegister(registerProperties)
-                }
-                else {
-                    setRegister(registerProperties)
-                }
+                    message: `Email To ${userResponse.email} Failed to Send`
+                })
             }
         }
-        else {
-            setRegister({
+        catch(err: any){
+            let failedRegistrationResult: FormProperties = {
                 isOpen: true,
                 isSuccess: false,
-                message: 'Internal Authentication Error'
-            })
+                message: ''
+            }
+            if (err instanceof ApiException)
+                failedRegistrationResult.message = err.response
+            else
+                failedRegistrationResult.message = 'Internal Server Error'
+            setRegister(failedRegistrationResult)
         }
         setSubmitting(false)
+        localStorage.setItem('token', '')
     }
 
     const validation = Yup.object({

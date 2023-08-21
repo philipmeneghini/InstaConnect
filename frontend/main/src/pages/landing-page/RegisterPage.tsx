@@ -1,7 +1,7 @@
 import React from 'react'
-import LoginHeader from '../components/LoginHeader'
-import RegisterForm from '../components/RegisterForm'
-import { Paths } from '../utils/Constants'
+import LoginHeader from '../../components/landing-page/LoginHeader'
+import RegisterForm from '../../components/landing-page/RegisterForm'
+import { Paths } from '../../utils/Constants'
 
 
 export const RegisterPage = () => {

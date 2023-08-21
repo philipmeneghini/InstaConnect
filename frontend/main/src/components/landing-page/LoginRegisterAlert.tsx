@@ -1,6 +1,6 @@
 import {Alert, AlertColor, Snackbar} from '@mui/material'
 import React from 'react'
-import { FormProperties } from '../utils/FormProperties'
+import { FormProperties } from '../../utils/FormProperties'
 
 interface AlertProps {
   login: FormProperties,

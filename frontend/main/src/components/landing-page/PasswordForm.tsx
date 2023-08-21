@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 import { Formik, ErrorMessage, FormikHelpers, FormikErrors, Form } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid, TextField } from '@mui/material'
-import { FormProperties } from '../utils/FormProperties'
+import { FormProperties } from '../../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _apiClient } from '../App'
-import { Paths } from '../utils/Constants'
-import LoginHeader from './LoginHeader'
+import { _apiClient } from '../../App'
+import { Paths } from '../../utils/Constants'
+import LoginHeader from './../landing-page/LoginHeader'
 import { useNavigate } from 'react-router-dom'
-import { ApiException, LoginResponse } from '../api/Client'
+import { ApiException, LoginResponse } from '../../api/Client'
 
 export interface PasswordFormValues {
     password: string
