@@ -21,12 +21,13 @@ export const MenuPage = () => {
             }
         }
         getUser(localStorage.getItem('token'))
+
     }, [])
 
     return (
         user ? 
         <div>
-            <Header/>
+            <Header user={user}/>
         </div> :
         <></>
 )}

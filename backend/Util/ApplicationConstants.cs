@@ -72,7 +72,7 @@ namespace Util.Constants
         #endregion
 
         #region AwsDestinations
-        static public readonly string ProfilePictureDestination = "users/{0}/profilePictures";
+        static public readonly string ProfilePictureDestination = "profilePicture/{0}/profilePicture.png";
         static public readonly string PhotosDestination = "users/{0}/photos";
         static public readonly string ReelsDestination = "users/{0}/reels";
         static public readonly string PhotosContentDestination = "users/{0}/photos/{1}";

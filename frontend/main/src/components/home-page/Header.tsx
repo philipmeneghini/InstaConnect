@@ -7,8 +7,13 @@ import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
+import { UserModel } from '../../api/Client'
 
-export const Header = () => {
+interface HeaderProps {
+    user: UserModel
+}
+
+export const Header = ( props: HeaderProps ) => {
 
     const [anchorUser, setAnchorUser] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
@@ -51,7 +56,7 @@ export const Header = () => {
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
-                                    <Avatar alt='Remy Sharp'/>
+                                    <Avatar alt='Remy Sharp' src={props.user.profilePictureUrl as string}/>
                                 </IconButton>
                             </Tooltip>
                             <Menu
