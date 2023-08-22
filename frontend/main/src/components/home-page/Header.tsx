@@ -2,12 +2,13 @@ import { AppBar, Container, Grid, Menu, MenuItem, Toolbar, Typography } from '@m
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
+import axios from 'axios'
 
 interface HeaderProps {
     user: UserModel
@@ -15,8 +16,22 @@ interface HeaderProps {
 
 export const Header = ( props: HeaderProps ) => {
 
-    const [anchorUser, setAnchorUser] = useState<HTMLElement | null>(null)
+    const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
+    const [ profilePicture, setProfilePicture ] = useState<string>(props.user.profilePictureUrl ?? '')
+
+    useEffect(() => {
+        const validateUrl = async(url: string) => { 
+            try {
+                await axios.get(url)
+                setProfilePicture(url)
+            } 
+            catch {
+                setProfilePicture('')
+            }
+        }
+        validateUrl(props.user.profilePictureUrl as string)
+    }, [props])
 
     const navigate = useNavigate()
 
@@ -56,7 +71,7 @@ export const Header = ( props: HeaderProps ) => {
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
-                                    <Avatar alt='Remy Sharp' src={props.user.profilePictureUrl as string}/>
+                                    <Avatar alt='Remy Sharp' src={profilePicture}/>
                                 </IconButton>
                             </Tooltip>
                             <Menu

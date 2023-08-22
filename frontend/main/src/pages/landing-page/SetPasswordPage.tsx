@@ -20,7 +20,7 @@ export const SetPasswordPage = () => {
             }
         }
         checkVerification(searchParams.get('token') as string)
-    }, [])
+    }, [searchParams])
 
     return (
     authenticated ?

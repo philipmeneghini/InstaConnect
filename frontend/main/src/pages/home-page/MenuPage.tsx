@@ -16,7 +16,7 @@ export const MenuPage = () => {
                     setUser(response)
                 }
                 catch {
-                    return
+                    setUser(null)
                 }
             }
         }
