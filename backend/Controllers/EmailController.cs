@@ -18,14 +18,14 @@ namespace Backend.Controllers
 
         [Authorize]
         [HttpPost("Registration")]
-        public async Task<bool> SendRegistrationEmail([FromBody] UserModel user)
+        public async Task<EmailResponse> SendRegistrationEmail([FromBody] UserModel user)
         {
             return await _emailService.SendRegistrationEmailAsync(user);
         }
 
         [Authorize]
         [HttpPost("ResetPassword")]
-        public async Task<bool> SendResetPasswordEmail([FromBody] UserModel user)
+        public async Task<EmailResponse> SendResetPasswordEmail([FromBody] UserModel user)
         {
             return await _emailService.SendResetPasswordEmailAsync(user);
         }

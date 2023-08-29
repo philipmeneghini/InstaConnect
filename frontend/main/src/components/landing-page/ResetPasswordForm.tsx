@@ -2,13 +2,12 @@ import React, { useState } from 'react'
 import { Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid,TextField } from '@mui/material'
-import { FormProperties } from '../utils/FormProperties'
+import { FormProperties } from '../../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
-import { _userApiClient, _authenticationApiClient, _emailApiClient} from '../App'
-import { GenericResponse, UserModel } from '../api_views/IBaseApiClient'
-import { AxiosRequestConfig } from 'axios'
-import { Paths } from '../utils/Constants'
+import { _apiClient } from '../../App'
+import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
+import { ApiException } from '../../api/Client'
 
 export interface ResetPasswordFormValues {
     email: string
@@ -45,55 +44,41 @@ export const ResetPasswordForm = () => {
             setSubmitting(false)
             return
         }
-        const jwtResponse: GenericResponse<string> = await _authenticationApiClient.login(process.env.REACT_APP_GUEST_EMAIL!, process.env.REACT_APP_GUEST_PASSWORD!)
-        if (jwtResponse.data) {
-            const header: AxiosRequestConfig = {headers: {Authorization: 'Bearer ' + jwtResponse.data}}
-            const response: GenericResponse<UserModel>  = await _userApiClient.getUser(values.email, header)
-            if (response.data) {
-                const emailResponse: GenericResponse<boolean> = await _emailApiClient.sendResetPasswordEmail(response.data, header)
-                if (emailResponse.data) {
-                    setPasswordReset({
-                        isOpen: true,
-                        isSuccess: true,
-                        message: `An Email Has Been Sent To ${response.data?.email}`
-                    })
-                    resetForm()
-                }
-                else {
-                    setPasswordReset({
-                        isOpen: true,
-                        isSuccess: false,
-                        message: `Email To ${response.data?.email} Failed to Send`
-                    })
-                }
+        try {
+            const jwtResponse = await _apiClient.login({ email: process.env.REACT_APP_GUEST_EMAIL!, password: process.env.REACT_APP_GUEST_PASSWORD! })
+            localStorage.setItem('token', jwtResponse.token ?? '')
+            const userResponse = await _apiClient.userGET(values.email)
+            const emailResponse = await _apiClient.resetPassword(userResponse)
+            if (emailResponse.sent) {
+                setPasswordReset({
+                    isOpen: true,
+                    isSuccess: true,
+                    message: `An Email Has Been Sent To ${userResponse.email}`
+                })
+                resetForm()
             }
             else {
-                let resetPasswordProperties: FormProperties = {
+                setPasswordReset({
                     isOpen: true,
                     isSuccess: false,
-                    message: response.message ? String(response.statusCode) : String(response.statusCode) + ': ' + response.message
-                }
-                if (response.statusCode === undefined) {
-                    resetPasswordProperties.message = 'Network Error'
-                    setPasswordReset(resetPasswordProperties)
-                }
-                else if (response.statusCode === 404) {
-                    resetPasswordProperties.message = 'No user with this email exists'
-                    setPasswordReset(resetPasswordProperties)
-                }
-                else {
-                    setPasswordReset(resetPasswordProperties)
-                }
+                    message: `Email To ${userResponse.email} Failed to Send`
+                })
             }
         }
-        else {
-            setPasswordReset({
+        catch(err: any){
+            let failedEmailResult: FormProperties = {
                 isOpen: true,
                 isSuccess: false,
-                message: 'Internal Authentication Error'
-            })
+                message: ''
+            }
+            if (err instanceof ApiException)
+                failedEmailResult.message = err.response
+            else
+                failedEmailResult.message = 'Internal Server Error'
+            setPasswordReset(failedEmailResult)
         }
         setSubmitting(false)
+        localStorage.setItem('token', '')
     }
 
     const validation = Yup.object({

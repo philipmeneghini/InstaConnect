@@ -19,7 +19,7 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<string> Login([FromBody] LoginBody login)
+        public async Task<LoginResponse> Login([FromBody] LoginBody login)
         {
             return await _authService.Login(login);
         }

@@ -26,14 +26,14 @@ namespace Backend.Services
             _jwtSettings = jwtSettings.Value;
         }
 
-        public async Task<string> Login(LoginBody request)
+        public async Task<LoginResponse> Login(LoginBody request)
         {
             if (request.Email.IsNullOrEmpty() || request.Password.IsNullOrEmpty())
                 throw new InstaBadRequestException(ApplicationConstants.MisingEmailOrPassword);
             var user = await _userService.GetUserAsync(request.Email);
             if (!CheckHash(user.Password, request.Password))
                 throw new InstaBadRequestException(ApplicationConstants.InvalidPassword);
-            return GenerateToken(user);
+            return new LoginResponse { Token = GenerateToken(user) };
         }
 
         public async Task<UserModel> Register(LoginBody request)

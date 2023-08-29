@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { _authenticationApiClient } from '../App'
-import PasswordForm from '../components/PasswordForm'
+import { _apiClient } from '../../App'
+import PasswordForm from '../../components/landing-page/PasswordForm'
 
 export const SetPasswordPage = () => {
     const [searchParams] = useSearchParams()
@@ -10,15 +10,17 @@ export const SetPasswordPage = () => {
 
     useEffect(() => {
         const checkVerification = async(token: string): Promise<void> => {
-            const response = await _authenticationApiClient.verifyToken(token)
-            const result = response.data ? response.data : false
-            if (result) {
+            try{
+                const response = await _apiClient.verifyToken(token)
                 setAuthenticated(true)
-                setEmail(response.data?.email as string)
+                setEmail(response.email as string)
+            }
+            catch (err: any) {
+                return
             }
         }
         checkVerification(searchParams.get('token') as string)
-    })
+    }, [searchParams])
 
     return (
     authenticated ?
