@@ -75,8 +75,8 @@ namespace Util.Constants
         static public readonly string ProfilePictureDestination = "profilePicture/{0}/profilePicture.png";
         static public readonly string PhotosDestination = "users/{0}/photos";
         static public readonly string ReelsDestination = "users/{0}/reels";
-        static public readonly string PhotosContentDestination = "users/{0}/photos/{1}";
-        static public readonly string ReelsContentDestination = "users/{0}/reels/{1}";
+        static public readonly string PhotosContentDestination = "photos/{0}/{1}.png";
+        static public readonly string ReelsContentDestination = "reels/{0}/{1}.png";
 
         static public readonly string ProfilePicture = "Profile Picture";
         static public readonly string Photos = "Photos";

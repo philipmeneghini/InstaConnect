@@ -1,29 +1,34 @@
 import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
-import { UserModel } from '../../api/Client'
+import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import React from 'react'
 import axios from 'axios'
-import { Avatar, Typography } from '@mui/material'
+import { Avatar, Button, Grid, ImageList, ImageListItem, Typography } from '@mui/material'
 
 export const ProfilePage = () => {
-    const [ user, setUser ] = useState<UserModel | null>(null)
+    const [ user, setUser ] = useState<UserModel | null>()
     const [ profilePicture, setProfilePicture ] = useState<string>()
+    const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
 
     useEffect(() => {
-        const getUser = async(jwt: string | null | undefined) => {
+        const getUserAndContents = async(jwt: string | null | undefined) => {
             if (jwt) {
                 try {
                     const jwtResponse = await _apiClient.verifyToken(jwt)
-                    const response = await _apiClient.userGET(jwtResponse.email)
-                    setUser(response)
+                    const user = await _apiClient.userGET(jwtResponse.email)
+                    setUser(user)
+                    const contents = await _apiClient.contentsGET(jwtResponse.email)
+                    console.log(contents[0].mediaUrl)
+                    setContents(contents)
                 }
                 catch {
                     setUser(null)
+                    setContents(new Array<ContentModel>())
                 }
             }
         }
-        getUser(localStorage.getItem('token'))
+        getUserAndContents(localStorage.getItem('token'))
 
     }, [])
 
@@ -44,12 +49,64 @@ export const ProfilePage = () => {
         user ? 
         <div>
             <Header user={user}/>
-            <div style={{display: 'flex', justifyContent: 'center', marginTop: '35px'}}>
-                <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
-                <Typography>
-                    {user.firstName} {user.lastName}
-                </Typography>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
+                <div style={{ paddingBottom: '40px' }}>
+                    <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
+                </div>
+                <div style={{ paddingBottom: '25px' }}>
+                    <Typography>
+                        {user.firstName} {user.lastName}
+                    </Typography>
+                </div>
+                <Grid container sx={{ maxWidth: '500px' }}>
+                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
+                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                            <Typography> {contents.length} </Typography>
+                            <Typography> Posts </Typography>
+                        </div>
+                    </Grid>
+                    <Grid item xs ={2} sx={{ display: 'flex', justifyContent: 'center'}}>
+                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                            <Typography> 
+                                {user.followers ? user.followers?.length : 0 } 
+                            </Typography>
+                            <Typography> Followers </Typography>
+                        </div>
+                    </Grid>
+                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
+                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                            <Typography> 
+                                {user.following ? user.following?.length : 0 } 
+                            </Typography>
+                            <Typography> Following </Typography>
+                        </div>
+                    </Grid>
+                </Grid>
+                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
+                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                        <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                            Create Post
+                        </Button>
+                    </Grid>
+                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                        <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                            Edit Profile
+                        </Button>
+                    </Grid>
+                </Grid>
             </div>
+            <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+                {contents.map((content) => (
+                <ImageListItem key={content.mediaUrl}>
+                    <img
+                        src={content.mediaUrl}
+                        srcSet={content.mediaUrl}
+                        alt={content.caption}
+                        loading="lazy"
+                    />
+                </ImageListItem>
+                ))}
+            </ImageList>
         </div> :
         <></>
 )}
