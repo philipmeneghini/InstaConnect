@@ -4,7 +4,7 @@ import { UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import React from 'react'
 
-export const MenuPage = () => {
+export const HomePage = () => {
     const [ user, setUser ] = useState<UserModel | null>(null)
 
     useEffect(() => {
@@ -32,4 +32,4 @@ export const MenuPage = () => {
         <></>
 )}
 
-export default MenuPage
+export default HomePage
