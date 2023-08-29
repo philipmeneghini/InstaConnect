@@ -42,6 +42,12 @@ export const Header = ( props: HeaderProps ) => {
     const handleCloseUserMenu = () => {
         setAnchorUser(null)
     }
+
+    const handleOpenProfilePage = () => {
+        setAnchorUser(null)
+        navigate(Paths['Profile'], { replace: true })
+    }
+
     const handleLogout = () => {
         setAnchorUser(null)
         navigate(Paths['Login'], { replace: true })
@@ -90,7 +96,7 @@ export const Header = ( props: HeaderProps ) => {
                             open={Boolean(anchorUser)}
                             onClose={handleCloseUserMenu}
                             >
-                                <MenuItem key='Profile' onClick={handleCloseUserMenu}>
+                                <MenuItem key='Profile' onClick={handleOpenProfilePage}>
                                     <Typography textAlign='center'> Profile </Typography>
                                 </MenuItem>
                                 <MenuItem key='Account' onClick={handleCloseUserMenu}>

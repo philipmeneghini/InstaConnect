@@ -7,6 +7,7 @@ import ResetPasswordPage from './pages/landing-page/ResetPasswordPage'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { Client } from './api/Client'
 import HomePage from './pages/home-page/HomePage'
+import ProfilePage from './pages/home-page/ProfilePage'
 
 export const _apiClient = new Client(process.env.REACT_APP_API_URL!)
 
@@ -20,6 +21,7 @@ function App() {
           <Route path='/setPassword' element={<SetPasswordPage/>}/>
           <Route path='/resetPassword' element={<ResetPasswordPage/>}/>
           <Route path='/home' element={<HomePage/>}/>
+          <Route path='/profile' element={<ProfilePage/>}/>
         </Routes>
       </Router>
     </div>
