@@ -5,11 +5,13 @@ import Header from '../../components/home-page/Header'
 import React from 'react'
 import axios from 'axios'
 import { Avatar, Button, Grid, ImageList, ImageListItem, Typography } from '@mui/material'
+import MediaPostBox from '../../components/profile-page/MediaPostBox'
 
 export const ProfilePage = () => {
     const [ user, setUser ] = useState<UserModel | null>()
     const [ profilePicture, setProfilePicture ] = useState<string>()
     const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
+    const [ content, setContent ] = useState<ContentModel | null>(null)
 
     useEffect(() => {
         const getUserAndContents = async(jwt: string | null | undefined) => {
@@ -44,6 +46,8 @@ export const ProfilePage = () => {
         }
         validateUrl(user?.profilePictureUrl as string)
     }, [user])
+
+    const handleOpen = (content: ContentModel) => { setContent(content) }
 
     return (
         user ? 
@@ -97,16 +101,17 @@ export const ProfilePage = () => {
             </div>
             <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
                 {contents.map((content) => (
-                <ImageListItem key={content.mediaUrl}>
-                    <img
-                        src={content.mediaUrl}
-                        srcSet={content.mediaUrl}
-                        alt={content.caption}
-                        loading="lazy"
-                    />
-                </ImageListItem>
+                    <ImageListItem key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                        <img
+                            src={content.mediaUrl}
+                            srcSet={content.mediaUrl}
+                            alt={content.caption}
+                            loading='lazy'
+                        />
+                    </ImageListItem>
                 ))}
             </ImageList>
+            <MediaPostBox user={user} content={content} setContent={setContent} profilePicture={profilePicture}/>
         </div> :
         <></>
 )}
