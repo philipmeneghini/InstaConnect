@@ -1,41 +1,26 @@
-import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import {  Avatar, Box, Button, Modal, Typography } from '@mui/material'
+import {  Avatar, Box, Button, IconButton, Modal, Typography } from '@mui/material'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import AddCommentIcon from '@mui/icons-material/AddComment'
-
-const postModalStyle = {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 500,
-    height: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 12,
-    p: 7,
-  }
 
 const postBoxStyle = {
     position: 'fixed',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 500,
-    height: 400,
-    bgcolor: 'background.paper',
+    width: '40vw',
+    height: '60vh',
+    bgcolor: 'whitesmoke',
     border: '2px solid #000',
-    boxShadow: 12,
-    p: 7,
+    p: '2vh',
     overflow: 'scroll',
 }
 
 const interactionToolbarStyle = {
-    marginTop: '3vh',
+    paddingTop: '1vh',
     display: 'flex',
-    margin: 'auto',
+    justifyContent: 'center',
 }
 
 interface MediaPostBoxProps {
@@ -48,6 +33,7 @@ interface MediaPostBoxProps {
 export const MediaPostBox = (props: MediaPostBoxProps) => {
 
     const handleClose = () => { props.setContent(null) }
+    const handleLike = () => { }
 
     return (
         <Modal
@@ -55,12 +41,13 @@ export const MediaPostBox = (props: MediaPostBoxProps) => {
             onClose={handleClose}
             aria-labelledby='modal-modal-title'
             aria-describedby='modal-modal-description'
-            sx={postModalStyle}
         >
             <Box sx={postBoxStyle}>
-                <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '20px', paddingTop: '2px'}}>
-                    <Avatar src={props.profilePicture} sx={{ width: '100', height: '100'}}/>
-                    <Typography> {props.user.firstName} {props.user.lastName} </Typography>
+                <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
+                    <Box sx={{display:'flex', justifyContent: 'space-between'}}>
+                        <Avatar src={props.profilePicture} sx={{ width: '5vh', height: '5vh'}}/>
+                        <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props.user.firstName} {props.user.lastName} </Typography>
+                    </Box>
                     <Button variant='contained' onClick={handleClose}> Close </Button>
                 </Box>
                 <img
@@ -68,13 +55,23 @@ export const MediaPostBox = (props: MediaPostBoxProps) => {
                     srcSet={props.content?.mediaUrl}
                     alt={props.content?.caption}
                     loading='lazy'
-                    style={{display: 'flex', margin: 'auto', border: '5px'}}
+                    style={{display: 'flex', margin: 'auto', maxHeight: '42vh', maxWidth: '38vw'}}
                 />
                 <Box sx={interactionToolbarStyle}>
-                    <FavoriteBorderIcon sx={interactionToolbarStyle}/>
-                    <AddCommentIcon sx={interactionToolbarStyle}/>
+                    <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
+                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleLike}>
+                            <FavoriteBorderIcon/>
+                        </IconButton>
+                        <Typography paddingLeft={'0.5vw'}> {props.content?.likes} likes</Typography>
+                    </Box>
+                    <Box sx={{paddingLeft: '5vw', display: 'flex', justifyContent: 'center'}}>
+                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleLike}>
+                            <AddCommentIcon/>
+                        </IconButton>
+                        <Typography paddingLeft={'0.5vw'}> 5 comments</Typography>
+                    </Box>
                 </Box>
-                <Typography mt={2} textAlign='center'>
+                <Typography mt={'2vh'} textAlign={'center'}>
                     {props.content?.caption}
                 </Typography>
             </Box>
