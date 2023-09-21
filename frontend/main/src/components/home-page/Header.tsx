@@ -1,4 +1,4 @@
-import { AppBar, Container, Grid, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Container, Drawer, Grid, List, ListItem, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -9,6 +9,14 @@ import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
 import axios from 'axios'
+
+const sideBarBoxStyling = {
+    maxWidth: '30vw',
+    marginTop: '10vh',
+    p: '2vh',
+    overflow: 'hidden',
+}
+
 
 interface HeaderProps {
     user: UserModel
@@ -57,6 +65,27 @@ export const Header = ( props: HeaderProps ) => {
         setMenuOpen(!menuOpen)
     }
 
+    const sideMenu = () => (
+        <Box sx={sideBarBoxStyling}>
+            <Typography variant='h4' sx={{ fontColor: 'white' }}> Followers </Typography>
+            <List>
+                {props.user.followers?.map(followers => (
+                    <ListItem>
+                        {followers}
+                    </ListItem>
+                ))}
+            </List>
+            <Typography variant='h4'> Following </Typography>
+            <List>
+                {props.user.following?.map(following => (
+                    <ListItem>
+                        {following}
+                    </ListItem>
+                ))}
+            </List>
+        </Box>
+    )
+
     return (
         <AppBar position='static'>
             <Container maxWidth='xl'>
@@ -65,6 +94,14 @@ export const Header = ( props: HeaderProps ) => {
                         <Grid item xs = {5} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'start' }}>
                             <IconButton onClick={handleMenuItemClick} color='inherit'>
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
+                                <Drawer
+                                    anchor={'left'}
+                                    open={menuOpen}
+                                    onClose={() => setMenuOpen(false)}
+                                    sx={{ color: 'blue' }}
+                                > 
+                                    {sideMenu()}
+                                </Drawer>
                             </IconButton>
                         </Grid>
                         <Grid item xs={2}>

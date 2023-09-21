@@ -5,16 +5,17 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 
 const postBoxStyle = {
-    position: 'fixed',
+    position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: '40vw',
-    height: '60vh',
+    maxHeight: '80vh',
     bgcolor: 'whitesmoke',
     border: '2px solid #000',
     p: '2vh',
-    overflow: 'scroll',
+    overflow: 'hidden',
+    overflowY: 'scroll',
 }
 
 const interactionToolbarStyle = {
@@ -55,7 +56,7 @@ export const MediaPostBox = (props: MediaPostBoxProps) => {
                     srcSet={props.content?.mediaUrl}
                     alt={props.content?.caption}
                     loading='lazy'
-                    style={{display: 'flex', margin: 'auto', maxHeight: '42vh', maxWidth: '38vw'}}
+                    style={{display: 'flex', margin: 'auto', width: '38vw'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
