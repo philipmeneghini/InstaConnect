@@ -36,11 +36,11 @@ namespace Backend.Models
         [BsonElement("dateUpdated")]
         public DateTime? DateUpdated { get; set; }
 
-        [BsonElement("caption")]
-        public string? Caption { get; set; }
+        [BsonElement("comments")]
+        public List<string> Comments { get; set; }
 
         [BsonElement("likes")]
-        public int Likes { get; set; }
+        public List<string> Likes { get; set; }
 
         [DefaultValue(typeof(MediaType), "Unknown")]
         [BsonElement("mediaType")]
