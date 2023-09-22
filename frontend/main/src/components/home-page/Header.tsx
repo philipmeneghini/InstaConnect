@@ -1,4 +1,4 @@
-import { AppBar, Box, Container, Drawer, Grid, List, ListItem, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Container, Divider, Drawer, Grid, List, ListItem, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -14,6 +14,7 @@ const sideBarBoxStyling = {
     maxWidth: '30vw',
     marginTop: '10vh',
     p: '2vh',
+    color: 'black',
     overflow: 'hidden',
 }
 
@@ -65,24 +66,32 @@ export const Header = ( props: HeaderProps ) => {
         setMenuOpen(!menuOpen)
     }
 
+    const handleInstaConnectClick = () => {
+        navigate(Paths['Home'], { replace: true })
+    }
+
     const sideMenu = () => (
         <Box sx={sideBarBoxStyling}>
-            <Typography variant='h4' sx={{ fontColor: 'white' }}> Followers </Typography>
+            <Typography variant='h4' sx={{ padding: '1vh 0 2vh 0' }}> {props.user.firstName} {props.user.lastName} </Typography>
+            <Divider sx={{ backgroundColor: 'black' }}/>
+            <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Followers </Typography>
             <List>
-                {props.user.followers?.map(followers => (
+                {props.user.followers?.map(follower => (
                     <ListItem>
-                        {followers}
+                        <ListItemText primary={follower}/>
                     </ListItem>
                 ))}
             </List>
-            <Typography variant='h4'> Following </Typography>
+            <Divider sx={{ backgroundColor: 'black' }}/>
+            <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Following </Typography>
             <List>
                 {props.user.following?.map(following => (
                     <ListItem>
-                        {following}
+                        <ListItemText primary={following}/>
                     </ListItem>
                 ))}
             </List>
+            <Divider sx={{ backgroundColor: 'black' }}/>
         </Box>
     )
 
@@ -96,16 +105,24 @@ export const Header = ( props: HeaderProps ) => {
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
                                 <Drawer
                                     anchor={'left'}
+                                    variant='persistent'
                                     open={menuOpen}
                                     onClose={() => setMenuOpen(false)}
-                                    sx={{ color: 'blue' }}
+                                    sx={{ backgroundColor: '' }}
+                                    PaperProps={{
+                                        sx: {
+                                            borderRight: '0.1vw solid black',
+                                            backgroundColor: '#e6e6e6',
+                                            //boxShadow: '0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)',
+                                        }
+                                      }}
                                 > 
                                     {sideMenu()}
                                 </Drawer>
                             </IconButton>
                         </Grid>
                         <Grid item xs={2}>
-                            <IconButton color='inherit'>
+                            <IconButton color='inherit' onClick={handleInstaConnectClick}>
                                 <Typography variant='h4'>
                                         InstaConnect
                                 </Typography>
