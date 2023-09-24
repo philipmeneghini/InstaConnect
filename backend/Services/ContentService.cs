@@ -101,7 +101,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newContent.DateCreated = DateTime.UtcNow;
             newContent.DateUpdated = DateTime.UtcNow;
-            newContent.Likes = 0;
+            newContent.Likes = new HashSet<string>();
 
             var content = CreateModel(newContent);
 
@@ -118,7 +118,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newContent.DateCreated = DateTime.UtcNow;
             newContent.DateUpdated = DateTime.UtcNow;
-            newContent.Likes = 0;
+            newContent.Likes = new HashSet<string>();
 
             var content = await CreateModelAsync(newContent);
 
@@ -139,7 +139,7 @@ namespace Backend.Services
 
                 newContent.DateCreated = DateTime.UtcNow;
                 newContent.DateUpdated = DateTime.UtcNow;
-                newContent.Likes = 0;
+                newContent.Likes = new HashSet<string>();
 
                 result.Add(newContent);
             }
@@ -160,7 +160,7 @@ namespace Backend.Services
 
                 newContent.DateCreated = DateTime.UtcNow;
                 newContent.DateUpdated = DateTime.UtcNow;
-                newContent.Likes = 0;
+                newContent.Likes = new HashSet<string>();
 
                 result.Add(newContent);
             }

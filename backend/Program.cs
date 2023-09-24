@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSection(ApplicationConstants.ConnectionStrings));
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
+builder.Services.Configure<MongoSettings<CommentModel>>(builder.Configuration.GetSection(ApplicationConstants.CommentModel));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.S3, builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.SES, builder.Configuration.GetSection(ApplicationConstants.AmazonSESCredentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
@@ -34,6 +35,9 @@ builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
 builder.Services.AddSingleton<IValidator<ContentEmailValidationModel>, ContentEmailValidator>();
 builder.Services.AddSingleton<IValidator<ContentModel>, ContentModelValidator>();
+builder.Services.AddSingleton<IValidator<CommentModel>, CommentModelValidator>();
+builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdValidator>();
+builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -41,6 +45,7 @@ builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IContentService, ContentService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {
