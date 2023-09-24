@@ -1242,6 +1242,8 @@ export interface UserModel {
     lastName?: string | undefined;
     birthDate?: string | undefined;
     email: string;
+    following?: string[] | undefined;
+    followers?: string[] | undefined;
     profilePictureUrl?: string | undefined;
     photosUrl?: string | undefined;
     reelsUrl?: string | undefined;
