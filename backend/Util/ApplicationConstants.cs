@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Amazon.S3.Model;
+using Backend.Models;
 
 namespace Util.Constants
 {

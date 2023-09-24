@@ -4,11 +4,9 @@ using MongoDB.Driver;
 using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
-using Util.MediaType;
 using InstaConnect.Services;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
-using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 
 namespace Backend.Services
@@ -97,7 +95,8 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newComment.DateCreated = DateTime.UtcNow;
             newComment.DateUpdated = DateTime.UtcNow;
-            newComment.Likes = new HashSet<string>();
+            if (newComment.Likes == null)
+                newComment.Likes = new HashSet<string>();
 
             var comment = CreateModel(newComment);
 
@@ -111,7 +110,8 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newComment.DateCreated = DateTime.UtcNow;
             newComment.DateUpdated = DateTime.UtcNow;
-            newComment.Likes = new HashSet<string>();
+            if (newComment.Likes == null)
+                newComment.Likes = new HashSet<string>();
 
             var comment = await CreateModelAsync(newComment);
 
@@ -129,7 +129,8 @@ namespace Backend.Services
 
                 newComment.DateCreated = DateTime.UtcNow;
                 newComment.DateUpdated = DateTime.UtcNow;
-                newComment.Likes = new HashSet<string>();
+                if (newComment.Likes == null)
+                    newComment.Likes = new HashSet<string>();
 
                 result.Add(newComment);
             }
@@ -149,7 +150,8 @@ namespace Backend.Services
 
                 newComment.DateCreated = DateTime.UtcNow;
                 newComment.DateUpdated = DateTime.UtcNow;
-                newComment.Likes = new HashSet<string>();
+                if (newComment.Likes == null)
+                    newComment.Likes = new HashSet<string>();
 
                 result.Add(newComment);
             }
@@ -170,7 +172,7 @@ namespace Backend.Services
             return comment;
         }
 
-        public async Task<CommentModel> UpdateCommentAsync(CommentModel updatedComment)
+        public async Task<CommentModel> UpdateCommentAsync(CommentModel? updatedComment)
         {
             if (updatedComment == null) throw new InstaBadRequestException(ApplicationConstants.CommentEmpty);
             var validationResult = _createUpdateCommentValidator.Validate(updatedComment, options => options.IncludeRuleSets(ApplicationConstants.Update));

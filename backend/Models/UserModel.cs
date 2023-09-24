@@ -40,6 +40,12 @@ namespace Backend.Models
         [BsonElement("birthday")]
         public string? BirthDate { get; set; }
 
+        [BsonElement("followers")]
+        public HashSet<string> Followers { get; set; }
+
+        [BsonElement("following")]
+        public HashSet<string> Following { get; set; }
+
         [Required, EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; }

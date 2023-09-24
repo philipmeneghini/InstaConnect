@@ -27,6 +27,8 @@ namespace Backend.Validators.UserValidators
 
             RuleSet(ApplicationConstants.Update, () =>
             {
+                RuleFor(model => model.Id).Cascade(CascadeMode.Stop)
+                                        .NotEmpty().WithMessage(ApplicationConstants.CommentIdEmpty);
                 RuleFor(model => model.DateCreated).Cascade(CascadeMode.Stop)
                                         .Empty().WithMessage(ApplicationConstants.DateCreatedFilled);
                 RuleFor(model => model.DateUpdated).Cascade(CascadeMode.Stop)
