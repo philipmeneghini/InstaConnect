@@ -1,5 +1,4 @@
-﻿using Amazon.S3.Model;
-using Backend.Models;
+﻿using Backend.Models;
 
 namespace Util.Constants
 {
@@ -9,11 +8,14 @@ namespace Util.Constants
         static public readonly string DatabaseName = "InstaConnect";
         static public readonly string TestCollectionName = "Test";
         static public readonly string UserCollectionName = "users";
+        static public readonly string ContentCollectionName = "contents";
+        static public readonly string CommentCollectionName = "comments";
         static public readonly string ConnectionStrings = "ConnectionString";
         static public readonly string S3BucketName = "instaconnect";
         static public readonly string AmazonS3Credentials = "AmazonCredentials:S3";
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string ContentModel = nameof(ContentModel);
+        static public readonly string CommentModel = nameof(CommentModel);
         static public readonly string EmailConfig = "AmazonSES";
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
@@ -21,6 +23,7 @@ namespace Util.Constants
         static public readonly string Star = "*";
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
+        static public readonly string ContentId = nameof(ContentId);
         static public readonly string Id = nameof(Id);
         static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
         static public readonly string S3 = nameof(S3);
@@ -41,6 +44,7 @@ namespace Util.Constants
         static public readonly string NoArgumentsPassed = "no valid arguments have been passed into the endpoint";
         static public readonly string UserEmpty = "no user passed in";
         static public readonly string ContentEmpty = "no content passed in";
+        static public readonly string CommentEmpty = "no comment passed in";
         static public readonly string IdsEmpty = "no ids passed in";
         static public readonly string EmailEmpty = "no email passed in";
         static public readonly string MediaTypeEmpty = "cannot leave mediaType empty";
@@ -49,6 +53,11 @@ namespace Util.Constants
         static public readonly string ContentIdNotHexadecimal = "content id is not a hexadecimal";
         static public readonly string NoUsersFound = "no users found";
         static public readonly string NoContentFound = "no content found";
+        static public readonly string BodyEmpty = "comment must have a body";
+        static public readonly string DateUpdatedFilled = "date updated field must be left empty";
+        static public readonly string DateCreatedFilled = "date created field must be left empty";
+        static public readonly string CommentIdEmpty = "no comment id passed in";
+        static public readonly string NoCommentsFound = "no comments found";
         static public readonly Dictionary<Type, string> ModelNames = new Dictionary<Type, string>()
         {
             { typeof(UserModel), "User" }
@@ -59,6 +68,7 @@ namespace Util.Constants
         static public readonly string InsertModelExistsException = "model with the same id already exists";
         static public readonly List<string> UserBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly List<string> ContentBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, ContentIdEmpty, ContentIdNotHexadecimal, MediaTypeEmpty, MediaTypeNotValid };
+        static public readonly List<string> CommentBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, ContentIdEmpty, ContentIdNotHexadecimal, CommentIdEmpty, DateUpdatedFilled, DateCreatedFilled };
         static public readonly List<string> EmailServicerBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
