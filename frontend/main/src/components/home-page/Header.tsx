@@ -96,7 +96,7 @@ export const Header = ( props: HeaderProps ) => {
     )
 
     return (
-        <AppBar position='static'>
+        <AppBar component='nav' position='fixed'>
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
                     <Grid container>

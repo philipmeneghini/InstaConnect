@@ -52,7 +52,7 @@ export const ProfilePage = () => {
         user ? 
         <div>
             <Header user={user}/>
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
+            <div style={{ marginTop: '12vh', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
                 <div style={{ paddingBottom: '40px' }}>
                     <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
                 </div>
