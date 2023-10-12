@@ -1478,31 +1478,21 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param firstName (optional) 
-     * @param lastName (optional) 
-     * @param birthdate (optional) 
+     * @param body (optional) 
      * @return Success
      */
-    usersGET(firstName?: string | undefined, lastName?: string | undefined, birthdate?: string | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
-        let url_ = this.baseUrl + "/User/Users?";
-        if (firstName === null)
-            throw new Error("The parameter 'firstName' cannot be null.");
-        else if (firstName !== undefined)
-            url_ += "firstName=" + encodeURIComponent("" + firstName) + "&";
-        if (lastName === null)
-            throw new Error("The parameter 'lastName' cannot be null.");
-        else if (lastName !== undefined)
-            url_ += "lastName=" + encodeURIComponent("" + lastName) + "&";
-        if (birthdate === null)
-            throw new Error("The parameter 'birthdate' cannot be null.");
-        else if (birthdate !== undefined)
-            url_ += "birthdate=" + encodeURIComponent("" + birthdate) + "&";
+    usersGET(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+        let url_ = this.baseUrl + "/User/Users";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(body);
+
         let options_: AxiosRequestConfig = {
+            data: content_,
             method: "GET",
             url: url_,
             headers: {
+                "Content-Type": "application/json",
                 "Accept": "text/plain"
             },
             cancelToken
