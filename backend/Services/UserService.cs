@@ -127,13 +127,16 @@ namespace Backend.Services
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             List<string> results = new List<string>();
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
+            bool firstEmail = true;
             foreach (var email in emails)
             {
                 var validationModel = new UserEmailValidationModel(email);
                 var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
                 ThrowExceptions(validationResult);
 
-                filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                if (!firstEmail)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                firstEmail = false;
             }
 
             var users = await GetModelsAsync(filter);
@@ -150,13 +153,16 @@ namespace Backend.Services
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             List<string> results = new List<string>();
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
+            bool firstEmail = true;
             foreach (var email in emails)
             {
                 var validationModel = new UserEmailValidationModel(email);
                 var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
                 ThrowExceptions(validationResult);
 
-                filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                if (!firstEmail)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                firstEmail = false;
             }
 
             var users = GetModels(filter);
