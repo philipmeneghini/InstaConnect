@@ -18,7 +18,6 @@ const sideBarBoxStyling = {
     overflow: 'hidden',
 }
 
-
 interface HeaderProps {
     user: UserModel
 }
@@ -78,7 +77,7 @@ export const Header = ( props: HeaderProps ) => {
             <List>
                 {props.user.followers?.map(follower => (
                     <ListItem>
-                        <ListItemText primary={follower}/>
+                        <ListItemText key={follower} primary={follower}/>
                     </ListItem>
                 ))}
             </List>
@@ -87,7 +86,7 @@ export const Header = ( props: HeaderProps ) => {
             <List>
                 {props.user.following?.map(following => (
                     <ListItem>
-                        <ListItemText primary={following}/>
+                        <ListItemText key={following} primary={following}/>
                     </ListItem>
                 ))}
             </List>

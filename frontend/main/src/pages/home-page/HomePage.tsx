@@ -80,15 +80,13 @@ export const HomePage = () => {
         getUsersFollowing(user)
     }, [user])
 
-    const handleLike = () => { }
-
     return (
         user ? 
         <div>
             <Header user={user}/>
             <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
                 {contents.map( (userContent) => (
-                    <PostContentBox userContent={userContent}/>
+                    <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                 ))}
             </Box>
         </div> :

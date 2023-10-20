@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, IconButton, Paper, Tab, Typography } from '@mui/material'
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import { Avatar, Box, Checkbox, IconButton, Paper, Tab, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { UserContents } from '../../pages/home-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { Favorite, FavoriteBorder } from '@mui/icons-material'
 
 const interactionToolbarStyle = {
     paddingTop: '1vh',
@@ -18,6 +18,7 @@ const interactionToolbarStyle = {
 
 interface PostContentProps {
     userContent: UserContents
+    user: UserModel
 }
 
 export const PostContentBox = ( props: PostContentProps ) => {
@@ -26,6 +27,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
+    const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -38,9 +40,9 @@ export const PostContentBox = ( props: PostContentProps ) => {
             }
         }     
 
-        getComments(props?.userContent?.content)
+        getComments(content)
 
-    }, [contentExpanded === true, props?.userContent?.content])
+    }, [contentExpanded, content])
 
     useEffect(() => {
         const getUserLikes = async (emails: string[] | undefined) => {
@@ -53,14 +55,50 @@ export const PostContentBox = ( props: PostContentProps ) => {
             }
         }
         
-        getUserLikes(props?.userContent?.content?.likes)
+        getUserLikes(content.likes)
 
-    }, [contentExpanded === true, props?.userContent?.content?.likes])
+    }, [contentExpanded, content])
 
-    const handleLike = () => { }
+    const handleLike = async () => {
+        try {
+            let newContent: ContentModel = {...content}
+            let newLikes: string[] | undefined = content?.likes
+            if (newLikes === undefined) {
+                newLikes = [ props?.user?.email ]
+            }
+            else {
+                const index: number = newLikes.indexOf(props?.user?.email, 0) ?? -1
+                if (index > -1) {
+                    newLikes.splice(index, 1)
+                }
+                else {
+                    console.log(props?.user?.email)
+                    newLikes.push(props?.user?.email)
+                }
+            }
+            newContent.likes = newLikes
+            await _apiClient.contentPUT(newContent)
+            setContent(newContent)
+        }
+        catch {
+            return
+        }
+    }
+
+    const isContentLiked = (): boolean | undefined => {
+        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
+        if (index > -1) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
     const handleDropdown = () => { 
         setContentExpanded(true)
     }
+
     const handleCloseDropdown = () => { 
         setContentExpanded(false)
     }
@@ -77,18 +115,16 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     </Box>
                 </Box>
                 <img
-                    src={props?.userContent?.content?.mediaUrl}
-                    srcSet={props?.userContent?.content?.mediaUrl}
-                    alt={props?.userContent?.content?.caption}
+                    src={content.mediaUrl}
+                    srcSet={content.mediaUrl}
+                    alt={content.caption}
                     loading='lazy'
                     style={{maxWidth: '38vw'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
-                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleLike}>
-                            <FavoriteBorderIcon/>
-                        </IconButton>
-                        <Typography paddingLeft={'0.5vw'}> {props?.userContent?.content?.likes?.length ?? 0} likes</Typography>
+                        <Checkbox onClick={handleLike} checked={isContentLiked()} sx={{paddingTop: '0',display: 'inline'}} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                        <Typography paddingLeft={'0.5vw'}> {content?.likes?.length ?? 0} likes</Typography>
                     </Box>
                     <Box sx={{paddingLeft: '5vw', display: 'flex', justifyContent: 'center'}}>
                         <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleLike}>
@@ -97,7 +133,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
                     </Box>
                 </Box>
-                <Typography paddingTop='1vh'> {props?.userContent?.content?.caption} </Typography>
+                <Typography paddingTop='1vh'> {content.caption} </Typography>
                 { contentExpanded ?
                     <Box sx={{marginTop: '2vh'}}>
                         <TabContext value={menuSelection}>
@@ -109,14 +145,14 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             </Box>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography sx={{display: 'flex', justifyContent: 'left', marginLeft: '2%'}}>
+                                <Typography key={comment?.contentId} sx={{display: 'flex', justifyContent: 'left', marginLeft: '2%'}}>
                                     <strong>{comment?.email}: </strong> {comment?.body}
                                 </Typography>
                                 ))}
                             </TabPanel>
                             <TabPanel value='likes'>
                                 {userLikes.map( (like) => (
-                                <Typography sx={{marginLeft: '10vw'}}>
+                                <Typography key={like?.email} sx={{marginLeft: '10vw'}}>
                                     <Avatar src={like.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
                                     <strong> {like.email} </strong>
                                 </Typography>
