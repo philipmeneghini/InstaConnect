@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Checkbox, IconButton, Paper, Tab, Typography } from '@mui/material'
+import { Avatar, Box, Checkbox, IconButton, InputAdornment, Paper, Tab, TextField, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { UserContents } from '../../pages/home-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
+import SendIcon from '@mui/icons-material/Send'
+
 
 const interactionToolbarStyle = {
     paddingTop: '1vh',
@@ -85,6 +87,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }
 
+    const handleComment = () => {  }
+
+    const sendComment = () => {  }
+
     const isContentLiked = (): boolean | undefined => {
         const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
         if (index > -1) {
@@ -127,7 +133,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <Typography paddingLeft={'0.5vw'}> {content?.likes?.length ?? 0} likes</Typography>
                     </Box>
                     <Box sx={{paddingLeft: '5vw', display: 'flex', justifyContent: 'center'}}>
-                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleLike}>
+                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleComment}>
                             <AddCommentIcon/>
                         </IconButton>
                     <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
@@ -143,12 +149,30 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                     <Tab label="Likes" value='likes' />
                                 </TabList>
                             </Box>
+                            <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography key={comment?.contentId} sx={{display: 'flex', justifyContent: 'left', marginLeft: '2%'}}>
+                                <Typography key={comment?.contentId} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
                                     <strong>{comment?.email}: </strong> {comment?.body}
                                 </Typography>
                                 ))}
+                                <TextField
+                                sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
+                                label={props?.user?.email}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <Avatar src={props?.user?.profilePictureUrl} sx={{ width: '4vh', height: '4vh'}}/>
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: (
+                                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={sendComment}>
+                                            <SendIcon sx={{color: 'blue'}}/>
+                                        </IconButton>
+                                    )
+                                }}
+                                multiline
+                                />
                             </TabPanel>
                             <TabPanel value='likes'>
                                 {userLikes.map( (like) => (
@@ -158,6 +182,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                 </Typography>
                                 ))}
                             </TabPanel>
+                            </Box>
                          </TabContext> 
                          <IconButton onClick={handleCloseDropdown}>
                             <KeyboardArrowUpIcon/>
