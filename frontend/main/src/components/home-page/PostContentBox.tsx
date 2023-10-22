@@ -30,6 +30,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
+    const [ newComment, setNewComment ] = useState<string>()
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -44,7 +45,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
         getComments(content)
 
-    }, [contentExpanded, content])
+    }, [contentExpanded, content, newComment])
 
     useEffect(() => {
         const getUserLikes = async (emails: string[] | undefined) => {
@@ -89,7 +90,15 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const handleComment = () => {  }
 
-    const sendComment = () => {  }
+    const sendComment = async () => { 
+        try {
+            await _apiClient.commentPOST({ contentId: content.id, likes: [], body: newComment, email: props?.user?.email } as CommentModel)
+            setNewComment('')
+        }
+        catch {
+            console.log('error')
+        }
+    }
 
     const isContentLiked = (): boolean | undefined => {
         const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
@@ -159,6 +168,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                 <TextField
                                 sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
                                 label={props?.user?.email}
+                                value={newComment}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position='start'>
@@ -171,6 +181,8 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                         </IconButton>
                                     )
                                 }}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    setNewComment(event.target.value)}}
                                 multiline
                                 />
                             </TabPanel>
