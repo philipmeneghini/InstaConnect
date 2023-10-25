@@ -88,7 +88,9 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }
 
-    const handleComment = () => {  }
+    const handleComment = () => { 
+        setContentExpanded(true)
+    }
 
     const sendComment = async () => { 
         try {
