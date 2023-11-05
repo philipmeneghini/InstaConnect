@@ -3,7 +3,7 @@ import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import React from 'react'
-import { Box } from '@mui/material'
+import { Box, Paper } from '@mui/material'
 import PostContentBox from '../../components/home-page/PostContentBox'
 
 const dateUpdatedDescending = (a: UserContents, b: UserContents): number => {
@@ -86,7 +86,9 @@ export const HomePage = () => {
             <Header user={user}/>
             <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
                 {contents.map( (userContent) => (
-                    <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                    <Paper elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+                        <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                    </Paper>
                 ))}
             </Box>
         </div> :

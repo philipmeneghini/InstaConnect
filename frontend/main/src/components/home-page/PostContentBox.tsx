@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Checkbox, IconButton, InputAdornment, Paper, Tab, TextField, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, Tab, TextField, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -10,6 +10,8 @@ import { UserContents } from '../../pages/home-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import SendIcon from '@mui/icons-material/Send'
+import { useNavigate } from 'react-router-dom'
+import { Paths } from '../../utils/Constants'
 
 
 const interactionToolbarStyle = {
@@ -21,6 +23,7 @@ const interactionToolbarStyle = {
 interface PostContentProps {
     userContent: UserContents
     user: UserModel
+    handleClose?: (() => void) | undefined
 }
 
 export const PostContentBox = ( props: PostContentProps ) => {
@@ -62,11 +65,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     }, [contentExpanded, content])
 
+    const navigate = useNavigate()
+
     const handleLike = async () => {
         try {
             let newContent: ContentModel = {...content}
             let newLikes: string[] | undefined = content?.likes
-            if (newLikes === undefined) {
+            if (newLikes === undefined || newLikes === null) {
                 newLikes = [ props?.user?.email ]
             }
             else {
@@ -84,11 +89,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch {
+            console.log('caught exception')
             return
         }
     }
 
-    const handleComment = () => { 
+    const handleComment = () => {
+        setMenuSelection('comments') 
         setContentExpanded(true)
     }
 
@@ -124,19 +131,32 @@ export const PostContentBox = ( props: PostContentProps ) => {
         setMenuSelection(newValue)
     }
 
-    return (<Paper elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+    const navigateToProfile = () => {
+        const email = props?.userContent?.user?.email
+        if (email) {
+            navigate({
+                pathname: Paths.Profile,
+                search: '?email=' + email
+            })
+        }
+    }
+
+    return (<>
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
                     <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
                         <Avatar src={props?.userContent?.user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
-                        <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.userContent?.user?.firstName} {props?.userContent?.user?.lastName} </Typography>
+                        <IconButton size='small' color='inherit' onClick={navigateToProfile}>
+                            <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.userContent?.user?.firstName} {props?.userContent?.user?.lastName} </Typography>
+                        </IconButton>
                     </Box>
+                    { props?.handleClose ? <Button variant='contained' onClick={props?.handleClose}> Close </Button> : <></>}
                 </Box>
                 <img
                     src={content.mediaUrl}
                     srcSet={content.mediaUrl}
                     alt={content.caption}
                     loading='lazy'
-                    style={{maxWidth: '38vw'}}
+                    style={{maxWidth: '38vw', display: 'flex', margin: 'auto'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
@@ -150,7 +170,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
                     </Box>
                 </Box>
-                <Typography paddingTop='1vh'> {content.caption} </Typography>
+                <Typography paddingTop='1vh' display='flex' justifyContent='center'> {content.caption} </Typography>
                 { contentExpanded ?
                     <Box sx={{marginTop: '2vh'}}>
                         <TabContext value={menuSelection}>
@@ -197,17 +217,20 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                 ))}
                             </TabPanel>
                             </Box>
-                         </TabContext> 
-                         <IconButton onClick={handleCloseDropdown}>
-                            <KeyboardArrowUpIcon/>
-                        </IconButton>   
+                         </TabContext>
+                         <Box sx={{display: 'flex', justifyContent: 'center'}}> 
+                            <IconButton onClick={handleCloseDropdown}>
+                                <KeyboardArrowUpIcon/>
+                            </IconButton>
+                        </Box>
                     </Box>
-                : 
-                <IconButton onClick={handleDropdown}>
-                    <KeyboardArrowDownIcon/>
-                </IconButton>}
-                
-        </Paper>)
+                :
+                <Box sx={{display: 'flex', justifyContent: 'center'}}>
+                    <IconButton onClick={handleDropdown}>
+                        <KeyboardArrowDownIcon/>
+                    </IconButton>
+                </Box>}
+                </>)
 }
 
 export default PostContentBox
