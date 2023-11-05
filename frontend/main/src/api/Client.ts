@@ -11,6 +11,7 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 import { AuthorizedApiBase } from './AuthorizedApiBase';
+import { isConstructorDeclaration } from 'typescript';
 
 export class Client extends AuthorizedApiBase {
     private instance: AxiosInstance;

@@ -6,7 +6,7 @@ import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, Tab, TextFie
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { UserContents } from '../../pages/home-page/HomePage'
+import { UserContents } from '../../pages/main-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import SendIcon from '@mui/icons-material/Send'
@@ -134,10 +134,18 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const navigateToProfile = () => {
         const email = props?.userContent?.user?.email
         if (email) {
-            navigate({
-                pathname: Paths.Profile,
-                search: '?email=' + email
-            })
+            if (email === props?.user?.email) {
+                navigate(Paths.Profile, {replace: true})
+            }
+            else {
+                navigate({
+                    pathname: Paths.Profile,
+                    search: `?email=${email}`
+                }, {replace: true})
+            }
+            if (props?.handleClose) {
+                props?.handleClose()
+            }
         }
     }
 
@@ -183,7 +191,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography key={comment?.contentId} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
+                                <Typography key={comment?.id} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
                                     <strong>{comment?.email}: </strong> {comment?.body}
                                 </Typography>
                                 ))}

@@ -6,8 +6,8 @@ import SetPasswordPage from './pages/landing-page/SetPasswordPage'
 import ResetPasswordPage from './pages/landing-page/ResetPasswordPage'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { Client } from './api/Client'
-import HomePage from './pages/home-page/HomePage'
-import ProfilePage from './pages/home-page/ProfilePage'
+import HomePage from './pages/main-page/HomePage'
+import ProfilePage from './pages/main-page/ProfilePage'
 
 export const _apiClient = new Client(process.env.REACT_APP_API_URL!)
 

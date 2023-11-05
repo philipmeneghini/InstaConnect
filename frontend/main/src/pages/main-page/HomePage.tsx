@@ -86,7 +86,7 @@ export const HomePage = () => {
             <Header user={user}/>
             <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
                 {contents.map( (userContent) => (
-                    <Paper elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+                    <Paper key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
                         <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                     </Paper>
                 ))}

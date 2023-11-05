@@ -58,6 +58,7 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleLogout = () => {
         setAnchorUser(null)
+        localStorage.removeItem('token')
         navigate(Paths['Login'], { replace: true })
     }
 
@@ -76,7 +77,7 @@ export const Header = ( props: HeaderProps ) => {
             <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Followers </Typography>
             <List>
                 {props.user.followers?.map(follower => (
-                    <ListItem>
+                    <ListItem key={follower}>
                         <ListItemText key={follower} primary={follower}/>
                     </ListItem>
                 ))}
@@ -85,7 +86,7 @@ export const Header = ( props: HeaderProps ) => {
             <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Following </Typography>
             <List>
                 {props.user.following?.map(following => (
-                    <ListItem>
+                    <ListItem key={following}>
                         <ListItemText key={following} primary={following}/>
                     </ListItem>
                 ))}

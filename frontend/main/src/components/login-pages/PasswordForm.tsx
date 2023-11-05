@@ -6,7 +6,7 @@ import { FormProperties } from '../../utils/FormProperties'
 import LoginRegisterAlert from './LoginRegisterAlert'
 import { _apiClient } from '../../App'
 import { Paths } from '../../utils/Constants'
-import LoginHeader from './../landing-page/LoginHeader'
+import LoginHeader from './LoginHeader'
 import { useNavigate } from 'react-router-dom'
 import { ApiException, LoginResponse } from '../../api/Client'
 
