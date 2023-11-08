@@ -28,7 +28,7 @@ export const ProfilePage = () => {
     const [ profilePicture, setProfilePicture ] = useState<string>()
     const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
-    const [searchParams] = useSearchParams()
+    const [ searchParams ] = useSearchParams()
 
     useEffect(() => {
         const getUserProfileAndContents = async(jwt: string | null | undefined) => {
@@ -111,6 +111,7 @@ export const ProfilePage = () => {
                         </div>
                     </Grid>
                 </Grid>
+                {user === profile ?
                 <Grid container mt={2} sx={{ maxWidth: '700px' }}>
                     <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
                         <Button variant='contained' sx={{ borderRadius: 28 }}> 
@@ -122,7 +123,19 @@ export const ProfilePage = () => {
                             Edit Profile
                         </Button>
                     </Grid>
+                </Grid> : 
+                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
+                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                        Follow
+                    </Button>
                 </Grid>
+                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                        Profile
+                    </Button>
+                </Grid>
+            </Grid>}
             </div>
             <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
                 {contents.map((content) => (
