@@ -11,6 +11,7 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 import { AuthorizedApiBase } from './AuthorizedApiBase';
+import { isConstructorDeclaration } from 'typescript';
 
 export class Client extends AuthorizedApiBase {
     private instance: AxiosInstance;
@@ -199,6 +200,470 @@ export class Client extends AuthorizedApiBase {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
         return Promise.resolve<JwtModel>(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return Success
+     */
+    commentGET(id?: string | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel> {
+        let url_ = this.baseUrl + "/Comment/Comment?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentGET(_response);
+        });
+    }
+
+    protected processCommentGET(response: AxiosResponse): Promise<CommentModel> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    commentPOST(body?: CommentModel | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel> {
+        let url_ = this.baseUrl + "/Comment/Comment";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "POST",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentPOST(_response);
+        });
+    }
+
+    protected processCommentPOST(response: AxiosResponse): Promise<CommentModel> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    commentPUT(body?: CommentModel | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel> {
+        let url_ = this.baseUrl + "/Comment/Comment";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "PUT",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentPUT(_response);
+        });
+    }
+
+    protected processCommentPUT(response: AxiosResponse): Promise<CommentModel> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel>(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return Success
+     */
+    commentDELETE(id?: string | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel> {
+        let url_ = this.baseUrl + "/Comment/Comment?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "DELETE",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentDELETE(_response);
+        });
+    }
+
+    protected processCommentDELETE(response: AxiosResponse): Promise<CommentModel> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel>(null as any);
+    }
+
+    /**
+     * @param contentId (optional) 
+     * @return Success
+     */
+    commentsGET(contentId?: string | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+        let url_ = this.baseUrl + "/Comment/Comments?";
+        if (contentId === null)
+            throw new Error("The parameter 'contentId' cannot be null.");
+        else if (contentId !== undefined)
+            url_ += "contentId=" + encodeURIComponent("" + contentId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentsGET(_response);
+        });
+    }
+
+    protected processCommentsGET(response: AxiosResponse): Promise<CommentModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel[]>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    commentsPOST(body?: CommentModel[] | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+        let url_ = this.baseUrl + "/Comment/Comments";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "POST",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentsPOST(_response);
+        });
+    }
+
+    protected processCommentsPOST(response: AxiosResponse): Promise<CommentModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel[]>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    commentsPUT(body?: CommentModel[] | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+        let url_ = this.baseUrl + "/Comment/Comments";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "PUT",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentsPUT(_response);
+        });
+    }
+
+    protected processCommentsPUT(response: AxiosResponse): Promise<CommentModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel[]>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    commentsDELETE(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+        let url_ = this.baseUrl + "/Comment/Comments";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "DELETE",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentsDELETE(_response);
+        });
+    }
+
+    protected processCommentsDELETE(response: AxiosResponse): Promise<CommentModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<CommentModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CommentModel[]>(null as any);
     }
 
     /**
@@ -1014,31 +1479,21 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param firstName (optional) 
-     * @param lastName (optional) 
-     * @param birthdate (optional) 
+     * @param body (optional) 
      * @return Success
      */
-    usersGET(firstName?: string | undefined, lastName?: string | undefined, birthdate?: string | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
-        let url_ = this.baseUrl + "/User/Users?";
-        if (firstName === null)
-            throw new Error("The parameter 'firstName' cannot be null.");
-        else if (firstName !== undefined)
-            url_ += "firstName=" + encodeURIComponent("" + firstName) + "&";
-        if (lastName === null)
-            throw new Error("The parameter 'lastName' cannot be null.");
-        else if (lastName !== undefined)
-            url_ += "lastName=" + encodeURIComponent("" + lastName) + "&";
-        if (birthdate === null)
-            throw new Error("The parameter 'birthdate' cannot be null.");
-        else if (birthdate !== undefined)
-            url_ += "birthdate=" + encodeURIComponent("" + birthdate) + "&";
+    usersGET(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+        let url_ = this.baseUrl + "/User/Users";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(body);
+
         let options_: AxiosRequestConfig = {
+            data: content_,
             method: "GET",
             url: url_,
             headers: {
+                "Content-Type": "application/json",
                 "Accept": "text/plain"
             },
             cancelToken
@@ -1198,12 +1653,22 @@ export class Client extends AuthorizedApiBase {
     }
 }
 
+export interface CommentModel {
+    id?: string | undefined;
+    dateCreated?: Date | undefined;
+    dateUpdated?: Date | undefined;
+    contentId?: string | undefined;
+    body?: string | undefined;
+    likes?: string[] | undefined;
+    email: string;
+}
+
 export interface ContentModel {
     id?: string | undefined;
     dateCreated?: Date | undefined;
     dateUpdated?: Date | undefined;
     caption?: string | undefined;
-    likes?: number;
+    likes?: string[] | undefined;
     mediaType?: MediaType;
     email: string;
     mediaUrl?: string | undefined;
@@ -1241,9 +1706,9 @@ export interface UserModel {
     firstName?: string | undefined;
     lastName?: string | undefined;
     birthDate?: string | undefined;
-    email: string;
-    following?: string[] | undefined;
     followers?: string[] | undefined;
+    following?: string[] | undefined;
+    email: string;
     profilePictureUrl?: string | undefined;
     photosUrl?: string | undefined;
     reelsUrl?: string | undefined;

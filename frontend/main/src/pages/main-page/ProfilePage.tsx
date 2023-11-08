@@ -3,24 +3,49 @@ import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import axios from 'axios'
-import { Avatar, Button, Grid, ImageList, ImageListItem, Typography } from '@mui/material'
-import MediaPostBox from '../../components/profile-page/MediaPostBox'
+import { Avatar, Box, Button, Grid, ImageList, ImageListItem, Modal, Typography } from '@mui/material'
+import { useSearchParams } from 'react-router-dom'
+import { UserContents } from './HomePage'
+import PostContentBox from '../../components/home-page/PostContentBox'
+
+const postBoxStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '40vw',
+    maxHeight: '90vh',
+    bgcolor: 'whitesmoke',
+    border: '1px solid #000',
+    p: '2vh',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+}
 
 export const ProfilePage = () => {
     const [ user, setUser ] = useState<UserModel | null>()
+    const [ profile, setProfile ] = useState<UserModel | null>();
     const [ profilePicture, setProfilePicture ] = useState<string>()
     const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
+    const [ searchParams ] = useSearchParams()
 
     useEffect(() => {
-        const getUserAndContents = async(jwt: string | null | undefined) => {
+        const getUserProfileAndContents = async(jwt: string | null | undefined) => {
             if (jwt) {
                 try {
                     const jwtResponse = await _apiClient.verifyToken(jwt)
                     const user = await _apiClient.userGET(jwtResponse.email)
                     setUser(user)
-                    const contents = await _apiClient.contentsGET(jwtResponse.email)
-                    console.log(contents[0].mediaUrl)
+                    let profile: UserModel
+                    if (searchParams.get('email')) {
+                        profile = await _apiClient.userGET(searchParams.get('email') as string)
+                    }
+                    else {
+                        profile = user
+                    }
+                    setProfile(profile)
+                    const contents = await _apiClient.contentsGET(profile?.email)
                     setContents(contents)
                 }
                 catch {
@@ -29,9 +54,9 @@ export const ProfilePage = () => {
                 }
             }
         }
-        getUserAndContents(localStorage.getItem('token'))
+        getUserProfileAndContents(localStorage.getItem('token'))
 
-    }, [])
+    }, [searchParams])
 
     useEffect(() => {
         const validateUrl = async(url: string) => { 
@@ -43,22 +68,23 @@ export const ProfilePage = () => {
                 setProfilePicture('')
             }
         }
-        validateUrl(user?.profilePictureUrl as string)
-    }, [user])
+        validateUrl(profile?.profilePictureUrl as string)
+    }, [user, profile?.profilePictureUrl])
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
+    const handleClose = () => { setContent(null) }
 
     return (
         user ? 
         <div>
             <Header user={user}/>
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
+            <div style={{ marginTop: '12vh', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
                 <div style={{ paddingBottom: '40px' }}>
                     <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
                 </div>
                 <div style={{ paddingBottom: '25px' }}>
                     <Typography>
-                        {user.firstName} {user.lastName}
+                        {profile?.firstName} {profile?.lastName}
                     </Typography>
                 </div>
                 <Grid container sx={{ maxWidth: '500px' }}>
@@ -71,7 +97,7 @@ export const ProfilePage = () => {
                     <Grid item xs ={2} sx={{ display: 'flex', justifyContent: 'center'}}>
                         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
                             <Typography> 
-                                {user.followers ? user.followers?.length : 0 } 
+                                {profile?.followers ? profile?.followers?.length : 0 } 
                             </Typography>
                             <Typography> Followers </Typography>
                         </div>
@@ -79,12 +105,13 @@ export const ProfilePage = () => {
                     <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
                         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
                             <Typography> 
-                                {user.following ? user.following?.length : 0 } 
+                                {profile?.following ? profile?.following?.length : 0 } 
                             </Typography>
                             <Typography> Following </Typography>
                         </div>
                     </Grid>
                 </Grid>
+                {user === profile ?
                 <Grid container mt={2} sx={{ maxWidth: '700px' }}>
                     <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
                         <Button variant='contained' sx={{ borderRadius: 28 }}> 
@@ -96,7 +123,19 @@ export const ProfilePage = () => {
                             Edit Profile
                         </Button>
                     </Grid>
+                </Grid> : 
+                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
+                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                        Follow
+                    </Button>
                 </Grid>
+                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                        Profile
+                    </Button>
+                </Grid>
+            </Grid>}
             </div>
             <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
                 {contents.map((content) => (
@@ -110,7 +149,16 @@ export const ProfilePage = () => {
                     </ImageListItem>
                 ))}
             </ImageList>
-            <MediaPostBox user={user} content={content} setContent={setContent} profilePicture={profilePicture}/>
+            <Modal
+            open={content ? true : false}
+            onClose={handleClose}
+            aria-labelledby='modal-modal-title'
+            aria-describedby='modal-modal-description'
+            >
+                <Box sx={postBoxStyle}>
+                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} user={user} handleClose={handleClose}/>
+                </Box>
+            </Modal>
         </div> :
         <></>
 )}

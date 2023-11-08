@@ -50,12 +50,6 @@ namespace Backend.Models
         [BsonElement("email")]
         public string Email { get; set; }
 
-        [BsonElement("following")]
-        public List<string>? Following { get; set; }
-
-        [BsonElement("followers")]
-        public List<string>? Followers { get; set; }
-
         [BsonIgnore]
         public string? ProfilePictureUrl { get; set; }
 

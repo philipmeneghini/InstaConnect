@@ -1,6 +1,6 @@
 import React from 'react'
-import LoginHeader from '../../components/landing-page/LoginHeader'
-import RegisterForm from '../../components/landing-page/RegisterForm'
+import LoginHeader from '../../components/login-pages/LoginHeader'
+import RegisterForm from '../../components/login-pages/RegisterForm'
 import { Paths } from '../../utils/Constants'
 
 

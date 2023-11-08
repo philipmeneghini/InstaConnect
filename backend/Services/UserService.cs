@@ -122,6 +122,58 @@ namespace Backend.Services
             return users;
         }
 
+        public async Task<List<UserModel>> GetUsersAsync(List<string>? emails)
+        {
+            if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            List<string> results = new List<string>();
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
+            bool firstEmail = true;
+            foreach (var email in emails)
+            {
+                var validationModel = new UserEmailValidationModel(email);
+                var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                ThrowExceptions(validationResult);
+
+                if (!firstEmail)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                firstEmail = false;
+            }
+
+            var users = await GetModelsAsync(filter);
+
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET));
+
+            return users;
+        }
+
+        public List<UserModel> GetUsers(List<string>? emails)
+        {
+            if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+            List<string> results = new List<string>();
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
+            bool firstEmail = true;
+            foreach (var email in emails)
+            {
+                var validationModel = new UserEmailValidationModel(email);
+                var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                ThrowExceptions(validationResult);
+
+                if (!firstEmail)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
+                firstEmail = false;
+            }
+
+            var users = GetModels(filter);
+
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET));
+
+            return users;
+        }
+
         public UserModel CreateUser(UserModel? newUser)
         {
             if (newUser == null) throw new InstaBadRequestException(ApplicationConstants.UserEmpty);

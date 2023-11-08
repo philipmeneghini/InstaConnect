@@ -18,7 +18,6 @@ const sideBarBoxStyling = {
     overflow: 'hidden',
 }
 
-
 interface HeaderProps {
     user: UserModel
 }
@@ -59,6 +58,7 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleLogout = () => {
         setAnchorUser(null)
+        localStorage.removeItem('token')
         navigate(Paths['Login'], { replace: true })
     }
 
@@ -77,8 +77,8 @@ export const Header = ( props: HeaderProps ) => {
             <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Followers </Typography>
             <List>
                 {props.user.followers?.map(follower => (
-                    <ListItem>
-                        <ListItemText primary={follower}/>
+                    <ListItem key={follower}>
+                        <ListItemText key={follower} primary={follower}/>
                     </ListItem>
                 ))}
             </List>
@@ -86,8 +86,8 @@ export const Header = ( props: HeaderProps ) => {
             <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Following </Typography>
             <List>
                 {props.user.following?.map(following => (
-                    <ListItem>
-                        <ListItemText primary={following}/>
+                    <ListItem key={following}>
+                        <ListItemText key={following} primary={following}/>
                     </ListItem>
                 ))}
             </List>
@@ -96,7 +96,7 @@ export const Header = ( props: HeaderProps ) => {
     )
 
     return (
-        <AppBar position='static'>
+        <AppBar component='nav' position='fixed'>
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
                     <Grid container>

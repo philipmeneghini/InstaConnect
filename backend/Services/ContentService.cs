@@ -176,6 +176,7 @@ namespace Backend.Services
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
+            updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var content = UpdateModel(updatedContent);
@@ -191,6 +192,7 @@ namespace Backend.Services
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
+            updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var content = await UpdateModelAsync(updatedContent);

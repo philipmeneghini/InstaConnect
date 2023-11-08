@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { _apiClient } from '../../App'
-import PasswordForm from '../../components/landing-page/PasswordForm'
+import PasswordForm from '../../components/login-pages/PasswordForm'
 
 export const SetPasswordPage = () => {
     const [searchParams] = useSearchParams()
