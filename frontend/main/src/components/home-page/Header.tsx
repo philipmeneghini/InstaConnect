@@ -1,4 +1,4 @@
-import { AppBar, Box, Container, Divider, Drawer, Grid, List, ListItem, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, DialogContent, DialogTitle, Divider, Drawer, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -9,11 +9,12 @@ import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
 import axios from 'axios'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 
 const sideBarBoxStyling = {
     maxWidth: '30vw',
-    marginTop: '10vh',
-    p: '2vh',
     color: 'black',
     overflow: 'hidden',
 }
@@ -27,6 +28,8 @@ export const Header = ( props: HeaderProps ) => {
     const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
     const [ profilePicture, setProfilePicture ] = useState<string>(props.user.profilePictureUrl ?? '')
+    const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
+    const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
 
     useEffect(() => {
         const validateUrl = async(url: string) => { 
@@ -63,35 +66,100 @@ export const Header = ( props: HeaderProps ) => {
     }
 
     const handleMenuItemClick = () => {
-        setMenuOpen(!menuOpen)
+        setMenuOpen(true)
+    }
+
+    const handleMenuClose = () => {
+        setMenuOpen(false)
     }
 
     const handleInstaConnectClick = () => {
         navigate(Paths['Home'], { replace: true })
     }
 
+    const handleFollowingClick = () => {
+        setFollowersOpen(false)
+        setFollowingOpen(!followingOpen)
+    }
+
+    const handleFollowersClick = () => {
+        setFollowingOpen(false)
+        setFollowersOpen(!followersOpen)
+    }
+
+    const navigateToProfile = (email: string) => {
+        if (email) {
+            navigate({
+                pathname: Paths.Profile,
+                search: `?email=${email}`
+            }, {replace: true})
+            setMenuOpen(false)
+        }
+    }
+
     const sideMenu = () => (
-        <Box sx={sideBarBoxStyling}>
-            <Typography variant='h4' sx={{ padding: '1vh 0 2vh 0' }}> {props.user.firstName} {props.user.lastName} </Typography>
-            <Divider sx={{ backgroundColor: 'black' }}/>
-            <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Followers </Typography>
-            <List>
-                {props.user.followers?.map(follower => (
-                    <ListItem key={follower}>
-                        <ListItemText key={follower} primary={follower}/>
-                    </ListItem>
-                ))}
-            </List>
-            <Divider sx={{ backgroundColor: 'black' }}/>
-            <Typography variant='h5' sx={{ paddingTop: '1vh' }}> Following </Typography>
-            <List>
-                {props.user.following?.map(following => (
-                    <ListItem key={following}>
-                        <ListItemText key={following} primary={following}/>
-                    </ListItem>
-                ))}
-            </List>
-            <Divider sx={{ backgroundColor: 'black' }}/>
+        <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
+            <Box sx={{height: '10vh'}}>
+                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
+                    <IconButton onClick={handleMenuClose}>
+                        <ChevronLeftIcon />
+                    </IconButton>
+                </Box>
+                <Divider />
+            </Box>
+            <Box sx={{height:'80vh'}}>
+                <List component='nav' sx={{paddingTop: '0', height: '90vh'}}>
+                    <ListItemButton onClick={handleFollowingClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+                        Following
+                        <ListItemIcon>
+                            {followingOpen? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                        </ListItemIcon>
+                    </ListItemButton>
+                    <Collapse in={followingOpen} timeout="auto" unmountOnExit>
+                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                            {props.user.following?.map(following => (
+                                <ListItemButton key={following} onClick={() => navigateToProfile(following)} sx={{ pl: 4 }}>
+                                    <ListItemText primary={following} />
+                                </ListItemButton>))}
+                        </List>
+                    </Collapse>
+                    <ListItemButton onClick={handleFollowersClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+                        Followers
+                        <ListItemIcon>
+                            {followersOpen ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                        </ListItemIcon>
+                    </ListItemButton>
+                    <Collapse in={followersOpen} timeout="auto" unmountOnExit>
+                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                            {props.user.followers?.map(follower => (
+                                <ListItemButton key={follower} onClick={() => navigateToProfile(follower)} sx={{ pl: 4 }}>
+                                    <ListItemText primary={follower} />
+                                </ListItemButton>))}
+                        </List>
+                    </Collapse>
+                </List>
+            </Box>
+            <Box sx={{height: '10vh'}}>
+                <Divider/>
+                <Box
+                sx={{
+                    display: 'flex',
+                    gap: 1,
+                    p: 1.5,
+                    pb: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                }}
+                >
+                    <Avatar src={profilePicture}/>
+                    <div>
+                        <Typography>{props?.user?.firstName} {props?.user?.lastName}</Typography>
+                        <Button onClick={handleLogout} variant='text' size='small' sx={{color: 'black'}}>
+                            Logout
+                        </Button>
+                    </div>
+                </Box>
+            </Box>
         </Box>
     )
 
@@ -103,8 +171,9 @@ export const Header = ( props: HeaderProps ) => {
                         <Grid item xs = {5} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'start' }}>
                             <IconButton onClick={handleMenuItemClick} color='inherit'>
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
-                                <Drawer
-                                    anchor={'left'}
+                            </IconButton>
+                            <Drawer
+                                    anchor='left'
                                     variant='persistent'
                                     open={menuOpen}
                                     onClose={() => setMenuOpen(false)}
@@ -119,7 +188,6 @@ export const Header = ( props: HeaderProps ) => {
                                 > 
                                     {sideMenu()}
                                 </Drawer>
-                            </IconButton>
                         </Grid>
                         <Grid item xs={2}>
                             <IconButton color='inherit' onClick={handleInstaConnectClick}>
