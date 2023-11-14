@@ -1,4 +1,4 @@
-import { Button, AppBar, Box, Collapse, Container, DialogContent, DialogTitle, Divider, Drawer, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -12,11 +12,11 @@ import axios from 'axios'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import { _apiClient } from '../../App'
 
-const sideBarBoxStyling = {
-    maxWidth: '30vw',
-    color: 'black',
-    overflow: 'hidden',
+interface FollowContents {
+    email : string
+    profilePicture : string | undefined
 }
 
 interface HeaderProps {
@@ -30,6 +30,8 @@ export const Header = ( props: HeaderProps ) => {
     const [ profilePicture, setProfilePicture ] = useState<string>(props.user.profilePictureUrl ?? '')
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
+    const [ followers, setFollowers ] = useState<FollowContents[]>([])
+    const [ following, setFollowing ] = useState<FollowContents[]>([])
 
     useEffect(() => {
         const validateUrl = async(url: string) => { 
@@ -43,6 +45,57 @@ export const Header = ( props: HeaderProps ) => {
         }
         validateUrl(props.user.profilePictureUrl as string)
     }, [props])
+
+    useEffect(() => {
+        const getFollowers = async(users : string[] | undefined) => {
+            try {
+                const response = await _apiClient.usersGET(users)
+                let result : FollowContents[] = new Array<FollowContents>()
+                for(let i = 0; i < response.length; i++) {
+                    const user : UserModel = response[i]
+                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
+                    try {
+                        await axios.get(followContent.profilePicture as string) 
+                    }
+                    catch {
+                        followContent.profilePicture = ''
+                    }
+                    result.push(followContent)
+                }
+                setFollowers(result)
+            }
+            catch {
+                setFollowers([])
+            }
+        }
+        console.log(props?.user?.followers)
+        getFollowers(props?.user?.followers)
+    }, [props, followersOpen])
+
+    useEffect(() => {
+        const getFollowing = async(users : string[] | undefined) => {
+            try {
+                const response = await _apiClient.usersGET(users)
+                let result : FollowContents[] = new Array<FollowContents>()
+                for(let i = 0; i < response.length; i++) {
+                    const user : UserModel = response[i]
+                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
+                    try {
+                        await axios.get(followContent.profilePicture as string) 
+                    }
+                    catch {
+                        followContent.profilePicture = ''
+                    }
+                    result.push(followContent)
+                }
+                setFollowing(result)
+            }
+            catch {
+                setFollowing([])
+            }
+        }
+        getFollowing(props?.user?.following)
+    }, [props, followingOpen])
 
     const navigate = useNavigate()
 
@@ -117,9 +170,10 @@ export const Header = ( props: HeaderProps ) => {
                     </ListItemButton>
                     <Collapse in={followingOpen} timeout="auto" unmountOnExit>
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                            {props.user.following?.map(following => (
-                                <ListItemButton key={following} onClick={() => navigateToProfile(following)} sx={{ pl: 4 }}>
-                                    <ListItemText primary={following} />
+                            {following.map(following => (
+                                <ListItemButton key={following.email} onClick={() => navigateToProfile(following.email)} sx={{ pl: 4 }}>
+                                    <Avatar src={following.profilePicture}/>
+                                    <ListItemText primary={following.email} />
                                 </ListItemButton>))}
                         </List>
                     </Collapse>
@@ -131,9 +185,10 @@ export const Header = ( props: HeaderProps ) => {
                     </ListItemButton>
                     <Collapse in={followersOpen} timeout="auto" unmountOnExit>
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                            {props.user.followers?.map(follower => (
-                                <ListItemButton key={follower} onClick={() => navigateToProfile(follower)} sx={{ pl: 4 }}>
-                                    <ListItemText primary={follower} />
+                            {followers.map(follower => (
+                                <ListItemButton key={follower.email} onClick={() => navigateToProfile(follower.email)} sx={{ pl: 4 }}>
+                                    <Avatar src={follower.email}/>
+                                    <ListItemText primary={follower.email} />
                                 </ListItemButton>))}
                         </List>
                     </Collapse>
