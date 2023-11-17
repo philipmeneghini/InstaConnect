@@ -11,7 +11,6 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 import { AuthorizedApiBase } from './AuthorizedApiBase';
-import { isConstructorDeclaration } from 'typescript';
 
 export class Client extends AuthorizedApiBase {
     private instance: AxiosInstance;
@@ -1479,21 +1478,21 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param body (optional) 
+     * @param emails (optional) 
      * @return Success
      */
-    usersGET(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
-        let url_ = this.baseUrl + "/User/Users";
+    usersGET(emails?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+        let url_ = this.baseUrl + "/User/Users?";
+        if (emails === null)
+            throw new Error("The parameter 'emails' cannot be null.");
+        else if (emails !== undefined)
+            emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_: AxiosRequestConfig = {
-            data: content_,
             method: "GET",
             url: url_,
             headers: {
-                "Content-Type": "application/json",
                 "Accept": "text/plain"
             },
             cancelToken

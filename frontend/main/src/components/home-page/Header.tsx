@@ -1,4 +1,4 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -172,7 +172,9 @@ export const Header = ( props: HeaderProps ) => {
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
                             {following.map(following => (
                                 <ListItemButton key={following.email} onClick={() => navigateToProfile(following.email)} sx={{ pl: 4 }}>
-                                    <Avatar src={following.profilePicture}/>
+                                    <ListItemAvatar>
+                                        <Avatar src={following.profilePicture}/>
+                                    </ListItemAvatar>
                                     <ListItemText primary={following.email} />
                                 </ListItemButton>))}
                         </List>
@@ -187,8 +189,10 @@ export const Header = ( props: HeaderProps ) => {
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
                             {followers.map(follower => (
                                 <ListItemButton key={follower.email} onClick={() => navigateToProfile(follower.email)} sx={{ pl: 4 }}>
-                                    <Avatar src={follower.email}/>
-                                    <ListItemText primary={follower.email} />
+                                    <ListItemAvatar>
+                                        <Avatar src={follower.profilePicture}/> 
+                                    </ListItemAvatar>
+                                    <ListItemText primary={ follower.email} />
                                 </ListItemButton>))}
                         </List>
                     </Collapse>
