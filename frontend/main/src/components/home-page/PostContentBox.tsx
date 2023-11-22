@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
-import { ApiException, CommentModel, ContentModel, UserModel } from '../../api/Client'
+import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
 import { Alert, Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Snackbar, Tab, TextField, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
