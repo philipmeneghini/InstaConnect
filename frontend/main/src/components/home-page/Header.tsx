@@ -122,8 +122,10 @@ export const Header = ( props: HeaderProps ) => {
         setMenuOpen(true)
     }
 
-    const handleMenuClose = () => {
+    const handleDrawerClose = () => {
         setMenuOpen(false)
+        setFollowersOpen(false)
+        setFollowingOpen(false)
     }
 
     const handleInstaConnectClick = () => {
@@ -154,7 +156,7 @@ export const Header = ( props: HeaderProps ) => {
         <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
             <Box sx={{height: '10vh'}}>
                 <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
-                    <IconButton onClick={handleMenuClose}>
+                    <IconButton onClick={handleDrawerClose}>
                         <ChevronLeftIcon />
                     </IconButton>
                 </Box>
@@ -168,8 +170,8 @@ export const Header = ( props: HeaderProps ) => {
                             {followingOpen? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </ListItemIcon>
                     </ListItemButton>
-                    <Collapse in={followingOpen} timeout="auto" unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                    <Collapse in={followingOpen} timeout='auto' unmountOnExit>
+                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component='div' disablePadding>
                             {following.map(following => (
                                 <ListItemButton key={following.email} onClick={() => navigateToProfile(following.email)} sx={{ pl: 4 }}>
                                     <ListItemAvatar>
@@ -235,13 +237,12 @@ export const Header = ( props: HeaderProps ) => {
                                     anchor='left'
                                     variant='persistent'
                                     open={menuOpen}
-                                    onClose={() => setMenuOpen(false)}
+                                    onClose={handleDrawerClose}
                                     sx={{ backgroundColor: '' }}
                                     PaperProps={{
                                         sx: {
                                             borderRight: '0.1vw solid black',
                                             backgroundColor: '#e6e6e6',
-                                            //boxShadow: '0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)',
                                         }
                                       }}
                                 > 

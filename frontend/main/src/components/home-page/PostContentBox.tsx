@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
-import { CommentModel, ContentModel, UserModel } from '../../api/Client'
+import { ApiException, CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Tab, TextField, Typography } from '@mui/material'
+import { Alert, Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Snackbar, Tab, TextField, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -34,6 +34,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
+    const [ error, setError ] = useState<string | undefined>()
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -65,8 +66,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     }, [contentExpanded, content])
 
-    const navigate = useNavigate()
-
     const handleLike = async () => {
         try {
             let newContent: ContentModel = {...content}
@@ -88,11 +87,12 @@ export const PostContentBox = ( props: PostContentProps ) => {
             await _apiClient.contentPUT(newContent)
             setContent(newContent)
         }
-        catch {
-            console.log('caught exception')
-            return
+        catch(err: any) {
+            setError(err.message)
         }
     }
+
+    const navigate = useNavigate()
 
     const handleComment = () => {
         setMenuSelection('comments') 
@@ -104,8 +104,8 @@ export const PostContentBox = ( props: PostContentProps ) => {
             await _apiClient.commentPOST({ contentId: content.id, likes: [], body: newComment, email: props?.user?.email } as CommentModel)
             setNewComment('')
         }
-        catch {
-            console.log('error')
+        catch(err: any) {
+            setError(err.message)
         }
     }
 
@@ -146,6 +146,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 props?.handleClose()
             }
         }
+    }
+
+    const handleCloseErrorMessage = () => {
+        setError(undefined)
     }
 
     return (<>
@@ -241,7 +245,18 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <KeyboardArrowDownIcon/>
                     </IconButton>
                 </Box>}
-                </>)
+                <Snackbar 
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} 
+                open={error ? true : false} 
+                autoHideDuration={6000} 
+                onClose={handleCloseErrorMessage}
+                key={'bottomcenter'}
+                >
+                    <Alert severity='error' sx={{ width: '100%' }}>
+                        Error processing request: {error}
+                    </Alert>
+                </Snackbar>
+            </>)
 }
 
 export default PostContentBox
