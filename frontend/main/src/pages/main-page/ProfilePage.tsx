@@ -18,8 +18,7 @@ const postBoxStyle = {
     bgcolor: 'whitesmoke',
     border: '1px solid #000',
     p: '2vh',
-    overflow: 'hidden',
-    overflowY: 'scroll',
+    overflowY: 'auto',
 }
 
 export const ProfilePage = () => {

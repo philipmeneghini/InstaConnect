@@ -3,7 +3,7 @@ import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import React from 'react'
-import { Box, Paper } from '@mui/material'
+import { Box, CircularProgress, Paper } from '@mui/material'
 import PostContentBox from '../../components/home-page/PostContentBox'
 
 const dateUpdatedDescending = (a: UserContents, b: UserContents): number => {
@@ -84,13 +84,15 @@ export const HomePage = () => {
         user ? 
         <div>
             <Header user={user}/>
+            {contents.length != 0 && contentLoadMessage == null ? 
             <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
                 {contents.map( (userContent) => (
                     <Paper key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
                         <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                     </Paper>
                 ))}
-            </Box>
+            </Box> :
+            <CircularProgress sx={{marginTop: '20vh'}}/>}
         </div> :
         <></>
 )}
