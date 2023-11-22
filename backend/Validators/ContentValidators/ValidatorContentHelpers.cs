@@ -2,7 +2,7 @@
 
 namespace Backend.Validators.ContentValidators
 {
-    public class ValidatorContentHelpers
+    public class ValidatorContentHelpers : IValidatorHelpers
     {
 
         public ValidatorContentHelpers()

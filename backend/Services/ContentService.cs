@@ -101,7 +101,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newContent.DateCreated = DateTime.UtcNow;
             newContent.DateUpdated = DateTime.UtcNow;
-            newContent.Likes = 0;
+            newContent.Likes = new HashSet<string>();
 
             var content = CreateModel(newContent);
 
@@ -118,7 +118,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
             newContent.DateCreated = DateTime.UtcNow;
             newContent.DateUpdated = DateTime.UtcNow;
-            newContent.Likes = 0;
+            newContent.Likes = new HashSet<string>();
 
             var content = await CreateModelAsync(newContent);
 
@@ -139,7 +139,7 @@ namespace Backend.Services
 
                 newContent.DateCreated = DateTime.UtcNow;
                 newContent.DateUpdated = DateTime.UtcNow;
-                newContent.Likes = 0;
+                newContent.Likes = new HashSet<string>();
 
                 result.Add(newContent);
             }
@@ -160,7 +160,7 @@ namespace Backend.Services
 
                 newContent.DateCreated = DateTime.UtcNow;
                 newContent.DateUpdated = DateTime.UtcNow;
-                newContent.Likes = 0;
+                newContent.Likes = new HashSet<string>();
 
                 result.Add(newContent);
             }
@@ -176,6 +176,7 @@ namespace Backend.Services
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
+            updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var content = UpdateModel(updatedContent);
@@ -191,6 +192,7 @@ namespace Backend.Services
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
+            updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var content = await UpdateModelAsync(updatedContent);

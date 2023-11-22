@@ -25,9 +25,9 @@ namespace InstaConnect.Controllers
 
         [Authorize]
         [HttpGet("Users")]
-        public async Task<ActionResult<List<UserModel>>> GetUsers(string? firstName, string? lastName, string? birthdate)
+        public async Task<ActionResult<List<UserModel>>> GetUsers([FromQuery] List<string>? emails)
         {
-            return await _userService.GetUsersAsync(firstName, lastName, birthdate);
+            return await _userService.GetUsersAsync(emails);
         }
 
         [Authorize]
@@ -43,7 +43,6 @@ namespace InstaConnect.Controllers
         {
             return await _userService.CreateUsersAsync(newUsers);
         }
-
 
         [Authorize]
         [HttpPut("User")]

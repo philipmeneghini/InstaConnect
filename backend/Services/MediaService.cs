@@ -35,7 +35,7 @@ namespace Backend.Services
             {
                 BucketName = bucketName,
                 Key = key,
-                Verb = HttpVerb.PUT,
+                Verb = action,
                 Expires = DateTime.UtcNow.AddMinutes(2)
             };
             return _client.GetPreSignedURL(request);

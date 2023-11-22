@@ -2,16 +2,14 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Util.Constants;
 using System.ComponentModel.DataAnnotations;
-using Util.MediaType;
-using System.ComponentModel;
 
 namespace Backend.Models
 {
-    public class ContentModel : IInstaModel
+    public class CommentModel : IInstaModel
     {
         public static string GetCollectionName()
         {
-            return ApplicationConstants.ContentCollectionName;
+            return ApplicationConstants.CommentCollectionName;
         }
 
         public object GetIndex()
@@ -21,7 +19,7 @@ namespace Backend.Models
 
         public Type GetType()
         {
-            return typeof(ContentModel);
+            return typeof(CommentModel);
         }
 
         [BsonId]
@@ -36,21 +34,17 @@ namespace Backend.Models
         [BsonElement("dateUpdated")]
         public DateTime? DateUpdated { get; set; }
 
-        [BsonElement("caption")]
-        public string? Caption { get; set; }
+        [BsonElement("contentId")]
+        public string? ContentId { get; set; }
+
+        [BsonElement("body")]
+        public string? Body { get; set; }
 
         [BsonElement("likes")]
         public HashSet<string> Likes { get; set; }
 
-        [DefaultValue(typeof(MediaType), "Unknown")]
-        [BsonElement("mediaType")]
-        public MediaType MediaType { get; set; }
-
         [Required, EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; }
-
-        [BsonIgnore]
-        public string? MediaUrl { get; set; }
     }
 }

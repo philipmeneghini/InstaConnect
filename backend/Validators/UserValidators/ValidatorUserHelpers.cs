@@ -1,6 +1,6 @@
 ﻿namespace Backend.Validators.UserValidators
 {
-    public class ValidatorUserHelpers
+    public class ValidatorUserHelpers : IValidatorHelpers
     {
 
         public ValidatorUserHelpers()
