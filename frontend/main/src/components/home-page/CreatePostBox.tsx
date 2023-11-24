@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Typography } from '@mui/material'
+import { Avatar, Box, Button, Fab, Grid, TextField, Typography } from '@mui/material'
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
+import { ErrorMessage, Field, Form, Formik } from 'formik'
 
+interface ContentPostValues {
+    multiMediaContent: string
+    caption: string
+}
 
 interface CreatePostProps {
     handleClose: () => void
@@ -32,11 +38,14 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
             }
         }
         getUserContents(localStorage.getItem('token'))
-    })
+    }, [])
 
-    const handleCloseErrorMessage = () => {
-        setError(undefined)
+    const initialValues: ContentPostValues = {
+        multiMediaContent: '',
+        caption: '',
     }
+
+    const onSubmit = () => { }
 
     return (<>
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
@@ -46,6 +55,48 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                     </Box>
                     <Button variant='contained' onClick={props?.handleClose}> Close </Button>
                 </Box>
+                <Formik initialValues={initialValues} onSubmit={onSubmit}>
+                    {formik => (
+                    <Form>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <input
+                                style={{display: 'none'}}
+                                accept='image/*'
+                                id='multiMediaContent'
+                                name='multiMediaContent'
+                                multiple
+                                type='file'
+                                onChange={formik.handleChange}
+                                value={formik.values.multiMediaContent}
+                                />
+                                <Box sx={{display: 'flex'}}>
+                                    <label htmlFor="multiMediaContent">
+                                        <Fab component="span">
+                                            <AddPhotoAlternateIcon />
+                                        </Fab>
+                                    </label>
+                                    <Typography>{formik.values.multiMediaContent}</Typography>
+                                </Box>
+                                <img 
+                                    src={formik.values.multiMediaContent}
+                                />
+
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Field as={TextField} 
+                                    label='Caption' 
+                                    name='caption' 
+                                    placeholder='Enter a caption' 
+                                    fullWidth required
+                                    error={formik.errors.caption && formik.touched.caption ? true : false}
+                                    helperText={<ErrorMessage name='caption'/>}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Form>
+                    )}
+                </Formik>
             </>)
 }
 
