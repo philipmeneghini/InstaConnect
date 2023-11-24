@@ -156,7 +156,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
                     <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
                         <Avatar src={props?.userContent?.user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
-                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.user?.email)}>
+                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.userContent?.user?.email)}>
                             <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.userContent?.user?.firstName} {props?.userContent?.user?.lastName} </Typography>
                         </IconButton>
                     </Box>

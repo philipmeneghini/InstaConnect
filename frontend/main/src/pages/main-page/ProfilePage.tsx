@@ -7,6 +7,7 @@ import { Avatar, Box, Button, Grid, ImageList, ImageListItem, Modal, Typography 
 import { useSearchParams } from 'react-router-dom'
 import { UserContents } from './HomePage'
 import PostContentBox from '../../components/home-page/PostContentBox'
+import CreatePostBox from '../../components/home-page/CreatePostBox'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -23,10 +24,12 @@ const postBoxStyle = {
 
 export const ProfilePage = () => {
     const [ user, setUser ] = useState<UserModel | null>()
-    const [ profile, setProfile ] = useState<UserModel | null>();
+    const [ profile, setProfile ] = useState<UserModel | null>()
     const [ profilePicture, setProfilePicture ] = useState<string>()
     const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
+    const [ isFollowing, setIsFollowing ] = useState<boolean>()
+    const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
     const [ searchParams ] = useSearchParams()
 
     useEffect(() => {
@@ -58,6 +61,13 @@ export const ProfilePage = () => {
     }, [searchParams])
 
     useEffect(() => {
+        if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
+            setIsFollowing(true)
+        else
+            setIsFollowing(false)
+    }, [ user, profile ])
+
+    useEffect(() => {
         const validateUrl = async(url: string) => { 
             try {
                 await axios.get(url)
@@ -72,6 +82,37 @@ export const ProfilePage = () => {
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = () => { setContent(null) }
+
+    const handleFollowButton = async () => {
+        try {
+            if (profile && user) {
+                if (isFollowing) {
+                    const userIndex: number = user?.following?.indexOf(profile?.email, 0) ?? -1
+                    const profileIndex: number = profile?.followers?.indexOf(user?.email, 0) ?? -1
+                    if (userIndex !== -1)
+                        user?.following?.splice(userIndex, 1)
+                    if(profileIndex !== -1)
+                        profile?.followers?.splice(profileIndex, 1)
+                }
+                else {
+                    if (!user?.following?.includes(profile?.email))
+                        user?.following?.push(profile?.email)
+                    if (!profile?.followers?.includes(user?.email))
+                        profile?.followers?.push(user?.email)
+                }
+
+                const res = await _apiClient.usersPUT( [ user, profile ] )
+                setUser(res[0])
+                setProfile(res[1])
+            }
+        }
+        catch {
+            return
+        }
+    }
+
+    const handleCreatePost = () => { setCreatePostOpen(true) }
+    const handleCreatePostClose = () => { setCreatePostOpen(false) }
 
     return (
         user ? 
@@ -113,7 +154,7 @@ export const ProfilePage = () => {
                 {user === profile ?
                 <Grid container mt={2} sx={{ maxWidth: '700px' }}>
                     <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                        <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                        <Button variant='contained' onClick={handleCreatePost} sx={{ borderRadius: 28 }}> 
                             Create Post
                         </Button>
                     </Grid>
@@ -125,8 +166,8 @@ export const ProfilePage = () => {
                 </Grid> : 
                 <Grid container mt={2} sx={{ maxWidth: '700px' }}>
                 <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
-                        Follow
+                    <Button variant='contained' onClick={handleFollowButton} sx={{ borderRadius: 28 }}> 
+                        {isFollowing ? 'UnFollow' : 'Follow'}
                     </Button>
                 </Grid>
                 <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
@@ -156,6 +197,16 @@ export const ProfilePage = () => {
             >
                 <Box sx={postBoxStyle}>
                     <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} user={user} handleClose={handleClose}/>
+                </Box>
+            </Modal>
+            <Modal
+            open={creatPostOpen}
+            onClose={handleCreatePostClose}
+            aria-labelledby='modal-modal-title'
+            aria-describedby='modal-modal-description'
+            >
+                <Box sx={postBoxStyle}>
+                    <CreatePostBox handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>
         </div> :

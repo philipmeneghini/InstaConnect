@@ -180,6 +180,7 @@ namespace Backend.Services
             var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
+            RemoveUrls(ref newUser);
             var user = CreateModel(newUser);
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT);
             user.ProfilePictureUrl = url;
@@ -199,6 +200,7 @@ namespace Backend.Services
             var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
+            RemoveUrls(ref newUser);
             var user = await CreateModelAsync(newUser);
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT);
             user.ProfilePictureUrl = url;
@@ -224,6 +226,7 @@ namespace Backend.Services
                 result.Add(newUser);
             }
 
+            RemoveUrls(ref result);
             var users = CreateModels(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT));
@@ -244,6 +247,7 @@ namespace Backend.Services
                 result.Add(newUser);
             }
 
+            RemoveUrls(ref result);
             var users = await CreateModelsAsync(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT));
@@ -258,6 +262,7 @@ namespace Backend.Services
             var validationResult = _createUpdateUserValidator.Validate(updatedUser, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
 
+            RemoveUrls(ref updatedUser);
             var user = UpdateModel(updatedUser);
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(updatedUser.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT);
             user.ProfilePictureUrl = url;
@@ -277,6 +282,7 @@ namespace Backend.Services
             var validationResult = _createUpdateUserValidator.Validate(updatedUser, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
 
+            RemoveUrls(ref updatedUser);
             var user = await UpdateModelAsync(updatedUser);
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(updatedUser.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT);
             user.ProfilePictureUrl = url;
@@ -302,6 +308,7 @@ namespace Backend.Services
                 result.Add(user);
             }
 
+            RemoveUrls(ref result);
             var users = UpdateModels(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT));
@@ -322,6 +329,7 @@ namespace Backend.Services
                 result.Add(user);
             }
 
+            RemoveUrls(ref result);
             var users = await UpdateModelsAsync(result);
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT));
@@ -386,6 +394,29 @@ namespace Backend.Services
             }
 
             return users;
+        }
+
+        private void RemoveUrls(ref UserModel user)
+        {
+            if (user != null)
+            {
+                user.ProfilePictureUrl = null;
+                user.PhotosUrl = null;
+                user.ReelsUrl = null;
+            }
+        }
+
+        private void RemoveUrls(ref List<UserModel> users)
+        {
+            foreach (var user in users)
+            {
+                if (user != null)
+                {
+                    user.ProfilePictureUrl = null;
+                    user.PhotosUrl = null;
+                    user.ReelsUrl = null;
+                }
+            }
         }
 
         private void ThrowExceptions (FluentValidation.Results.ValidationResult validationResult)
