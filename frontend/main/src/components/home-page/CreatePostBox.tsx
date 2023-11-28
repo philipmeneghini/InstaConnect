@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
-import { UserModel } from '../../api/Client'
+import { ContentModel, MediaType, UserModel } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Fab, Grid, TextField, Typography } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import { ErrorMessage, Field, Form, Formik } from 'formik'
+import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { FormProperties } from '../../utils/FormProperties'
+import axios from 'axios'
+import LoginRegisterAlert from '../login-pages/LoginRegisterAlert'
 
 interface ContentPostValues {
-    multiMediaContent: string
+    multiMediaContent: File | undefined
     caption: string
 }
 
@@ -19,6 +22,11 @@ interface CreatePostProps {
 export const CreatePostBox = ( props: CreatePostProps ) => {
 
     const [ user, setUser ] = useState<UserModel>()
+    const [ post, setPost ] = useState<FormProperties>(({
+        isOpen: false,
+        isSuccess: false,
+        message: ''
+      }))
     const [ error, setError ] = useState<string | undefined>()
 
     useEffect(() => {
@@ -42,16 +50,76 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
     }, [])
 
     const initialValues: ContentPostValues = {
-        multiMediaContent: '',
+        multiMediaContent: undefined,
         caption: '',
     }
 
     const validation = Yup.object({
-        multiMediaContent: Yup.string().required('Required'),
+        multiMediaContent: Yup.mixed().required('Required'),
         caption: Yup.string().required('Required'),
     })
 
-    const onSubmit = () => { }
+    const onSubmit = async (values: ContentPostValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<ContentPostValues>) => {
+        if (!values.caption || !values.multiMediaContent) {
+            setPost({
+                isOpen: true,
+                isSuccess: false,
+                message: 'Caption and/or Photo Content Missing!'
+            })
+            setSubmitting(false)
+            return
+        }
+        const errors: FormikErrors<ContentPostValues>  = await validateForm(values)
+        if (errors.caption || errors.multiMediaContent) {
+            setPost({
+                isOpen: true,
+                isSuccess: false,
+                message: 'One Or More Fields Are Invalid!'
+            })
+            setSubmitting(false)
+            return
+        }
+        if (!user){
+            setPost({
+                isOpen: true,
+                isSuccess: false,
+                message: 'You Must Be Logged In!'
+            })
+        }
+        try {
+            let newContent : ContentModel = {
+                caption: values.caption,
+                email: user?.email as string,
+                mediaType: MediaType._1,
+                likes: []
+            }
+            const contentResponse = await _apiClient.contentPOST(newContent)
+            if (!contentResponse.mediaUrl || !contentResponse.id) {
+                setPost({
+                    isOpen: true,
+                    isSuccess: false,
+                    message: 'Error When Creating Post!'
+                })
+                return
+            }
+            await axios.put(contentResponse.mediaUrl as string, 
+                            values.multiMediaContent, 
+                            { headers: { 'Content-Type': values.multiMediaContent.type } })
+            setPost({
+                isOpen: true,
+                isSuccess: true,
+                message: 'Post Successfully Created!'
+            })
+            resetForm()
+        }
+        catch(err: any) {
+            setPost({
+                isOpen: true,
+                isSuccess: false,
+                message: `Error: ${err.message}`
+            })
+        }
+    }
 
     return (<>
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
@@ -72,8 +140,8 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                                 id='multiMediaContent'
                                 name='multiMediaContent'
                                 type='file'
-                                onChange={(e) => {if (e.target.files != null) {
-                                    formik.setFieldValue('multiMediaContent', URL.createObjectURL(e.target.files[0]))
+                                onChange={(e) => {if (e.target.files != null && e.target.files.length > 0) {
+                                    formik.setFieldValue('multiMediaContent', e.target.files[0])
                                 }}}
                                 />
                                 <Box sx={{display: 'flex', maxWidth: '90%'}}>
@@ -83,14 +151,14 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                                         </Fab>
                                     </label>
                                     {formik.errors.multiMediaContent && formik.touched.multiMediaContent 
-                                    ? <Typography sx={{marginLeft: '3%', color: 'red'}}>{formik.errors.multiMediaContent}</Typography> 
-                                    : <Typography sx={{marginLeft: '3%', maxWidth: '60%'}} noWrap={true}>{formik.values.multiMediaContent}</Typography>}
+                                    ? <Typography sx={{margin: '5% 0 0 3%', color: '#D32E2E'}}>{formik.errors.multiMediaContent}</Typography> 
+                                    : <Typography sx={{margin: '5% 0 0 3%' }} noWrap={true}>{URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}</Typography>}
                                 </Box>
                                 <img 
                                     style={{marginTop: '2vh', maxWidth: '100%', maxHeight: '50vh'}}
-                                    src={formik.values.multiMediaContent}
-                                    srcSet={formik.values.multiMediaContent}
-                                    alt={formik.values.multiMediaContent}
+                                    src={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
+                                    srcSet={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
+                                    alt={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
                                 />
 
                             </Grid>
@@ -112,6 +180,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                     </Form>
                     )}
                 </Formik>
+                <LoginRegisterAlert login={post} setLogin={setPost}/>
             </>)
 }
 

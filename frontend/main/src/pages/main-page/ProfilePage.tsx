@@ -177,7 +177,7 @@ export const ProfilePage = () => {
                 </Grid>
             </Grid>}
             </div>
-            <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+            <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
                 {contents.map((content) => (
                     <ImageListItem key={content.mediaUrl} onClick={() => handleOpen(content)}>
                         <img

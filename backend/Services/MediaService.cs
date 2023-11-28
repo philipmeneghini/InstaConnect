@@ -30,14 +30,29 @@ namespace Backend.Services
         }
 
         public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action)
-        {  
-            GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
+        {
+            GetPreSignedUrlRequest request;
+            if (action == HttpVerb.PUT)
             {
-                BucketName = bucketName,
-                Key = key,
-                Verb = action,
-                Expires = DateTime.UtcNow.AddMinutes(2)
-            };
+                request = new GetPreSignedUrlRequest
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    Verb = action,
+                    Expires = DateTime.UtcNow.AddMinutes(2),
+                    ContentType = "image/jpeg"
+                };
+            }
+            else
+            {
+                request = new GetPreSignedUrlRequest
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    Verb = action,
+                    Expires = DateTime.UtcNow.AddMinutes(2)
+                };
+            }
             return _client.GetPreSignedURL(request);
         }
 
