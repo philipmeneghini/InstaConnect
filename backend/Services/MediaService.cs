@@ -8,6 +8,7 @@ using Backend.Models.Config;
 using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Util.Constants;
+using Util.MediaType;
 
 namespace Backend.Services
 {
@@ -29,30 +30,19 @@ namespace Backend.Services
             return result;
         }
 
-        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action)
+        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action, MediaType media)
         {
-            GetPreSignedUrlRequest request;
-            if (action == HttpVerb.PUT)
+            var request = new GetPreSignedUrlRequest
             {
-                request = new GetPreSignedUrlRequest
-                {
-                    BucketName = bucketName,
-                    Key = key,
-                    Verb = action,
-                    Expires = DateTime.UtcNow.AddMinutes(2),
-                    ContentType = "image/jpeg"
-                };
-            }
-            else
-            {
-                request = new GetPreSignedUrlRequest
-                {
-                    BucketName = bucketName,
-                    Key = key,
-                    Verb = action,
-                    Expires = DateTime.UtcNow.AddMinutes(2)
-                };
-            }
+                BucketName = bucketName,
+                Key = key,
+                Verb = action,
+                Expires = DateTime.UtcNow.AddMinutes(2)
+            };
+
+            if (action == HttpVerb.PUT && ApplicationConstants.MediaContentType.ContainsKey(MediaTypeConverter.MediaToString(media)))
+                request.ContentType = ApplicationConstants.MediaContentType[MediaTypeConverter.MediaToString(media)];
+
             return _client.GetPreSignedURL(request);
         }
 

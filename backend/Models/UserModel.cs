@@ -58,5 +58,14 @@ namespace Backend.Models
 
         [BsonIgnore]
         public string? ReelsUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadProfilePictureUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadPhotosUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadReelsUrl { get; set; }
     }
 }

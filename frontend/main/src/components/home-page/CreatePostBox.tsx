@@ -94,7 +94,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 likes: []
             }
             const contentResponse = await _apiClient.contentPOST(newContent)
-            if (!contentResponse.mediaUrl || !contentResponse.id) {
+            if (!contentResponse.uploadMediaUrl || !contentResponse.id) {
                 setPost({
                     isOpen: true,
                     isSuccess: false,
@@ -102,7 +102,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 })
                 return
             }
-            await axios.put(contentResponse.mediaUrl as string, 
+            await axios.put(contentResponse.uploadMediaUrl as string, 
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
             setPost({
