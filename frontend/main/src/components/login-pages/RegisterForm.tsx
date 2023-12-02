@@ -5,7 +5,7 @@ import { Button, Grid, Paper, TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import { FormProperties } from '../../utils/FormProperties'
-import LoginRegisterAlert from './LoginRegisterAlert'
+import SubmissionAlert from './SubmissionAlert'
 import { _apiClient} from '../../App'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -109,7 +109,7 @@ export const RegisterForm = () => {
                 <Formik initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
                 {
                     formik => (
-                    <Form style={{display: 'flex', verticalAlign: 'middle', marginTop: '15px', flexDirection: 'column'}}autoComplete='off'>
+                    <Form style={{display: 'flex', verticalAlign: 'middle', marginTop: '15px', flexDirection: 'column'}} autoComplete='off'>
                         <Grid sx ={{paddingTop: '10px', paddingBottom: '20px', maxHeight:'85px'}}>
                             <Field as={TextField} 
                                 label='First Name' 
@@ -161,7 +161,7 @@ export const RegisterForm = () => {
                 }
                 </Formik>
             </Paper>
-            <LoginRegisterAlert login={register} setLogin={setRegister} />
+            <SubmissionAlert value={register} setValue={setRegister} />
         </Grid>
     )
 }

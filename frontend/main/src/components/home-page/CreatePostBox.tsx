@@ -8,7 +8,7 @@ import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers } from '
 import * as Yup from 'yup'
 import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
-import LoginRegisterAlert from '../login-pages/LoginRegisterAlert'
+import SubmissionAlert from '../login-pages/SubmissionAlert'
 
 interface ContentPostValues {
     multiMediaContent: File | undefined
@@ -27,10 +27,9 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
         isSuccess: false,
         message: ''
       }))
-    const [ error, setError ] = useState<string | undefined>()
 
     useEffect(() => {
-        const getUserContents = async(jwt: string | null | undefined) => {
+        const getUser = async(jwt: string | null | undefined) => {
             if (jwt) {
                 try {
                     const jwtResponse = await _apiClient.verifyToken(jwt)
@@ -38,15 +37,12 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                     setUser(user)
                 }
                 catch(err: any) {
-                    setError(err.message)
                     setUser(undefined)
                 }
             }
-            else {
-                setError('No valid jwt token in local storage')
-            }
         }
-        getUserContents(localStorage.getItem('token'))
+
+        getUser(localStorage.getItem('token'))
     }, [])
 
     const initialValues: ContentPostValues = {
@@ -94,6 +90,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 likes: []
             }
             const contentResponse = await _apiClient.contentPOST(newContent)
+            console.log(contentResponse.uploadMediaUrl)
             if (!contentResponse.uploadMediaUrl || !contentResponse.id) {
                 setPost({
                     isOpen: true,
@@ -102,6 +99,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 })
                 return
             }
+            console.log(values.multiMediaContent.type)
             await axios.put(contentResponse.uploadMediaUrl as string, 
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
@@ -152,14 +150,15 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                                     </label>
                                     {formik.errors.multiMediaContent && formik.touched.multiMediaContent 
                                     ? <Typography sx={{margin: '5% 0 0 3%', color: '#D32E2E'}}>{formik.errors.multiMediaContent}</Typography> 
-                                    : <Typography sx={{margin: '5% 0 0 3%' }} noWrap={true}>{URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}</Typography>}
+                                    : <Typography sx={{margin: '5% 0 0 3%' }} noWrap={true}>{formik.values.multiMediaContent ? URL.createObjectURL(formik.values.multiMediaContent) : ''}</Typography>}
                                 </Box>
+                                {formik.values.multiMediaContent ?
                                 <img 
                                     style={{marginTop: '2vh', maxWidth: '100%', maxHeight: '50vh'}}
-                                    src={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
-                                    srcSet={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
-                                    alt={URL.createObjectURL(formik.values.multiMediaContent ?? new Blob())}
-                                />
+                                    src={URL.createObjectURL(formik.values.multiMediaContent)}
+                                    srcSet={URL.createObjectURL(formik.values.multiMediaContent)}
+                                    alt={URL.createObjectURL(formik.values.multiMediaContent)}
+                                /> : <></>}
 
                             </Grid>
                             <Grid item xs={6}>
@@ -180,7 +179,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                     </Form>
                     )}
                 </Formik>
-                <LoginRegisterAlert login={post} setLogin={setPost}/>
+                <SubmissionAlert value={post} setValue={setPost}/>
             </>)
 }
 

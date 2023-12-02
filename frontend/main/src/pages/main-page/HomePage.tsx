@@ -3,8 +3,29 @@ import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
 import React from 'react'
-import { Box, CircularProgress, Paper } from '@mui/material'
+import { Box, CircularProgress, Fab, Modal, Paper, Tooltip } from '@mui/material'
 import PostContentBox from '../../components/home-page/PostContentBox'
+import AddIcon from '@mui/icons-material/Add'
+import CreatePostBox from '../../components/home-page/CreatePostBox'
+
+const fabStyling = {
+    position: 'fixed',
+    bottom: 10,
+    right: 8,
+}
+
+const postBoxStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '40vw',
+    maxHeight: '90vh',
+    bgcolor: 'whitesmoke',
+    border: '1px solid #000',
+    p: '2vh',
+    overflowY: 'auto',
+}
 
 const dateUpdatedDescending = (a: UserContents, b: UserContents): number => {
     if (a.content.dateUpdated && b.content.dateUpdated)
@@ -26,6 +47,7 @@ export const HomePage = () => {
     const [ user, setUser ] = useState<UserModel | null>(null)
     const [ contents, setContents ] = useState<UserContents[]> ([])
     const [ contentLoadMessage, setContentLoadMessage ] = useState<string | null>(null)
+    const [ createPostOpen, setCreatePostOpen ] = useState<boolean>(false)
 
     useEffect(() => {
         const getUser = async(jwt: string | null | undefined) => {
@@ -80,6 +102,9 @@ export const HomePage = () => {
         getUsersFollowing(user)
     }, [user])
 
+    const handleCreatePost = () => { setCreatePostOpen(true) }
+    const handleCreatePostClose = () => { setCreatePostOpen(false) }
+
     return (
         user ? 
         <div>
@@ -93,6 +118,21 @@ export const HomePage = () => {
                 ))}
             </Box> :
             <CircularProgress sx={{marginTop: '20vh'}}/>}
+            <Tooltip title='Add Post'>
+                <Fab onClick={handleCreatePost} sx={fabStyling} color='primary' aria-label='add'>
+                    <AddIcon />
+                </Fab>
+            </Tooltip>
+            <Modal
+            open={createPostOpen}
+            onClose={handleCreatePostClose}
+            aria-labelledby='modal-modal-title'
+            aria-describedby='modal-modal-description'
+            >
+                <Box sx={postBoxStyle}>
+                    <CreatePostBox handleClose={handleCreatePostClose}/>
+                </Box>
+            </Modal>
         </div> :
         <></>
 )}

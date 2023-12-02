@@ -3,21 +3,21 @@ import React from 'react'
 import { FormProperties } from '../../utils/FormProperties'
 
 interface AlertProps {
-  login: FormProperties,
-  setLogin: React.Dispatch<React.SetStateAction<FormProperties>>
+  value: FormProperties,
+  setValue: React.Dispatch<React.SetStateAction<FormProperties>>
 }
 
-export const LoginRegisterAlert = (props: AlertProps) => {
+export const SubmissionAlert = (props: AlertProps) => {
 
   const handleClose = () => {
-    props.setLogin({
-      ...props.login,
+    props.setValue({
+      ...props.value,
       isOpen: false
     })
   }
 
   const handleSeverity = () => {
-    if(props.login.isSuccess) {
+    if(props.value.isSuccess) {
       return 'success' as AlertColor
     }
     else {
@@ -26,18 +26,18 @@ export const LoginRegisterAlert = (props: AlertProps) => {
   }
 
   return (
-    <Snackbar 
+    <Snackbar
       anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} 
-      open={props.login.isOpen} 
+      open={props.value.isOpen} 
       autoHideDuration={6000} 
       onClose={handleClose}
       key={'bottomcenter'}
       >
         <Alert severity={handleSeverity()} sx={{ width: '100%' }}>
-          {props.login.message}
+          {props.value.message}
         </Alert>
     </Snackbar>
   )
 }
 
-export default LoginRegisterAlert
+export default SubmissionAlert

@@ -58,7 +58,7 @@ export const ProfilePage = () => {
         }
         getUserProfileAndContents(localStorage.getItem('token'))
 
-    }, [searchParams])
+    }, [ searchParams ])
 
     useEffect(() => {
         if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
@@ -112,7 +112,13 @@ export const ProfilePage = () => {
     }
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
-    const handleCreatePostClose = () => { setCreatePostOpen(false) }
+    const handleCreatePostClose = async () => {
+        if (profile) {
+            const contents = await _apiClient.contentsGET(profile?.email)
+            setContents(contents)
+        }
+        setCreatePostOpen(false) 
+    }
 
     return (
         user ? 
@@ -179,8 +185,9 @@ export const ProfilePage = () => {
             </div>
             <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
                 {contents.map((content) => (
-                    <ImageListItem key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                    <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
                         <img
+                            style={{height: '164'}}
                             src={content.mediaUrl}
                             srcSet={content.mediaUrl}
                             alt={content.caption}

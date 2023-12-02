@@ -443,6 +443,9 @@ namespace Backend.Services
                 user.ProfilePictureUrl = null;
                 user.PhotosUrl = null;
                 user.ReelsUrl = null;
+                user.UploadProfilePictureUrl = null;
+                user.UploadPhotosUrl = null;
+                user.UploadReelsUrl = null;
             }
         }
 
@@ -455,6 +458,9 @@ namespace Backend.Services
                     user.ProfilePictureUrl = null;
                     user.PhotosUrl = null;
                     user.ReelsUrl = null;
+                    user.UploadProfilePictureUrl = null;
+                    user.UploadPhotosUrl = null;
+                    user.UploadReelsUrl = null;
                 }
             }
         }
