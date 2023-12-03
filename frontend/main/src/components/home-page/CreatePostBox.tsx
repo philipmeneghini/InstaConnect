@@ -99,7 +99,6 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 })
                 return
             }
-            console.log(values.multiMediaContent.type)
             await axios.put(contentResponse.uploadMediaUrl as string, 
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })

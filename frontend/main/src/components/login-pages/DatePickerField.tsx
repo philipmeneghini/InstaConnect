@@ -52,7 +52,7 @@ export const DatePickerField = (prop: NameProp) => {
         disableFuture
         minDate={minDate}
         maxDate={maxDate}
-        sx={{width:'380px'}}
+        sx={{width:'100%'}}
         onError={(error) => processError(error)}
         slotProps={{
             textField: {
