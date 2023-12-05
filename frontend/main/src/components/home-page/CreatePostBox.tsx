@@ -90,7 +90,6 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 likes: []
             }
             const contentResponse = await _apiClient.contentPOST(newContent)
-            console.log(contentResponse.uploadMediaUrl)
             if (!contentResponse.uploadMediaUrl || !contentResponse.id) {
                 setPost({
                     isOpen: true,

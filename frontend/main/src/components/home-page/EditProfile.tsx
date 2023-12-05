@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react'
-import { UserModel } from '../../api/Client'
+import { ApiException, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Fab, Grid, IconButton, TextField, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, Fab, FormControlLabel, Grid, IconButton, TextField, Typography } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
+import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
 import SubmissionAlert from '../login-pages/SubmissionAlert'
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import DatePickerField from '../login-pages/DatePickerField'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
+import { _apiClient } from '../../App'
 
 interface EditProfileValues {
     profilePicture: File | undefined
     firstName: string
     lastName: string
-    birthDate: string | null
+    birthDate: Dayjs | null
+    resetPassword: boolean
 }
 
 interface EditProfileProps {
@@ -58,13 +60,15 @@ export const EditProfile = ( props: EditProfileProps ) => {
         profilePicture: undefined,
         firstName: props?.user?.firstName ?? '',
         lastName: props?.user?.lastName ?? '',
-        birthDate: null
+        birthDate: dayjs(props?.user?.birthDate),
+        resetPassword: false,
     }
 
     const validation = Yup.object({
         firstName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid First Name').required('Required'),
         lastName: Yup.string().matches(/^[A-Za-z ]*$/, 'Please Enter a Valid Last Name').required('Required'),
-        birthDate: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required').nullable()
+        birthDate: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required').nullable(),
+        resetPassword: Yup.bool().required('Required')
     })
 
     const navigateToProfile = (email : string | undefined) => {
@@ -85,6 +89,76 @@ export const EditProfile = ( props: EditProfileProps ) => {
     }
 
     const onSubmit = async (values: EditProfileValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<EditProfileValues>) => {
+        if (!values.birthDate || !values.firstName || !values.lastName || !values.resetPassword) {
+            setUserEdits({
+                isOpen: true,
+                isSuccess: false,
+                message: 'One or more fields missing!'
+            })
+            setSubmitting(false)
+            return
+        }
+        const errors: FormikErrors<EditProfileValues>  = await validateForm(values)
+        if (errors.birthDate || errors.firstName || errors.lastName || errors.resetPassword || errors.profilePicture) {
+            setUserEdits({
+                isOpen: true,
+                isSuccess: false,
+                message: 'One Or More Fields Are Invalid!'
+            })
+            setSubmitting(false)
+            return
+        }
+        try {
+            if (props?.user?.email) {
+                const userResponse = await _apiClient.userPUT({email: props?.user?.email,
+                                                           firstName: values.firstName,
+                                                           lastName: values.lastName,
+                                                           birthDate: values.birthDate.format('MM/DD/YYYY')} as UserModel)
+                if (values.profilePicture) {
+                    await axios.put(userResponse.uploadProfilePictureUrl as string, 
+                                    values.profilePicture, 
+                                    { headers: { 'Content-Type': values.profilePicture.type } })
+                }
+
+                if (values.resetPassword) {
+                    const emailResponse = await _apiClient.registration(userResponse)
+                    if (emailResponse.sent) {
+                        setUserEdits({
+                            isOpen: true,
+                            isSuccess: true,
+                            message: `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`
+                        })
+                        resetForm()
+                    }
+                    else {
+                        setUserEdits({
+                            isOpen: true,
+                            isSuccess: false,
+                            message: `Email To ${userResponse.email} Failed to Send To Update Your Password`
+                        })
+                    }
+                }
+            }
+            else {
+                setUserEdits({
+                    isOpen: true,
+                    isSuccess: false,
+                    message: 'No User Is Logged In!'
+                })
+            }
+        }
+        catch(err: any) {
+            let failedUserEditResult: FormProperties = {
+                isOpen: true,
+                isSuccess: false,
+                message: ''
+            }
+            if (err instanceof ApiException)
+                failedUserEditResult.message = err.response
+            else
+                failedUserEditResult.message = 'Internal Server Error'
+            setUserEdits(failedUserEditResult)
+        }
     }
 
     return (<>
@@ -141,8 +215,9 @@ export const EditProfile = ( props: EditProfileProps ) => {
                                         label='First Name' 
                                         name='firstName' 
                                         placeholder='Enter new first name'
-                                        fullwidth required
                                         multiline
+                                        sx={{width: '100%'}}
+                                        fullwidth required
                                         error={formik.errors.firstName && formik.touched.firstName ? true : false}
                                         helperText={<ErrorMessage name='firstName'/>}
                                         />
@@ -159,6 +234,19 @@ export const EditProfile = ( props: EditProfileProps ) => {
                                         />
                                     </Grid>
                                     <Grid item xs>
+                                        <TextField 
+                                        label='Email - Read Only' 
+                                        name='email'
+                                        placeholder='Enter new email'
+                                        defaultValue={props?.user?.email}
+                                        InputProps={{
+                                            readOnly: true,
+                                          }}
+                                        multiline 
+                                        fullWidth required
+                                        />
+                                    </Grid>
+                                    <Grid item xs>
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <Field style={{paddingBottom: '20px'}} as={DatePickerField}
                                                 label='Date of Birth' 
@@ -168,6 +256,9 @@ export const EditProfile = ( props: EditProfileProps ) => {
                                                 helperText={<ErrorMessage name='birthDate'/>}
                                             />
                                         </LocalizationProvider>
+                                    </Grid>
+                                    <Grid item xs>
+                                        <FormControlLabel control={<Checkbox onClick={() => formik.setFieldValue('resetPassword', !formik.values.resetPassword)} />} label='Reset Password' name='resetPassword'/>
                                     </Grid>
                                 </Grid>
                             </Grid>

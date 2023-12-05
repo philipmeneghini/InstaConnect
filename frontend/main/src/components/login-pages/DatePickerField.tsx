@@ -48,6 +48,7 @@ export const DatePickerField = (prop: NameProp) => {
     return (
       <DatePicker
         value={field.value}
+        label='Birth Date'
         onChange={value => formikChange(value)}
         disableFuture
         minDate={minDate}
