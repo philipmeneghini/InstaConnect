@@ -88,8 +88,8 @@ export const EditProfile = ( props: EditProfileProps ) => {
         }
     }
 
-    const onSubmit = async (values: EditProfileValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<EditProfileValues>) => {
-        if (!values.birthDate || !values.firstName || !values.lastName || !values.resetPassword) {
+    const onSubmit = async (values: EditProfileValues, { setSubmitting, validateForm }: FormikHelpers<EditProfileValues>) => {
+        if (!values.birthDate || !values.firstName || !values.lastName) {
             setUserEdits({
                 isOpen: true,
                 isSuccess: false,
@@ -121,14 +121,13 @@ export const EditProfile = ( props: EditProfileProps ) => {
                 }
 
                 if (values.resetPassword) {
-                    const emailResponse = await _apiClient.registration(userResponse)
+                    const emailResponse = await _apiClient.resetPassword(userResponse)
                     if (emailResponse.sent) {
                         setUserEdits({
                             isOpen: true,
                             isSuccess: true,
                             message: `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`
                         })
-                        resetForm()
                     }
                     else {
                         setUserEdits({

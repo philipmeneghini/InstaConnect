@@ -186,7 +186,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     <Box sx={{marginTop: '2vh'}}>
                         <TabContext value={menuSelection}>
                             <Box sx={{ display: 'flex', justifyContent: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList onChange={handleChange} aria-label="lab API tabs example">
+                                <TabList onChange={handleChange}>
                                     <Tab label='Comments' value='comments' />
                                     <Tab label="Likes" value='likes' />
                                 </TabList>

@@ -9,6 +9,7 @@ import { UserContents } from './HomePage'
 import PostContentBox from '../../components/home-page/PostContentBox'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
 import EditProfile from '../../components/home-page/EditProfile'
+import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -32,6 +33,7 @@ export const ProfilePage = () => {
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
     const [ editProfileOpen, setEditProfileOpen ] = useState<boolean>(false)
+    const [ profileDetailOpen, setProfileDetailOpen ] = useState<boolean>(false)
     const [ searchParams ] = useSearchParams()
 
     useEffect(() => {
@@ -125,6 +127,9 @@ export const ProfilePage = () => {
     const handleEditProfileOpen = () => { setEditProfileOpen(true) }
     const handleEditProfileClose = () => { setEditProfileOpen(false) }
 
+    const handleProfileDetailOpen = () => { setProfileDetailOpen(true) }
+    const handleProfileDetailClose = () => { setProfileDetailOpen(false) }
+
     return (
         user ? 
         <div>
@@ -182,7 +187,7 @@ export const ProfilePage = () => {
                     </Button>
                 </Grid>
                 <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' sx={{ borderRadius: 28 }}> 
+                    <Button variant='contained' onClick={handleProfileDetailOpen} sx={{ borderRadius: 28 }}> 
                         Profile
                     </Button>
                 </Grid>
@@ -229,6 +234,16 @@ export const ProfilePage = () => {
             >
                 <Box sx={postBoxStyle}>
                     <EditProfile user={profile} handleClose={handleEditProfileClose}/>
+                </Box>
+            </Modal>
+            <Modal
+            open={profileDetailOpen}
+            onClose={handleProfileDetailClose}
+            aria-labelledby='modal-modal-title'
+            aria-describedby='modal-modal-description'
+            >
+                <Box sx={postBoxStyle}>
+                    <ProfileDetailBox user={profile as UserModel} handleClose={handleProfileDetailClose}/>
                 </Box>
             </Modal>
         </div> :
