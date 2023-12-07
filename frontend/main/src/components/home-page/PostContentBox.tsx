@@ -167,7 +167,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     srcSet={content.mediaUrl}
                     alt={content.caption}
                     loading='lazy'
-                    style={{maxWidth: '38vw', display: 'flex', margin: 'auto'}}
+                    style={{maxWidth: '38vw', maxHeight: '40vh', display: 'flex', margin: 'auto'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>

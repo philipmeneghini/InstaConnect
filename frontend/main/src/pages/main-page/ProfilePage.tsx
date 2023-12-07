@@ -243,7 +243,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <ProfileDetailBox user={profile as UserModel} handleClose={handleProfileDetailClose}/>
+                    <ProfileDetailBox user={user} profile={profile as UserModel} handleClose={handleProfileDetailClose}/>
                 </Box>
             </Modal>
         </div> :

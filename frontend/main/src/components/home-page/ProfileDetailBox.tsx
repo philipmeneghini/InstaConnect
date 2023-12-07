@@ -10,6 +10,7 @@ import { FollowContents } from './Header'
 import axios from 'axios'
 
 interface ProfileDetailProps {
+    profile: UserModel
     user: UserModel
     handleClose?: (() => void) | undefined
 }
@@ -42,8 +43,8 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                 setFollowers([])
             }
         }
-        console.log(props?.user?.followers)
-        getFollowers(props?.user?.followers)
+        console.log(props?.profile?.followers)
+        getFollowers(props?.profile?.followers)
     }, [props])
 
     useEffect(() => {
@@ -68,7 +69,7 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                 setFollowing([])
             }
         }
-        getFollowing(props?.user?.following)
+        getFollowing(props?.profile?.following)
     }, [props])
 
     const navigate = useNavigate()
@@ -97,9 +98,9 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
     return (<>
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
                     <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
-                        <Avatar src={props?.user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
-                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.user?.email)}>
-                            <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.user?.firstName} {props?.user?.lastName} </Typography>
+                        <Avatar src={props?.profile?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
+                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.profile?.email)}>
+                            <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.profile?.firstName} {props?.profile?.lastName} </Typography>
                         </IconButton>
                     </Box>
                     { props?.handleClose ? <Button variant='contained' onClick={props?.handleClose}> Close </Button> : <></>}
@@ -107,21 +108,22 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <img
-                        src={props?.user?.profilePictureUrl}
-                        srcSet={props?.user?.profilePictureUrl}
+                        style={{maxHeight: '30vh', maxWidth: '100%'}}
+                        src={props?.profile?.profilePictureUrl}
+                        srcSet={props?.profile?.profilePictureUrl}
                         alt='profile'
                         />
                     </Grid>
                     <Grid item xs={6}>
                         <Grid item xs container direction='column' spacing={2}>
                             <Grid item xs>
-                                <Typography><b>Name:</b> {props?.user?.firstName} {props?.user?.lastName}</Typography>            
+                                <Typography><b>Name:</b> {props?.profile?.firstName} {props?.profile?.lastName}</Typography>            
                             </Grid>
                             <Grid item xs>
-                                <Typography><b>Email:</b> {props?.user?.email}</Typography>        
+                                <Typography><b>Email:</b> {props?.profile?.email}</Typography>        
                             </Grid>
                             <Grid item xs>
-                                <Typography><b>Birthdate:</b> {props?.user?.birthDate}</Typography>
+                                <Typography><b>Birthdate:</b> {props?.profile?.birthDate}</Typography>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -133,9 +135,9 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                             <Tab label="Following" value='following' />
                         </TabList>
                     </Box>
-                    <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
+                    <Box sx={{overflowY: 'auto', maxHeight: '30vh'}}>
                         <TabPanel value='followers'>
-                            <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                            <List sx={{ maxHeight: '65vh'}} component="div" disablePadding>
                                 {followers ? followers.map( (follower) => (
                                     <ListItemButton key={follower?.email} onClick={() => navigateToProfile(follower?.email)} sx={{ pl: 4 }}>
                                         <ListItemAvatar>
@@ -147,7 +149,7 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                             </List>
                         </TabPanel>
                         <TabPanel value='following'>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                        <List sx={{ maxHeight: '65vh'}} component="div" disablePadding>
                                 {following ? following.map( (following) => (
                                     <ListItemButton key={following?.email} onClick={() => navigateToProfile(following?.email)} sx={{ pl: 4 }}>
                                         <ListItemAvatar>
