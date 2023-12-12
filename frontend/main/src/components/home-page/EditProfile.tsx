@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ApiException, UserModel } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Checkbox, Fab, FormControlLabel, Grid, IconButton, TextField, Typography } from '@mui/material'
@@ -15,6 +15,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
 import { _apiClient } from '../../App'
+import useProfilePicture from '../../hooks/useProfilePicture'
 
 interface EditProfileValues {
     profilePicture: File | undefined
@@ -31,25 +32,12 @@ interface EditProfileProps {
 
 export const EditProfile = ( props: EditProfileProps ) => {
 
-    const [ profilePicture, setProfilePicture ] = useState<string>()
+    const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
     const [ userEdits, setUserEdits ] = useState<FormProperties>(({
         isOpen: false,
         isSuccess: false,
         message: ''
       }))
-
-    useEffect(() => {
-        const validateUrl = async(url: string) => { 
-            try {
-                await axios.get(url)
-                setProfilePicture(url)
-            } 
-            catch {
-                setProfilePicture('')
-            }
-        }
-        validateUrl(props?.user?.profilePictureUrl as string)
-    }, [props])
 
     const navigate = useNavigate()
     

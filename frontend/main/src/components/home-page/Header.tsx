@@ -2,17 +2,17 @@ import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, 
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
-import axios from 'axios'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import { _apiClient } from '../../App'
+import useFollowers from '../../hooks/useFollowers'
+import useProfilePicture from '../../hooks/useProfilePicture'
 
 export interface FollowContents {
     email : string
@@ -27,75 +27,12 @@ export const Header = ( props: HeaderProps ) => {
 
     const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
-    const [ profilePicture, setProfilePicture ] = useState<string>(props.user.profilePictureUrl ?? '')
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
-    const [ followers, setFollowers ] = useState<FollowContents[]>([])
-    const [ following, setFollowing ] = useState<FollowContents[]>([])
 
-    useEffect(() => {
-        const validateUrl = async(url: string) => { 
-            try {
-                await axios.get(url)
-                setProfilePicture(url)
-            } 
-            catch {
-                setProfilePicture('')
-            }
-        }
-        validateUrl(props.user.profilePictureUrl as string)
-    }, [props])
-
-    useEffect(() => {
-        const getFollowers = async(users : string[] | undefined) => {
-            try {
-                const response = await _apiClient.usersGET(users)
-                let result : FollowContents[] = new Array<FollowContents>()
-                for(let i = 0; i < response.length; i++) {
-                    const user : UserModel = response[i]
-                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
-                    try {
-                        await axios.get(followContent.profilePicture as string) 
-                    }
-                    catch {
-                        followContent.profilePicture = ''
-                    }
-                    result.push(followContent)
-                }
-                setFollowers(result)
-            }
-            catch {
-                setFollowers([])
-            }
-        }
-        console.log(props?.user?.followers)
-        getFollowers(props?.user?.followers)
-    }, [props, followersOpen])
-
-    useEffect(() => {
-        const getFollowing = async(users : string[] | undefined) => {
-            try {
-                const response = await _apiClient.usersGET(users)
-                let result : FollowContents[] = new Array<FollowContents>()
-                for(let i = 0; i < response.length; i++) {
-                    const user : UserModel = response[i]
-                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
-                    try {
-                        await axios.get(followContent.profilePicture as string) 
-                    }
-                    catch {
-                        followContent.profilePicture = ''
-                    }
-                    result.push(followContent)
-                }
-                setFollowing(result)
-            }
-            catch {
-                setFollowing([])
-            }
-        }
-        getFollowing(props?.user?.following)
-    }, [props, followingOpen])
+    const [ followers ] = useFollowers(props?.user?.followers, followersOpen)
+    const [ following ] = useFollowers(props?.user?.following, followingOpen)
+    const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
     const navigate = useNavigate()
 

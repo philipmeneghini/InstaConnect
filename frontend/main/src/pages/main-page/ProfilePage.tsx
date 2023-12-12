@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
-import axios from 'axios'
 import { Avatar, Box, Button, Grid, ImageList, ImageListItem, Modal, Typography } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
 import { UserContents } from './HomePage'
@@ -10,6 +9,7 @@ import PostContentBox from '../../components/home-page/PostContentBox'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
 import EditProfile from '../../components/home-page/EditProfile'
 import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
+import useProfilePicture from '../../hooks/useProfilePicture'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -27,13 +27,14 @@ const postBoxStyle = {
 export const ProfilePage = () => {
     const [ user, setUser ] = useState<UserModel | null>()
     const [ profile, setProfile ] = useState<UserModel | null>()
-    const [ profilePicture, setProfilePicture ] = useState<string>()
     const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
     const [ editProfileOpen, setEditProfileOpen ] = useState<boolean>(false)
     const [ profileDetailOpen, setProfileDetailOpen ] = useState<boolean>(false)
+
+    const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
 
     useEffect(() => {
@@ -70,19 +71,6 @@ export const ProfilePage = () => {
         else
             setIsFollowing(false)
     }, [ user, profile ])
-
-    useEffect(() => {
-        const validateUrl = async(url: string) => { 
-            try {
-                await axios.get(url)
-                setProfilePicture(url)
-            } 
-            catch {
-                setProfilePicture('')
-            }
-        }
-        validateUrl(profile?.profilePictureUrl as string)
-    }, [user, profile?.profilePictureUrl])
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = () => { setContent(null) }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { _apiClient } from '../../App'
-import { ContentModel, MediaType, UserModel } from '../../api/Client'
+import { ContentModel, MediaType } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Fab, Grid, TextField, Typography } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
@@ -9,6 +9,7 @@ import * as Yup from 'yup'
 import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
 import SubmissionAlert from '../login-pages/SubmissionAlert'
+import useUser from '../../hooks/useUser'
 
 interface ContentPostValues {
     multiMediaContent: File | undefined
@@ -21,29 +22,12 @@ interface CreatePostProps {
 
 export const CreatePostBox = ( props: CreatePostProps ) => {
 
-    const [ user, setUser ] = useState<UserModel>()
+    const [ user ] = useUser()
     const [ post, setPost ] = useState<FormProperties>(({
         isOpen: false,
         isSuccess: false,
         message: ''
       }))
-
-    useEffect(() => {
-        const getUser = async(jwt: string | null | undefined) => {
-            if (jwt) {
-                try {
-                    const jwtResponse = await _apiClient.verifyToken(jwt)
-                    const user = await _apiClient.userGET(jwtResponse.email)
-                    setUser(user)
-                }
-                catch(err: any) {
-                    setUser(undefined)
-                }
-            }
-        }
-
-        getUser(localStorage.getItem('token'))
-    }, [])
 
     const initialValues: ContentPostValues = {
         multiMediaContent: undefined,
