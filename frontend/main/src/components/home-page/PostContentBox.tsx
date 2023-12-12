@@ -156,7 +156,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
                     <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
                         <Avatar src={props?.userContent?.user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
-                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.user?.email)}>
+                        <IconButton size='small' color='inherit' onClick={() => navigateToProfile(props?.userContent?.user?.email)}>
                             <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.userContent?.user?.firstName} {props?.userContent?.user?.lastName} </Typography>
                         </IconButton>
                     </Box>
@@ -167,7 +167,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     srcSet={content.mediaUrl}
                     alt={content.caption}
                     loading='lazy'
-                    style={{maxWidth: '38vw', display: 'flex', margin: 'auto'}}
+                    style={{maxWidth: '38vw', maxHeight: '40vh', display: 'flex', margin: 'auto'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
@@ -186,7 +186,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     <Box sx={{marginTop: '2vh'}}>
                         <TabContext value={menuSelection}>
                             <Box sx={{ display: 'flex', justifyContent: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList onChange={handleChange} aria-label="lab API tabs example">
+                                <TabList onChange={handleChange}>
                                     <Tab label='Comments' value='comments' />
                                     <Tab label="Likes" value='likes' />
                                 </TabList>

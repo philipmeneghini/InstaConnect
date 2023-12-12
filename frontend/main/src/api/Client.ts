@@ -1671,6 +1671,7 @@ export interface ContentModel {
     mediaType?: MediaType;
     email: string;
     mediaUrl?: string | undefined;
+    uploadMediaUrl?: string | undefined;
 }
 
 export interface EmailResponse {
@@ -1711,6 +1712,9 @@ export interface UserModel {
     profilePictureUrl?: string | undefined;
     photosUrl?: string | undefined;
     reelsUrl?: string | undefined;
+    uploadProfilePictureUrl?: string | undefined;
+    uploadPhotosUrl?: string | undefined;
+    uploadReelsUrl?: string | undefined;
 }
 
 export class ApiException extends Error {

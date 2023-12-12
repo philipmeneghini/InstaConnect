@@ -3,7 +3,7 @@ import { Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid,TextField } from '@mui/material'
 import { FormProperties } from '../../utils/FormProperties'
-import LoginRegisterAlert from './LoginRegisterAlert'
+import SubmissionAlert from './SubmissionAlert'
 import { _apiClient } from '../../App'
 import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
@@ -114,7 +114,7 @@ export const ResetPasswordForm = () => {
                 </Form>)   
             }
             </Formik>
-            <LoginRegisterAlert login={passwordReset} setLogin={setPasswordReset} />
+            <SubmissionAlert value={passwordReset} setValue={setPasswordReset} />
         </>
     )
 }

@@ -52,5 +52,8 @@ namespace Backend.Models
 
         [BsonIgnore]
         public string? MediaUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadMediaUrl { get; set; }
     }
 }

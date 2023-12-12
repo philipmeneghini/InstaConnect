@@ -33,6 +33,9 @@ namespace Util.MediaType
                 case MediaType.Reels:
                     res = ApplicationConstants.Reels;
                     break;
+                case MediaType.Unknown:
+                    res = ApplicationConstants.Unknown;
+                    break;
             }
             return res;
         }

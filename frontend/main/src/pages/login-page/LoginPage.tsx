@@ -4,7 +4,7 @@ import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
 import { _apiClient } from '../../App'
-import LoginRegisterAlert from '../../components/login-pages/LoginRegisterAlert'
+import SubmissionAlert from '../../components/login-pages/SubmissionAlert'
 import LoginHeader from '../../components/login-pages/LoginHeader'
 import { Paths } from '../../utils/Constants'
 import { FormProperties } from '../../utils/FormProperties'
@@ -137,7 +137,7 @@ export const LoginPage = () => {
             <Grid item xs={4.75}>
               <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
             </Grid>
-            <LoginRegisterAlert login={login} setLogin={setLogin} />
+            <SubmissionAlert value={login} setValue={setLogin} />
           </Grid>
         </Grid>
       </>)

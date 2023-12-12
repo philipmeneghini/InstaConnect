@@ -14,7 +14,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import { _apiClient } from '../../App'
 
-interface FollowContents {
+export interface FollowContents {
     email : string
     profilePicture : string | undefined
 }
