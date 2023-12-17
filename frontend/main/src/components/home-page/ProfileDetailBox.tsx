@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react'
-import { _apiClient } from '../../App'
+import { useState } from 'react'
 import { UserModel } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Grid, IconButton, List, ListItemAvatar, ListItemButton, ListItemText, Tab, Typography } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
-import { FollowContents } from './Header'
-import axios from 'axios'
+import useFollowers from '../../hooks/useFollowers'
 
 interface ProfileDetailProps {
     profile: UserModel
@@ -18,59 +16,9 @@ interface ProfileDetailProps {
 export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
 
     const [ menuSelection, setMenuSelection ] = useState<string>('followers')
-    const [ followers, setFollowers ] = useState<FollowContents[]>()
-    const [ following, setFollowing ] = useState<FollowContents[]>()
 
-    useEffect(() => {
-        const getFollowers = async(users : string[] | undefined) => {
-            try {
-                const response = await _apiClient.usersGET(users)
-                let result : FollowContents[] = new Array<FollowContents>()
-                for(let i = 0; i < response.length; i++) {
-                    const user : UserModel = response[i]
-                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
-                    try {
-                        await axios.get(followContent.profilePicture as string) 
-                    }
-                    catch {
-                        followContent.profilePicture = ''
-                    }
-                    result.push(followContent)
-                }
-                setFollowers(result)
-            }
-            catch {
-                setFollowers([])
-            }
-        }
-        console.log(props?.profile?.followers)
-        getFollowers(props?.profile?.followers)
-    }, [props])
-
-    useEffect(() => {
-        const getFollowing = async(users : string[] | undefined) => {
-            try {
-                const response = await _apiClient.usersGET(users)
-                let result : FollowContents[] = new Array<FollowContents>()
-                for(let i = 0; i < response.length; i++) {
-                    const user : UserModel = response[i]
-                    const followContent : FollowContents = { email : user.email , profilePicture : user.profilePictureUrl}
-                    try {
-                        await axios.get(followContent.profilePicture as string) 
-                    }
-                    catch {
-                        followContent.profilePicture = ''
-                    }
-                    result.push(followContent)
-                }
-                setFollowing(result)
-            }
-            catch {
-                setFollowing([])
-            }
-        }
-        getFollowing(props?.profile?.following)
-    }, [props])
+    const [ followers ] = useFollowers(props?.profile?.followers, true)
+    const [ following ] = useFollowers(props?.profile?.followers, true)
 
     const navigate = useNavigate()
 
