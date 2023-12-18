@@ -53,12 +53,8 @@ namespace Backend.Services
                 BucketName = bucketName,
                 Key = key
             };
+            
             var response = await _client.DeleteObjectAsync(request);
-            if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
-            {
-                throw new InstaGenericException((int)response.HttpStatusCode, string.Format(ApplicationConstants.ErrorDeletingProfilePicture, key));
-            }
-            return;
         }
     }
 }

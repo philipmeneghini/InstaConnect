@@ -4,7 +4,7 @@ import { ContentModel, MediaType } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Fab, Grid, TextField, Typography } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
-import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers } from 'formik'
+import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik'
 import * as Yup from 'yup'
 import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
@@ -90,7 +90,9 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 isSuccess: true,
                 message: 'Post Successfully Created!'
             })
-            resetForm()
+            setTimeout(() => 
+            { handleSuccessfulClose(resetForm) }, 
+            3000)
         }
         catch(err: any) {
             setPost({
@@ -99,6 +101,12 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                 message: `Error: ${err.message}`
             })
         }
+    }
+
+    const handleSuccessfulClose = (resetForm: (nextState?: Partial<FormikState<ContentPostValues>> | undefined) => void) => {
+        resetForm()
+        if(props?.handleClose)
+            props?.handleClose()
     }
 
     return (<>

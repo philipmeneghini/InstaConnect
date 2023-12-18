@@ -10,6 +10,7 @@ import CreatePostBox from '../../components/home-page/CreatePostBox'
 import EditProfile from '../../components/home-page/EditProfile'
 import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
 import useProfilePicture from '../../hooks/useProfilePicture'
+import { dateCreatedDescendingContents } from '../../utils/Sorters'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -53,7 +54,8 @@ export const ProfilePage = () => {
                     }
                     setProfile(profile)
                     const contents = await _apiClient.contentsGET(profile?.email)
-                    setContents(contents)
+                    const orderedContents = contents.sort(dateCreatedDescendingContents)
+                    setContents(orderedContents)
                 }
                 catch {
                     setUser(null)
@@ -73,7 +75,13 @@ export const ProfilePage = () => {
     }, [ user, profile ])
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
-    const handleClose = () => { setContent(null) }
+    const handleClose = async () => { 
+        if (profile) {
+            const contents = await _apiClient.contentsGET(profile?.email)
+            setContents(contents)
+        }
+        setContent(null)
+    }
 
     const handleFollowButton = async () => {
         try {

@@ -8,6 +8,7 @@ import PostContentBox from '../../components/home-page/PostContentBox'
 import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
 import useUser from '../../hooks/useUser'
+import { dateCreatedDescendingUserContents } from '../../utils/Sorters'
 
 const fabStyling = {
     position: 'fixed',
@@ -26,17 +27,6 @@ const postBoxStyle = {
     border: '1px solid #000',
     p: '2vh',
     overflowY: 'auto',
-}
-
-const dateUpdatedDescending = (a: UserContents, b: UserContents): number => {
-    if (a.content.dateUpdated && b.content.dateUpdated)
-        return 0
-    else if (a.content.dateUpdated)
-        return 1
-    else if (b.content.dateUpdated)
-        return -1
-    
-    return (a.content.dateUpdated ?? new Date()) > (b.content.dateUpdated ?? new Date()) ? 1 : (a.content.dateUpdated === b.content.dateUpdated ? 0 : -1)
 }
 
 export interface UserContents {
@@ -70,9 +60,9 @@ export const HomePage = () => {
                         catch {
                             continue
                         }
-                        currentUserContents.sort(dateUpdatedDescending)
+                        currentUserContents.sort(dateCreatedDescendingUserContents)
                     }
-                    currentUserContents.sort(dateUpdatedDescending)
+                    currentUserContents.sort(dateCreatedDescendingUserContents)
                     setContents(currentUserContents)
                     if (currentUserContents.length > 0)
                         setContentLoadMessage(null)

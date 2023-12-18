@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Alert, Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Snackbar, Tab, TextField, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import DeleteConfirmation from './DeleteConfirmation'
+import SubmissionAlert from '../login-pages/SubmissionAlert'
+import { FormProperties } from '../../utils/FormProperties'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -49,7 +51,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
     const [ deleting, setDeleting ] = useState<boolean>(false)
-    const [ error, setError ] = useState<string | undefined>()
+    const [ alert, setAlert ] = useState<FormProperties>({
+        isOpen: false,
+        isSuccess: true,
+        message: ''
+    })
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -103,7 +109,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch(err: any) {
-            setError(err.message)
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
         }
     }
 
@@ -124,7 +134,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setNewComment('')
         }
         catch(err: any) {
-            setError(err.message)
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
         }
     }
 
@@ -167,16 +181,36 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }
 
-    const handleCloseErrorMessage = () => {
-        setError(undefined)
-    }
-
     const handleCancelModal = () => {
         setDeleting(false)
     }
 
-    const handleDeleteModal = () => {
-        
+    const handleDeleteModal = async () => {
+        try {
+           await _apiClient.contentDELETE(props?.userContent?.content?.id)
+            setAlert({
+                isOpen: true,
+                isSuccess: true,
+                message: 'Successfully deleted post!'
+            })
+        }
+        catch(err: any) {
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
+        }
+        setDeleting(false)
+        setTimeout(() => 
+        { handleSuccessfulDelete() }, 
+        3000)
+    }
+
+    const handleSuccessfulDelete = () => {
+        if (props?.handleClose) {
+            props?.handleClose()
+        }
     }
 
     return (<>
@@ -281,17 +315,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <KeyboardArrowDownIcon/>
                     </IconButton>
                 </Box>}
-                <Snackbar 
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} 
-                open={error ? true : false} 
-                autoHideDuration={6000} 
-                onClose={handleCloseErrorMessage}
-                key={'bottomcenter'}
-                >
-                    <Alert severity='error' sx={{ width: '100%' }}>
-                        Error processing request: {error}
-                    </Alert>
-                </Snackbar>
                 <Modal
                 open={deleting}
                 aria-labelledby='modal-modal-title'
@@ -301,6 +324,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <DeleteConfirmation handleCancel={handleCancelModal} handleDelete={handleDeleteModal}/>
                     </Box>
                 </Modal>
+                <SubmissionAlert value={alert} setValue={setAlert}/>
             </>)
 }
 
