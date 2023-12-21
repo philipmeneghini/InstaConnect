@@ -1,4 +1,4 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, styled, alpha, InputBase } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -13,6 +13,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
+import SearchIcon from '@mui/icons-material/Search'
 
 export interface FollowContents {
     email : string
@@ -22,6 +23,49 @@ export interface FollowContents {
 interface HeaderProps {
     user: UserModel
 }
+
+const Search = styled('div')(({ theme }) => ({
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    marginRight: theme.spacing(2),
+    marginLeft: 0,
+    width: '60%',
+    height: '70%',
+    margin: 'auto',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(3),
+      width: 'auto',
+    },
+  }));
+  
+  const SearchIconWrapper = styled('div')(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }));
+  
+  const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: 'inherit',
+    '& .MuiInputBase-input': {
+      padding: theme.spacing(1, 1, 1, 0),
+      // vertical padding + font size from searchIcon
+      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('md')]: {
+        width: '20ch',
+      },
+    },
+  }));
+  
 
 export const Header = ( props: HeaderProps ) => {
 
@@ -86,6 +130,12 @@ export const Header = ( props: HeaderProps ) => {
                 search: `?email=${email}`
             }, {replace: true})
             setMenuOpen(false)
+        }
+    }
+
+    const handleKeyPress = (evt: any) => {
+        if (evt.key === 'Enter') {
+            console.log(evt.target.value)
         }
     }
 
@@ -171,20 +221,30 @@ export const Header = ( props: HeaderProps ) => {
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
                             </IconButton>
                             <Drawer
-                                    anchor='left'
-                                    variant='persistent'
-                                    open={menuOpen}
-                                    onClose={handleDrawerClose}
-                                    sx={{ backgroundColor: '' }}
-                                    PaperProps={{
-                                        sx: {
-                                            borderRight: '0.1vw solid black',
-                                            backgroundColor: '#e6e6e6',
-                                        }
-                                      }}
-                                > 
-                                    {sideMenu()}
-                                </Drawer>
+                                anchor='left'
+                                variant='persistent'
+                                open={menuOpen}
+                                onClose={handleDrawerClose}
+                                sx={{ backgroundColor: '' }}
+                                PaperProps={{
+                                    sx: {
+                                        borderRight: '0.1vw solid black',
+                                        backgroundColor: '#e6e6e6',
+                                    }
+                                    }}
+                            > 
+                                {sideMenu()}
+                            </Drawer>
+                            <Search>
+                                <SearchIconWrapper>
+                                    <SearchIcon />
+                                </SearchIconWrapper>
+                                <StyledInputBase
+                                placeholder="Search…"
+                                inputProps={{ 'aria-label': 'search' }}
+                                onKeyDown={handleKeyPress}
+                                />
+                            </Search>
                         </Grid>
                         <Grid item xs={2}>
                             <IconButton color='inherit' onClick={handleInstaConnectClick}>
