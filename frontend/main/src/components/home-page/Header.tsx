@@ -135,7 +135,7 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleKeyPress = (evt: any) => {
         if (evt.key === 'Enter') {
-            console.log(evt.target.value)
+            console.log('test')
         }
     }
 

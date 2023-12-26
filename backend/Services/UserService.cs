@@ -13,7 +13,7 @@ using Backend.Models.Validation;
 
 namespace Backend.Services
 {
-    public class UserService : Repository<UserModel>, IUserService
+    public class UserService : Repository<UserModel>, IUserService, ISearchService<UserModel>
     {
         private IMediaService _mediaService;
         private IValidator<UserEmailValidationModel> _deleteGetUserValidator;
@@ -432,6 +432,38 @@ namespace Backend.Services
                 _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
                 _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
             }
+
+            return users;
+        }
+
+        public List<UserModel> GetSearch(string? searchParam)
+        {
+            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+
+            var users = GetModels(filter);
+
+            if (users.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+
+            return users;
+        }
+
+        public async Task<List<UserModel>> GetSearchAsync(string? searchParam)
+        {
+            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+
+            var users = await GetModelsAsync(filter);
+
+            if (users.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
 
             return users;
         }

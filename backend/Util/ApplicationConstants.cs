@@ -72,6 +72,7 @@ namespace Util.Constants
         static public readonly List<string> EmailServicerBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
+        static public readonly string NoSearchParam = "No search parameters passed in!";
         #endregion
 
         #region CRUD Operations
@@ -132,6 +133,10 @@ namespace Util.Constants
             { Reels,  VideoGif },
             { Unknown, string.Empty }
         };
+        #endregion
+
+        #region RegEx
+        static public readonly string NameRegEx = "/.*[{0}].*/";
         #endregion
     }
 }
