@@ -19,14 +19,16 @@ namespace Backend.Controllers
             _contentService = contentService;
         }
 
+        [Authorize]
         [HttpGet("Users/Search")]
-        public async Task<List<UserModel>> GetUserSearch(string? searchParam)
+        public async Task<List<UserModel>> GetUserSearch([FromQuery] string? searchParam)
         {
             return await _userService.GetSearchAsync(searchParam);
         }
 
+        [Authorize]
         [HttpGet("Content/Search")]
-        public async Task<List<ContentModel>> GetContentSearch(string? searchParam)
+        public async Task<List<ContentModel>> GetContentSearch([FromQuery] string? searchParam)
         {
             return await _contentService.GetSearchAsync(searchParam);
         }

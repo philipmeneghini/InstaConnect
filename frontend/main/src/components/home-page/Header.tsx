@@ -1,19 +1,22 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, styled, alpha, InputBase } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, styled, alpha, InputBase, Modal } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
-import { UserModel } from '../../api/Client'
+import { ContentModel, UserModel } from '../../api/Client'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchIcon from '@mui/icons-material/Search'
+import { _apiClient } from '../../App'
+import PostContentBox from './PostContentBox'
+import { UserContents } from '../../pages/main-page/HomePage'
 
 export interface FollowContents {
     email : string
@@ -22,6 +25,19 @@ export interface FollowContents {
 
 interface HeaderProps {
     user: UserModel
+}
+
+const postBoxStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '40vw',
+    maxHeight: '90vh',
+    bgcolor: 'whitesmoke',
+    border: '1px solid #000',
+    p: '2vh',
+    overflowY: 'auto',
 }
 
 const Search = styled('div')(({ theme }) => ({
@@ -70,13 +86,39 @@ const Search = styled('div')(({ theme }) => ({
 export const Header = ( props: HeaderProps ) => {
 
     const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
+    const [ anchorSearch, setAnchorSearch ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
+    const [ searchOpen, setSearchOpen ] = useState<boolean>(false)
+    const [ usersSearch, setUsersSearch ] = useState<UserModel[]>([])
+    const [ contentsSearch, setContentsSearch ] = useState<ContentModel[]>([])
+    const [ contentOpen, setContentOpen ] = useState<ContentModel>()
+    const [ contentUser, setContentUser ] = useState<UserModel>()
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
 
     const [ followers ] = useFollowers(props?.user?.followers, followersOpen)
     const [ following ] = useFollowers(props?.user?.following, followingOpen)
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
+
+    useEffect(() => {
+        const GetContentUser = async () => {
+            if (contentOpen !== undefined && contentOpen !== null) {
+                try {
+                    const user = await  _apiClient.userGET(contentOpen?.email)
+                    setContentUser(user)
+                }
+                catch {
+                    setContentUser(undefined)
+                }
+            }
+            else {
+                setContentUser(undefined)
+            }
+        }
+
+        GetContentUser()
+
+    }, [contentOpen])
 
     const navigate = useNavigate()
 
@@ -135,8 +177,52 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleKeyPress = (evt: any) => {
         if (evt.key === 'Enter') {
-            console.log('test')
+            handleSearchOpen(evt.target.value, evt.currentTarget)
         }
+    }
+
+    const handleSearchOpen = async (searchParam: string, target: HTMLElement) => {
+        let users: UserModel[]
+        let contents: ContentModel[]
+
+        try {
+            users = await  _apiClient.search(searchParam)
+        }
+        catch{
+            users = []
+        }
+
+        try{
+            contents = await _apiClient.search2(searchParam)
+        }
+        catch {
+            contents = []
+        }
+
+        if (contents.length > 0 || users.length > 0) {
+            setSearchOpen(true)
+            setAnchorSearch(target)
+        }
+        else {
+            setSearchOpen(false)
+            setAnchorSearch(null)
+        }
+        setUsersSearch(users)
+        setContentsSearch(contents)
+    }
+
+    const handleSearchClose = () => {
+        setSearchOpen(false)
+        setUsersSearch([])
+        setContentsSearch([])
+    }
+
+    const openContent = (content: ContentModel) => {
+        setContentOpen(content)
+    }
+
+    const handleContentClose = () => {
+        setContentOpen(undefined)
     }
 
     const sideMenu = () => (
@@ -212,6 +298,7 @@ export const Header = ( props: HeaderProps ) => {
     )
 
     return (
+        <>
         <AppBar component='nav' position='fixed'>
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
@@ -245,6 +332,53 @@ export const Header = ( props: HeaderProps ) => {
                                 onKeyDown={handleKeyPress}
                                 />
                             </Search>
+                            <Menu
+                            anchorEl={anchorSearch}
+                            id='search-menu'
+                            open={searchOpen}
+                            onClose={handleSearchClose}
+                            onClick={handleSearchClose}
+                            PaperProps={{
+                                elevation: 0,
+                                sx: {
+                                overflow: 'auto',
+                                maxHeight: '80vh',
+                                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                mt: 1.5,
+                                '& .MuiAvatar-root': {
+                                    width: 32,
+                                    height: 32,
+                                    ml: -0.5,
+                                    mr: 1,
+                                },
+                                '&::before': {
+                                    content: '""',
+                                    display: 'block',
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 14,
+                                    width: 10,
+                                    height: 10,
+                                    bgcolor: 'background.paper',
+                                    transform: 'translateY(-50%) rotate(45deg)',
+                                    zIndex: 0,
+                                },
+                                },
+                            }}
+                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                            >
+                                <Typography textAlign='center'> <strong> Users </strong> </Typography>
+                                {usersSearch.map(user => 
+                                    <MenuItem key={user?.id} onClick={() => navigateToProfile(user?.email)}>
+                                        <Avatar src={user?.profilePictureUrl}/> {user?.firstName} {user?.lastName}
+                                    </MenuItem>)}
+                                <Typography textAlign='center'> <strong> Posts </strong> </Typography>
+                                {contentsSearch.map(content => 
+                                    <MenuItem key={content?.id} onClick={() => openContent(content)}>
+                                        <Avatar src={content?.mediaUrl}/> {content?.caption}
+                                    </MenuItem>)}
+                            </Menu>
                         </Grid>
                         <Grid item xs={2}>
                             <IconButton color='inherit' onClick={handleInstaConnectClick}>
@@ -290,6 +424,17 @@ export const Header = ( props: HeaderProps ) => {
                 </Toolbar>
             </Container>
         </AppBar>
+        <Modal
+        open={contentOpen ? true : false}
+        onClose={handleContentClose}
+        aria-labelledby='modal-modal-title'
+        aria-describedby='modal-modal-description'
+        >
+            <Box sx={postBoxStyle}>
+                <PostContentBox userContent={{user: contentUser as UserModel, content: contentOpen as ContentModel} as UserContents} user={props?.user} handleClose={handleContentClose}/>
+            </Box>
+        </Modal>
+        </>
 )}
 
 export default Header

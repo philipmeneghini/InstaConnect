@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using System.Text.RegularExpressions;
 
 namespace Backend.Services
 {
@@ -331,7 +332,21 @@ namespace Backend.Services
         public List<ContentModel> GetSearch(string? searchParam)
         {
             if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
-            var filter = Builders<ContentModel>.Filter.Regex(c => c.Caption, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            foreach(var param in listParams)
+            {
+                if (firstIteration)
+                    continue;
+
+                filter |= Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
             var contents = GetModels(filter);
 
             if (contents.Count == 0)
@@ -344,7 +359,21 @@ namespace Backend.Services
         public async Task<List<ContentModel>> GetSearchAsync(string? searchParam)
         {
             if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
-            var filter = Builders<ContentModel>.Filter.Regex(c => c.Caption, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            foreach (var param in listParams)
+            {
+                if (firstIteration)
+                    continue;
+
+                filter |= Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
             var contents = await GetModelsAsync(filter);
 
             if (contents.Count == 0)

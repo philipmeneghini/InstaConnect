@@ -10,6 +10,7 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
+using System.Text.RegularExpressions;
 
 namespace Backend.Services
 {
@@ -438,8 +439,23 @@ namespace Backend.Services
 
         public List<UserModel> GetSearch(string? searchParam)
         {
-            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
-            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+            if (string.IsNullOrWhiteSpace(searchParam))
+                throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            for (int i = 0; i < listParams.Count(); i++)
+            {
+                if (!firstIteration)
+                    filter |= Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+
+                filter |= Builders<UserModel>.Filter.Regex(p => p.LastName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                filter |= Builders<UserModel>.Filter.Regex(p => p.Email, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                firstIteration = false;
+            }
 
             var users = GetModels(filter);
 
@@ -453,9 +469,24 @@ namespace Backend.Services
         }
 
         public async Task<List<UserModel>> GetSearchAsync(string? searchParam)
-        {
-            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
-            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(string.Format(ApplicationConstants.NameRegEx, searchParam)));
+        { 
+            if (string.IsNullOrWhiteSpace(searchParam)) 
+                throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            for (int i = 0; i < listParams.Count(); i++)
+            {
+                if (!firstIteration)
+                    filter |= Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+
+                filter |= Builders<UserModel>.Filter.Regex(p => p.LastName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                filter |= Builders<UserModel>.Filter.Regex(p => p.Email, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                firstIteration = false;
+            }
 
             var users = await GetModelsAsync(filter);
 

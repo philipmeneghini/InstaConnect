@@ -136,7 +136,8 @@ namespace Util.Constants
         #endregion
 
         #region RegEx
-        static public readonly string NameRegEx = "/.*[{0}].*/";
+        static public readonly string I = "i";
+        static public readonly string BlankString = " ";
         #endregion
     }
 }

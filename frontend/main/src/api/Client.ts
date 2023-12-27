@@ -1246,6 +1246,122 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param searchParam (optional) 
+     * @return Success
+     */
+    search(searchParam?: string | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+        let url_ = this.baseUrl + "/api/Search/Users/Search?";
+        if (searchParam === null)
+            throw new Error("The parameter 'searchParam' cannot be null.");
+        else if (searchParam !== undefined)
+            url_ += "searchParam=" + encodeURIComponent("" + searchParam) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processSearch(_response);
+        });
+    }
+
+    protected processSearch(response: AxiosResponse): Promise<UserModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<UserModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<UserModel[]>(null as any);
+    }
+
+    /**
+     * @param searchParam (optional) 
+     * @return Success
+     */
+    search2(searchParam?: string | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
+        let url_ = this.baseUrl + "/api/Search/Content/Search?";
+        if (searchParam === null)
+            throw new Error("The parameter 'searchParam' cannot be null.");
+        else if (searchParam !== undefined)
+            url_ += "searchParam=" + encodeURIComponent("" + searchParam) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processSearch2(_response);
+        });
+    }
+
+    protected processSearch2(response: AxiosResponse): Promise<ContentModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<ContentModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<ContentModel[]>(null as any);
+    }
+
+    /**
      * @param email (optional) 
      * @return Success
      */
