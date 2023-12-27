@@ -2,17 +2,33 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Alert, Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Snackbar, Tab, TextField, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import { UserContents } from '../../pages/main-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import SendIcon from '@mui/icons-material/Send'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import DeleteConfirmation from './DeleteConfirmation'
+import SubmissionAlert from '../login-pages/SubmissionAlert'
+import { FormProperties } from '../../utils/FormProperties'
 
+const postBoxStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '30vw',
+    maxHeight: '90vh',
+    bgcolor: 'whitesmoke',
+    border: '1px solid #000',
+    p: '2vh',
+    overflowY: 'auto',
+}
 
 const interactionToolbarStyle = {
     paddingTop: '1vh',
@@ -34,7 +50,12 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
-    const [ error, setError ] = useState<string | undefined>()
+    const [ deleting, setDeleting ] = useState<boolean>(false)
+    const [ alert, setAlert ] = useState<FormProperties>({
+        isOpen: false,
+        isSuccess: true,
+        message: ''
+    })
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -88,7 +109,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch(err: any) {
-            setError(err.message)
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
         }
     }
 
@@ -99,13 +124,21 @@ export const PostContentBox = ( props: PostContentProps ) => {
         setContentExpanded(true)
     }
 
+    const handleDelete = () => {
+        setDeleting(true)
+    }
+
     const sendComment = async () => { 
         try {
             await _apiClient.commentPOST({ contentId: content.id, likes: [], body: newComment, email: props?.user?.email } as CommentModel)
             setNewComment('')
         }
         catch(err: any) {
-            setError(err.message)
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
         }
     }
 
@@ -148,8 +181,36 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }
 
-    const handleCloseErrorMessage = () => {
-        setError(undefined)
+    const handleCancelModal = () => {
+        setDeleting(false)
+    }
+
+    const handleDeleteModal = async () => {
+        try {
+           await _apiClient.contentDELETE(props?.userContent?.content?.id)
+            setAlert({
+                isOpen: true,
+                isSuccess: true,
+                message: 'Successfully deleted post!'
+            })
+        }
+        catch(err: any) {
+            setAlert({
+                isOpen: true,
+                isSuccess: false,
+                message: err.message
+            })
+        }
+        setDeleting(false)
+        setTimeout(() => 
+        { handleSuccessfulDelete() }, 
+        3000)
+    }
+
+    const handleSuccessfulDelete = () => {
+        if (props?.handleClose) {
+            props?.handleClose()
+        }
     }
 
     return (<>
@@ -160,14 +221,23 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {props?.userContent?.user?.firstName} {props?.userContent?.user?.lastName} </Typography>
                         </IconButton>
                     </Box>
-                    { props?.handleClose ? <Button variant='contained' onClick={props?.handleClose}> Close </Button> : <></>}
+                    <Box>
+                        { props?.user?.email === props?.userContent?.user?.email ? 
+                            
+                                <IconButton sx={{marginRight: '1vw'}} size='small' onClick={handleDelete}>
+                                    <Tooltip title='Delete Post'>
+                                        <DeleteForeverIcon sx={{color: 'red'}}/> 
+                                    </Tooltip>
+                                </IconButton>: <></> }
+                        { props?.handleClose ? <Button variant='contained' onClick={props?.handleClose}> Close </Button> : <></>}
+                    </Box>
                 </Box>
                 <img
                     src={content.mediaUrl}
                     srcSet={content.mediaUrl}
                     alt={content.caption}
                     loading='lazy'
-                    style={{maxWidth: '38vw', maxHeight: '40vh', display: 'flex', margin: 'auto'}}
+                    style={{maxWidth: '38vw', maxHeight: '30vh', display: 'flex', margin: 'auto'}}
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
@@ -245,17 +315,16 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <KeyboardArrowDownIcon/>
                     </IconButton>
                 </Box>}
-                <Snackbar 
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} 
-                open={error ? true : false} 
-                autoHideDuration={6000} 
-                onClose={handleCloseErrorMessage}
-                key={'bottomcenter'}
+                <Modal
+                open={deleting}
+                aria-labelledby='modal-modal-title'
+                aria-describedby='modal-modal-description'
                 >
-                    <Alert severity='error' sx={{ width: '100%' }}>
-                        Error processing request: {error}
-                    </Alert>
-                </Snackbar>
+                    <Box sx={postBoxStyle}>
+                        <DeleteConfirmation handleCancel={handleCancelModal} handleDelete={handleDeleteModal}/>
+                    </Box>
+                </Modal>
+                <SubmissionAlert value={alert} setValue={setAlert}/>
             </>)
 }
 
