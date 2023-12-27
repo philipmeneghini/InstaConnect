@@ -98,10 +98,15 @@ const SearchBar = () => {
 
     const navigateToProfile = (email: string) => {
         if (email) {
-            navigate({
-                pathname: Paths.Profile,
-                search: `?email=${email}`
-            }, {replace: true})
+            if (email === user?.email) {
+                navigate(Paths.Profile, {replace: true})
+            }
+            else {
+                navigate({
+                    pathname: Paths.Profile,
+                    search: `?email=${email}`
+                }, {replace: true})
+            }
         }
     }
 
