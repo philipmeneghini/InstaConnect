@@ -10,10 +10,12 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using System.Text.RegularExpressions;
 
 namespace Backend.Services
 {
-    public class ContentService : Repository<ContentModel>, IContentService
+    public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
         private readonly IMediaService _mediaService;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
@@ -325,6 +327,60 @@ namespace Backend.Services
             content.ForEach(c => _mediaService.DeleteMedia(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName));
 
             return content;
+        }
+
+        public List<ContentModel> GetSearch(string? searchParam)
+        {
+            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            foreach(var param in listParams)
+            {
+                if (firstIteration)
+                    continue;
+
+                filter |= Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
+            var contents = GetModels(filter);
+
+            if (contents.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
+            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            return contents;
+        }
+
+        public async Task<List<ContentModel>> GetSearchAsync(string? searchParam)
+        {
+            if (string.IsNullOrWhiteSpace(searchParam)) throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            foreach (var param in listParams)
+            {
+                if (firstIteration)
+                    continue;
+
+                filter |= Builders<ContentModel>.Filter.Regex(p => p.Caption, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
+            var contents = await GetModelsAsync(filter);
+
+            if (contents.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
+            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            return contents;
         }
 
         private static void ThrowExceptions (FluentValidation.Results.ValidationResult validationResult)

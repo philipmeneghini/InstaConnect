@@ -10,10 +10,11 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
+using System.Text.RegularExpressions;
 
 namespace Backend.Services
 {
-    public class UserService : Repository<UserModel>, IUserService
+    public class UserService : Repository<UserModel>, IUserService, ISearchService<UserModel>
     {
         private IMediaService _mediaService;
         private IValidator<UserEmailValidationModel> _deleteGetUserValidator;
@@ -432,6 +433,68 @@ namespace Backend.Services
                 _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
                 _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
             }
+
+            return users;
+        }
+
+        public List<UserModel> GetSearch(string? searchParam)
+        {
+            if (string.IsNullOrWhiteSpace(searchParam))
+                throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            for (int i = 0; i < listParams.Count(); i++)
+            {
+                if (!firstIteration)
+                    filter |= Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+
+                filter |= Builders<UserModel>.Filter.Regex(p => p.LastName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                filter |= Builders<UserModel>.Filter.Regex(p => p.Email, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
+            var users = GetModels(filter);
+
+            if (users.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+
+            return users;
+        }
+
+        public async Task<List<UserModel>> GetSearchAsync(string? searchParam)
+        { 
+            if (string.IsNullOrWhiteSpace(searchParam)) 
+                throw new InstaBadRequestException(ApplicationConstants.NoSearchParam);
+
+            var listParams = searchParam.Split(ApplicationConstants.BlankString).ToList();
+            listParams = listParams.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var filter = Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams.FirstOrDefault() ?? ApplicationConstants.BlankString), ApplicationConstants.I));
+
+            bool firstIteration = true;
+            for (int i = 0; i < listParams.Count(); i++)
+            {
+                if (!firstIteration)
+                    filter |= Builders<UserModel>.Filter.Regex(p => p.FirstName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+
+                filter |= Builders<UserModel>.Filter.Regex(p => p.LastName, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                filter |= Builders<UserModel>.Filter.Regex(p => p.Email, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(listParams[i]), ApplicationConstants.I));
+                firstIteration = false;
+            }
+
+            var users = await GetModelsAsync(filter);
+
+            if (users.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
+            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
+            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
+            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
 
             return users;
         }

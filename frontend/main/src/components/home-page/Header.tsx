@@ -13,6 +13,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
+import SearchBar from './SearchBar'
 
 export interface FollowContents {
     email : string
@@ -171,20 +172,21 @@ export const Header = ( props: HeaderProps ) => {
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
                             </IconButton>
                             <Drawer
-                                    anchor='left'
-                                    variant='persistent'
-                                    open={menuOpen}
-                                    onClose={handleDrawerClose}
-                                    sx={{ backgroundColor: '' }}
-                                    PaperProps={{
-                                        sx: {
-                                            borderRight: '0.1vw solid black',
-                                            backgroundColor: '#e6e6e6',
-                                        }
-                                      }}
-                                > 
-                                    {sideMenu()}
-                                </Drawer>
+                                anchor='left'
+                                variant='persistent'
+                                open={menuOpen}
+                                onClose={handleDrawerClose}
+                                sx={{ backgroundColor: '' }}
+                                PaperProps={{
+                                    sx: {
+                                        borderRight: '0.1vw solid black',
+                                        backgroundColor: '#e6e6e6',
+                                    }
+                                    }}
+                            > 
+                                {sideMenu()}
+                            </Drawer>
+                            <SearchBar/>
                         </Grid>
                         <Grid item xs={2}>
                             <IconButton color='inherit' onClick={handleInstaConnectClick}>

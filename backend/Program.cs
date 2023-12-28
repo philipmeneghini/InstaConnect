@@ -40,6 +40,8 @@ builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdVal
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
+builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
+builder.Services.AddScoped<ISearchService<ContentModel>, ContentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IUserService, UserService>();
