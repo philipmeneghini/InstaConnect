@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, Grid, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -13,9 +13,11 @@ import SendIcon from '@mui/icons-material/Send'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
 import SubmissionAlert from '../login-pages/SubmissionAlert'
 import { FormProperties } from '../../utils/FormProperties'
+import EditOffIcon from '@mui/icons-material/EditOff'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -44,8 +46,10 @@ interface PostContentProps {
 
 export const PostContentBox = ( props: PostContentProps ) => {
 
+    const [ editMode, setEditMode ] = useState<boolean>(false)
     const [ comments, setComments ] = useState<CommentModel[]>([])
     const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
+    const [ caption, setCaption ] = useState<string>()
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
@@ -213,6 +217,47 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }
 
+    const handleEdit = () => { 
+        if (editMode) {
+            setEditMode(false)
+            setCaption(undefined)
+        }
+        else {
+            setEditMode(true)
+            setCaption(content?.caption)
+        }
+    }
+
+    const handleCaptionChange = (e: any) => {
+        setCaption(e.target.value)
+    }
+
+    const handleSaveChanges = async () => {
+        let newContent: ContentModel = { ...content,
+                                        caption: caption}
+        console.log(caption)
+        console.log(newContent)
+        try {
+            await _apiClient.contentPUT(newContent)
+            setAlert({
+                isSuccess: true,
+                isOpen: true,
+                message: 'Post Successfully Updated!'
+            })
+            setTimeout(() => 
+            { setContent(newContent) }, 
+            3000)
+        }
+        catch {
+            setAlert({
+                isSuccess: false,
+                isOpen: true,
+                message: 'Post Failed to Update!'
+            })
+        }
+        setEditMode(false)
+    }
+
     return (<>
                 <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
                     <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
@@ -223,12 +268,18 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     </Box>
                     <Box>
                         { props?.user?.email === props?.userContent?.user?.email ? 
-                            
+                            <>
+                                <IconButton sx={{marginRight: '1vw'}} size='small' onClick={handleEdit}>
+                                    <Tooltip title={editMode ? 'Stop Editing Post' : 'Edit Post'}>
+                                        {editMode ? <EditOffIcon/> : <EditIcon/> }
+                                    </Tooltip>
+                                </IconButton>
                                 <IconButton sx={{marginRight: '1vw'}} size='small' onClick={handleDelete}>
                                     <Tooltip title='Delete Post'>
                                         <DeleteForeverIcon sx={{color: 'red'}}/> 
                                     </Tooltip>
-                                </IconButton>: <></> }
+                                </IconButton>
+                            </>: <></> }
                         { props?.handleClose ? <Button variant='contained' onClick={props?.handleClose}> Close </Button> : <></>}
                     </Box>
                 </Box>
@@ -251,7 +302,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
                     </Box>
                 </Box>
-                <Typography paddingTop='1vh' display='flex' justifyContent='center'> {content.caption} </Typography>
+                {editMode ? 
+                <TextField sx={{display: 'flex', justifyContent: 'center'}} 
+                    variant='standard' 
+                    onChange={handleCaptionChange}
+                    value={caption}
+                    multiline/> 
+                : <Typography paddingTop='1vh' display='flex' justifyContent='center'> {content.caption} </Typography>}
                 { contentExpanded ?
                     <Box sx={{marginTop: '2vh'}}>
                         <TabContext value={menuSelection}>
@@ -303,18 +360,36 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             </TabPanel>
                             </Box>
                          </TabContext>
-                         <Box sx={{display: 'flex', justifyContent: 'center'}}> 
-                            <IconButton onClick={handleCloseDropdown}>
-                                <KeyboardArrowUpIcon/>
-                            </IconButton>
-                        </Box>
+                         <Grid container>
+                            <Grid item xs={3}>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <div style={{display: 'flex', justifyContent: 'center'}}>
+                                    <IconButton onClick={handleCloseDropdown}>
+                                        <KeyboardArrowUpIcon/>
+                                    </IconButton>
+                                </div>
+                            </Grid>
+                            <Grid item xs={3}>
+                                {editMode && <Button sx={{marginTop: '5%'}} variant='contained' onClick={handleSaveChanges}> Save Changes </Button>}
+                            </Grid>
+                        </Grid>
                     </Box>
                 :
-                <Box sx={{display: 'flex', justifyContent: 'center'}}>
-                    <IconButton onClick={handleDropdown}>
-                        <KeyboardArrowDownIcon/>
-                    </IconButton>
-                </Box>}
+                <Grid container>
+                    <Grid item xs={3}>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <div style={{display: 'flex', justifyContent: 'center'}}>
+                            <IconButton onClick={handleDropdown}>
+                                <KeyboardArrowDownIcon/>
+                            </IconButton>
+                        </div>
+                    </Grid>
+                    <Grid item xs={3}>
+                        {editMode && <Button sx={{marginTop: '5%'}} variant='contained' onClick={handleSaveChanges}> Save Changes </Button>}
+                    </Grid>
+                </Grid>}
                 <Modal
                 open={deleting}
                 aria-labelledby='modal-modal-title'
