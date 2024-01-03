@@ -1,5 +1,4 @@
-﻿using Amazon.S3.Model;
-using Backend.Models;
+﻿using Backend.Models;
 
 namespace Util.Constants
 {
@@ -73,6 +72,7 @@ namespace Util.Constants
         static public readonly List<string> EmailServicerBadRequestErrorMessages = new List<string>() { EmailValid, EmailEmpty, FirstNameEmpty, FirstNameValid, LastNameEmpty, LastNameValid, BirthdateEmpty, BirthdateValid };
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
+        static public readonly string NoSearchParam = "No search parameters passed in!";
         #endregion
 
         #region CRUD Operations
@@ -90,8 +90,9 @@ namespace Util.Constants
         static public readonly string ReelsContentDestination = "reels/{0}/{1}";
 
         static public readonly string ProfilePicture = "Profile Picture";
-        static public readonly string Photos = "Photos";
-        static public readonly string Reels = "Reels";
+        static public readonly string Photos = nameof(Photos);
+        static public readonly string Reels = nameof(Reels);
+        static public readonly string Unknown = nameof(Unknown);
         #endregion
 
         #region Registration Email
@@ -121,6 +122,22 @@ namespace Util.Constants
         static public readonly string MisingEmailOrPassword = "missing email or password";
         static public readonly string InvalidPassword = "invalid password";
         static public readonly string NoToken = "no token passed in";
+        #endregion
+
+        #region Media AWS Dictionaries
+        static public readonly string ImageJpeg = "image/jpeg";
+        static public readonly string VideoGif = "video/gif";
+        static public readonly Dictionary<string, string> MediaContentType = new Dictionary<string, string>() {
+            { ProfilePicture, ImageJpeg },
+            { Photos, ImageJpeg },
+            { Reels,  VideoGif },
+            { Unknown, string.Empty }
+        };
+        #endregion
+
+        #region RegEx
+        static public readonly string I = "i";
+        static public readonly string BlankString = " ";
         #endregion
     }
 }

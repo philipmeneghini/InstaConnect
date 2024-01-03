@@ -8,6 +8,7 @@ using Backend.Models.Config;
 using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Util.Constants;
+using Util.MediaType;
 
 namespace Backend.Services
 {
@@ -29,15 +30,19 @@ namespace Backend.Services
             return result;
         }
 
-        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action)
-        {  
-            GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
+        public string GeneratePresignedUrl(string key, string bucketName, HttpVerb action, MediaType media)
+        {
+            var request = new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
                 Key = key,
                 Verb = action,
                 Expires = DateTime.UtcNow.AddMinutes(2)
             };
+
+            if (action == HttpVerb.PUT && ApplicationConstants.MediaContentType.ContainsKey(MediaTypeConverter.MediaToString(media)))
+                request.ContentType = ApplicationConstants.MediaContentType[MediaTypeConverter.MediaToString(media)];
+
             return _client.GetPreSignedURL(request);
         }
 
@@ -48,12 +53,8 @@ namespace Backend.Services
                 BucketName = bucketName,
                 Key = key
             };
+            
             var response = await _client.DeleteObjectAsync(request);
-            if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
-            {
-                throw new InstaGenericException((int)response.HttpStatusCode, string.Format(ApplicationConstants.ErrorDeletingProfilePicture, key));
-            }
-            return;
         }
     }
 }

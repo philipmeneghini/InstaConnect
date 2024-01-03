@@ -41,10 +41,10 @@ namespace Backend.Models
         public string? BirthDate { get; set; }
 
         [BsonElement("followers")]
-        public HashSet<string> Followers { get; set; }
+        public HashSet<string>? Followers { get; set; }
 
         [BsonElement("following")]
-        public HashSet<string> Following { get; set; }
+        public HashSet<string>? Following { get; set; }
 
         [Required, EmailAddress]
         [BsonElement("email")]
@@ -58,5 +58,14 @@ namespace Backend.Models
 
         [BsonIgnore]
         public string? ReelsUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadProfilePictureUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadPhotosUrl { get; set; }
+
+        [BsonIgnore]
+        public string? UploadReelsUrl { get; set; }
     }
 }
