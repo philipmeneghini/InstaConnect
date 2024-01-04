@@ -321,7 +321,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography key={comment?.id} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
+                                <Typography key={comment?.id} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw', '&:hover': { color: '#1876D3' }}}>
                                     <strong>{comment?.email}: </strong> {comment?.body}
                                 </Typography>
                                 ))}
