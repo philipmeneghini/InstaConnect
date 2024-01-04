@@ -1,4 +1,4 @@
-import {AppBar, Button, Toolbar, Typography} from '@mui/material'
+import {AppBar, Box, Button, Grid, Toolbar, Typography} from '@mui/material'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
@@ -15,12 +15,22 @@ export const LoginHeader = (props: LoginProps) => {
   return (
     <AppBar>
       <Toolbar>
-        <Typography variant='h4' component='div' sx={{ flexGrow: 1 }}>
-          InstaConnect
-        </Typography>
-        {Paths && <Button color='inherit' onClick={() => navigate(props.sideButtonPath, { replace: true })}>
-          {props.sideButton}
-        </Button>}
+        <Grid container>
+          <Grid item xs={3}>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography variant='h4' component='div' sx={{ flexGrow: 1 }}>
+              InstaConnect
+            </Typography>
+          </Grid>
+          <Grid item xs={3}>
+            <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+              {Paths && <Button color='inherit' onClick={() => navigate(props.sideButtonPath, { replace: true })}>
+              {props.sideButton}
+            </Button>}
+            </Box>
+          </Grid>
+        </Grid>
       </Toolbar>
     </AppBar>
   )

@@ -10,6 +10,7 @@ import { Paths } from '../../utils/Constants'
 import { FormProperties } from '../../utils/FormProperties'
 import { ApiException, LoginResponse } from '../../api/Client'
 import { useNavigate } from 'react-router-dom'
+import LoginFooter from '../../components/login-pages/LoginFooter'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
@@ -140,6 +141,7 @@ export const LoginPage = () => {
             <SubmissionAlert value={login} setValue={setLogin} />
           </Grid>
         </Grid>
+        <LoginFooter/>
       </>)
 }
 
