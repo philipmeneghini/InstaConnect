@@ -18,6 +18,7 @@ import DeleteConfirmation from './DeleteConfirmation'
 import SubmissionAlert from '../login-pages/SubmissionAlert'
 import { FormProperties } from '../../utils/FormProperties'
 import EditOffIcon from '@mui/icons-material/EditOff'
+import Comment from './Comment'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -321,9 +322,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography key={comment?.id} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw', '&:hover': { color: '#1876D3' }}}>
-                                    <strong>{comment?.email}: </strong> {comment?.body}
-                                </Typography>
+                                    <Comment key={comment?.id} comment={comment}/>
                                 ))}
                                 <TextField
                                 sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
