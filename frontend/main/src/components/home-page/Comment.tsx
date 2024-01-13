@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { CommentModel } from '../../api/Client'
-import { Box, Checkbox, Typography } from '@mui/material'
+import { Box, Checkbox, IconButton, Tooltip, Typography } from '@mui/material'
 import useUser from '../../hooks/useUser'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
+import EditIcon from '@mui/icons-material/Edit'
+import EditOffIcon from '@mui/icons-material/EditOff'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { _apiClient } from '../../App'
 
 interface CommentProps {
@@ -14,6 +17,7 @@ const Comment = (props: CommentProps) => {
     
     const [ like, setLike ] = useState<boolean>()
     const [ likes, setLikes ] = useState<number>(props?.comment?.likes?.length ?? 0)
+    const [ editMode, setEditMode ] = useState<boolean>(false)
     const [ hoverButton, setHoverButton ] = useState<boolean>(false)
     const [ user ] = useUser()
 
@@ -57,8 +61,15 @@ const Comment = (props: CommentProps) => {
         setHoverButton(false)
     }
 
+    const handleEdit = () => {
+        setEditMode(prevState => !prevState)
+    }
+
+    const handleDelete = () => {
+    }
+
     return (
-            <Box sx={{backgroundColor: hoverButton ? '#F1EDF2' : 'white'}}
+            <Box sx={{backgroundColor: hoverButton ? '#F4F5F4' : 'white'}}
                 onMouseEnter={handleEnterComment}
                 onMouseLeave={handleLeaveComment}
             >
@@ -68,8 +79,23 @@ const Comment = (props: CommentProps) => {
                     </Typography>
                 </Box>
                 <Box sx={{ display: hoverButton ? 'flex' : 'none', justifyContent: 'left', marginLeft: '1vw'}}>
-                    <Checkbox size='small' onClick={handleLike} checked={like} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                    <Tooltip title={like ? 'Unlike Comment' : 'Like Comment'}>
+                        <Checkbox size='small' onClick={handleLike} checked={like} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                    </Tooltip>
                     <Typography sx={{margin: 'auto 0'}}>{likes} Likes </Typography>
+                    {user?.email === props?.comment?.email &&
+                    <>
+                        <IconButton sx={{margin: '0 1vw'}} size='small' onClick={handleEdit}>
+                            <Tooltip title={editMode ? 'Stop Editing Comment' : 'Edit Comment'}>
+                                {editMode ? <EditOffIcon/> : <EditIcon/> }
+                            </Tooltip>
+                        </IconButton>
+                        <IconButton  size='small' onClick={handleDelete}>
+                            <Tooltip title='Delete Comment'>
+                                <DeleteForeverIcon sx={{color: 'red'}}/> 
+                            </Tooltip>
+                        </IconButton>
+                    </>}
                 </Box>
             </Box>
     )
