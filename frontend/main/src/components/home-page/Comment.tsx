@@ -1,12 +1,34 @@
 import React, { useState, useEffect } from 'react'
 import { CommentModel } from '../../api/Client'
 import { Box, Checkbox, IconButton, Tooltip, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import useUser from '../../hooks/useUser'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import EditIcon from '@mui/icons-material/Edit'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { _apiClient } from '../../App'
+
+const useStyles = makeStyles<{ hover: boolean }>()(
+    (theme, { hover }) => ({
+        comment: {
+            backgroundColor: hover ? '#F4F5F4' : 'white'
+        },
+        commentBox: {
+            p: hover ? '0.5vh 0 0 0' :'0.5vh'
+        },
+        commentText: {
+            display: 'flex', 
+            justifyContent: 'left', 
+            marginLeft: '1vw',
+            font: hover ? '1.1rem' : '1rem'
+        },
+        commentToolbar: {
+            display: hover ? 'flex' : 'none', 
+            justifyContent: 'left', 
+            marginLeft: '1vw'
+        },
+}))
 
 interface CommentProps {
     key: string | undefined
@@ -29,6 +51,15 @@ const Comment = (props: CommentProps) => {
             setLike(false)
         }
     }, [ user, props ] )
+
+    const { classes } = useStyles({ hover: hoverButton })
+
+    const {
+        comment,
+        commentBox,
+        commentText,
+        commentToolbar
+    } = classes
 
     const handleLike = async () => {
         try {
@@ -69,16 +100,16 @@ const Comment = (props: CommentProps) => {
     }
 
     return (
-            <Box sx={{backgroundColor: hoverButton ? '#F4F5F4' : 'white'}}
+            <Box className={comment}
                 onMouseEnter={handleEnterComment}
                 onMouseLeave={handleLeaveComment}
             >
-                <Box sx={{padding: hoverButton ? '0.5vh 0 0 0' :'0.5vh' }} >
-                    <Typography variant='body1' fontSize={hoverButton ? '1.1rem' : '1rem'} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
+                <Box className={commentBox} >
+                    <Typography className={commentText} variant='body1' >
                         <strong>{props?.comment?.email}: </strong> {props?.comment?.body}
                     </Typography>
                 </Box>
-                <Box sx={{ display: hoverButton ? 'flex' : 'none', justifyContent: 'left', marginLeft: '1vw'}}>
+                <Box className={commentToolbar}>
                     <Tooltip title={like ? 'Unlike Comment' : 'Like Comment'}>
                         <Checkbox size='small' onClick={handleLike} checked={like} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
                     </Tooltip>
