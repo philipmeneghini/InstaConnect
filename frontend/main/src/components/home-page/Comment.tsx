@@ -16,28 +16,38 @@ import { Paths } from '../../utils/Constants'
 
 const useStyles = makeStyles<{ hover: boolean }>()(
     (theme, { hover }) => ({
+        trashIcon: {
+            color: 'red'
+        },
         comment: {
             backgroundColor: hover ? '#F4F5F4' : 'white'
         },
         commentBox: {
             p: hover ? '0.5vh 0 0 0' :'0.5vh'
         },
+        commentText: {
+            textAlign: 'left', 
+            paddingLeft: '1vw'
+        },
         commentTextHeader: {
-            display: 'flex', 
-            justifyContent: 'left', 
-            marginLeft: '1vw',
-            font: hover ? '1.1rem' : '1rem'
+            display: 'inline', 
+            font: hover ? '1.1rem' : '1rem',
+            '&:hover': { cursor: 'pointer' }
         },
         commentTextBody: {
-            display: 'flex', 
-            justifyContent: 'left', 
-            margin: 'auto 0 auto 0.2vw',
+            display: 'inline',
             font: hover ? '1.1rem' : '1rem'
         },
         commentToolbar: {
             display: hover ? 'flex' : 'none', 
             justifyContent: 'left', 
             marginLeft: '1vw'
+        },
+        commentLikes: {
+            margin: 'auto 0'
+        },
+        commentEdit: {
+            margin: '0 1vw'
         },
         commentButtonEdit: {
             display: hover ? 'flex' : 'none',
@@ -56,14 +66,13 @@ interface CommentProps {
 }
 
 const Comment = (props: CommentProps) => {
-    
-    const [ like, setLike ] = useState<boolean>()
-    const [ likes, setLikes ] = useState<number>(props?.comment?.likes?.length ?? 0)
+    const [ liked, setLiked ] = useState<boolean>(true)
+    const [ likes, setLikes ] = useState<string[]>(props?.comment?.likes ?? [])
     const [ commentBody, setCommentBody ] = useState<string>(props?.comment?.body ?? '')
     const [ editMode, setEditMode ] = useState<boolean>(false)
-    const [ hoverButton, setHoverButton ] = useState<boolean>(false)
+    const [ deleteMode, setDeleteMode ] = useState<boolean>(false)
+    const [ hoverDisplay, setHoverDisplay ] = useState<boolean>(false)
     const [ deleted, setDeleted ] = useState<boolean>(false)
-    const [ deleteAction, setDeleteAction ] = useState<boolean>(false)
     const [ user ] = useUser()
     const [ alert, setAlert ] = useState<FormProperties>({
         isOpen: false,
@@ -72,24 +81,31 @@ const Comment = (props: CommentProps) => {
     })
 
     useEffect(() => {
-        if (props?.comment?.likes && props?.comment?.likes.indexOf(user?.email as string) >= 0) {
-            setLike(true)
+        if(!user?.email) {
+            setLiked(false)
+        }
+        else if (likes.indexOf(user.email) >= 0) {
+            setLiked(true)
         }
         else {
-            setLike(false)
+            setLiked(false)
         }
-    }, [ user, props ] )
+    }, [likes, user?.email])
 
     const navigate = useNavigate()
 
-    const { classes } = useStyles({ hover: hoverButton })
+    const { classes } = useStyles({ hover: hoverDisplay })
 
     const {
+        trashIcon,
         comment,
         commentBox,
+        commentText,
         commentTextHeader,
         commentTextBody,
         commentToolbar,
+        commentLikes,
+        commentEdit,
         commentButtonEdit,
         commentButtonDelete
     } = classes
@@ -97,19 +113,26 @@ const Comment = (props: CommentProps) => {
     const handleLike = async () => {
         try {
             let newComment: CommentModel = props?.comment
+            let newLikes: string[] = likes
             newComment.dateCreated = undefined
             newComment.dateUpdated = undefined
-            if (like && newComment?.likes && newComment?.likes.indexOf(user?.email as string) > -1) {
-                newComment.likes?.splice(newComment?.likes?.indexOf(user?.email as string), 1)
+            if (liked) {
+                console.log('HandleLike - liked before- ' + likes)
+                newLikes.splice(likes?.indexOf(user?.email as string), 1)
+                console.log( 'HandleLike - liked after-' + likes)
+                newComment.likes = newLikes
                 await _apiClient.commentPUT( newComment)
-                setLike(false)
-                setLikes(prevState => prevState - 1)
+                console.log('HandleLike- Likes setting to state ' + newLikes)
+                setLikes(newLikes)
+                setLiked(false)
             }
             else {
-                newComment?.likes ? newComment?.likes.push(user?.email as string) : newComment.likes = [ user?.email as string ]
+                newLikes.push(user?.email as string)
+                newComment.likes = newLikes
                 await _apiClient.commentPUT( newComment )
-                setLike(true)  
-                setLikes(prevState => prevState + 1)
+                console.log(' HandleLike - Not Liked: ' + newComment.likes)
+                setLikes(newLikes)
+                setLiked(true)
             }
         }
         catch (err: any) {
@@ -122,14 +145,14 @@ const Comment = (props: CommentProps) => {
     }
 
     const handleEnterComment = () => {
-        setHoverButton(true)
+        setHoverDisplay(true)
     }
 
     const handleLeaveComment = () => {
-        setHoverButton(false)
-        setEditMode(false)
-        setDeleteAction(false)
-        setCommentBody(props?.comment?.body ?? '')
+        if(!editMode && !deleteMode) {
+            setHoverDisplay(false)
+            setCommentBody(props?.comment?.body ??'')
+        }
     }
 
     const handleEdit = () => {
@@ -137,11 +160,11 @@ const Comment = (props: CommentProps) => {
             setCommentBody(props?.comment?.body ?? '')
         }
         setEditMode(prevState => !prevState)
-        setDeleteAction(false)
+        setDeleteMode(false)
     }
 
     const setDeleting = () => {
-        setDeleteAction(prevState => !prevState)
+        setDeleteMode(prevState => !prevState)
         setEditMode(false)
         setCommentBody(props?.comment?.body ?? '')
     }
@@ -166,7 +189,7 @@ const Comment = (props: CommentProps) => {
         }
     }
 
-    const handleCommentChange = (e: any) => {
+    const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCommentBody(e.target.value)
     }
 
@@ -218,13 +241,11 @@ const Comment = (props: CommentProps) => {
             >
                 <Box className={commentBox} >
                     {!editMode ?
-                    <Box sx={{display: 'flex', justifyContent: 'left'}}>
-                        <IconButton color='inherit' onClick={() => navigateToProfile(props?.comment?.email)}>
-                            <Typography className={commentTextHeader} variant='body1' >
-                                <strong>{props?.comment?.email}: </strong>
-                            </Typography>
-                        </IconButton>
-                        <Typography className={commentTextBody} variant='body1'>
+                    <Box className={commentText}>
+                        <Typography className={commentTextHeader} onClick={() => navigateToProfile(props?.comment?.email)}>
+                            <strong>{props?.comment?.email}: </strong>
+                        </Typography>
+                        <Typography className={commentTextBody}>
                             {commentBody}
                         </Typography>
                     </Box>
@@ -236,23 +257,23 @@ const Comment = (props: CommentProps) => {
                         variant='standard'/>}
                 </Box>
                 <Box className={commentToolbar}>
-                    <Tooltip title={like ? 'Unlike Comment' : 'Like Comment'}>
-                        <Checkbox size='small' onClick={handleLike} checked={like} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                    <Tooltip title={liked ? 'Unlike Comment' : 'Like Comment'}>
+                        <Checkbox size='small' onClick={handleLike} checked={liked} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
                     </Tooltip>
-                    <Typography sx={{margin: 'auto 0'}}>{likes} Likes </Typography>
+                    <Typography className={commentLikes}>{likes?.length ?? 0} Likes </Typography>
                     {user?.email === props?.comment?.email &&
                     <>
-                        <IconButton sx={{margin: '0 1vw'}} size='small' onClick={handleEdit}>
+                        <IconButton className={commentEdit} size='small' onClick={handleEdit}>
                             <Tooltip title={editMode ? 'Stop Editing Comment' : 'Edit Comment'}>
                                 {editMode ? <EditOffIcon/> : <EditIcon/> }
                             </Tooltip>
                         </IconButton>
                         <IconButton  size='small' onClick={setDeleting}>
-                            <Tooltip title={deleteAction ? 'Cancel Deleting Comment' :'Delete Comment' }>
-                                {deleteAction ? <RestoreFromTrashIcon sx={{color: 'red'}}/>:<DeleteForeverIcon sx={{color: 'red'}}/> }
+                            <Tooltip title={deleteMode ? 'Cancel Deleting Comment' :'Delete Comment' }>
+                                {deleteMode ? <RestoreFromTrashIcon className={trashIcon}/>:<DeleteForeverIcon className={trashIcon}/> }
                             </Tooltip>
                         </IconButton>
-                        { deleteAction && <Button className={commentButtonDelete} size='small' onClick={handleDelete}>
+                        { deleteMode && <Button className={commentButtonDelete} size='small' onClick={handleDelete}>
                             Confirm Deletion
                         </Button>}
                         { editMode && <Button className={commentButtonEdit} size='small' onClick={handleSave}>

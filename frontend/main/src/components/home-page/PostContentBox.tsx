@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
@@ -61,6 +61,16 @@ export const PostContentBox = ( props: PostContentProps ) => {
         isSuccess: true,
         message: ''
     })
+
+    const isContentLiked = useMemo((): boolean | undefined => {
+        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
+        if (index > -1) {
+            return true
+        }
+        else {
+            return false
+        }
+    }, [props, content])
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
@@ -144,16 +154,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 isSuccess: false,
                 message: err.message
             })
-        }
-    }
-
-    const isContentLiked = (): boolean | undefined => {
-        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
-        if (index > -1) {
-            return true
-        }
-        else {
-            return false
         }
     }
 
@@ -293,7 +293,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
-                        <Checkbox onClick={handleLike} checked={isContentLiked()} sx={{paddingTop: '0',display: 'inline'}} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                        <Checkbox onClick={handleLike} checked={isContentLiked} sx={{paddingTop: '0',display: 'inline'}} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
                         <Typography paddingLeft={'0.5vw'}> {content?.likes?.length ?? 0} likes</Typography>
                     </Box>
                     <Box sx={{paddingLeft: '5vw', display: 'flex', justifyContent: 'center'}}>
