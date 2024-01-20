@@ -4,3 +4,5 @@ export const Paths = {
     'Home': '/home',
     'Profile': '/profile'
 }
+
+export const ReleaseVersion: string = '20240103.1'
