@@ -10,6 +10,49 @@ import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
 import SubmissionAlert from '../login-pages/SubmissionAlert'
 import useUser from '../../hooks/useUser'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    theme => ({
+        header: {
+            display:'flex', 
+            justifyContent: 'space-between', 
+            marginBottom: '2vh'
+        },
+        headerItems: {
+            display:'flex', 
+            justifyContent: 'space-between', 
+            marginLeft: '2%'
+        },
+        headerAvatar: {
+            width: '5vh', 
+            height: '5vh'
+        },
+        headerText: {
+            margin: '0.5vh 0 0.5vh 1vh'
+        },
+        imageBox: {
+            display: 'flex', 
+            maxWidth: '90%'
+        },
+        image: {
+            marginTop: '2vh', 
+            maxWidth: '100%', 
+            maxHeight: '50vh'
+        },
+        imageText: {
+            margin: '5% 0 0 3%'
+        },
+        imageError: {
+            margin: '5% 0 0 3%', 
+            color: '#D32E2E'
+        },
+        submitButton: {
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            paddingTop: '2vh'
+        }
+}))
 
 interface ContentPostValues {
     multiMediaContent: File | undefined
@@ -28,6 +71,20 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
         isSuccess: false,
         message: ''
       }))
+
+    const { classes } = useStyles()
+
+      const {
+          header,
+          headerItems,
+          headerAvatar,
+          headerText,
+          image,
+          imageBox,
+          imageText,
+          imageError,
+          submitButton
+      } = classes
 
     const initialValues: ContentPostValues = {
         multiMediaContent: undefined,
@@ -110,10 +167,10 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
     }
 
     return (<>
-                <Box sx={{display:'flex', justifyContent: 'space-between', marginBottom: '2vh'}}>
-                    <Box sx={{display:'flex', justifyContent: 'space-between', marginLeft: '2%'}}>
-                        <Avatar src={user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
-                            <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {user?.firstName} {user?.lastName} </Typography>
+                <Box className={header}>
+                    <Box className={headerItems}>
+                        <Avatar className={headerAvatar} src={user?.profilePictureUrl}/>
+                        <Typography className={headerText}> {user?.firstName} {user?.lastName} </Typography>
                     </Box>
                     <Button variant='contained' onClick={props?.handleClose}> Close </Button>
                 </Box>
@@ -132,19 +189,19 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                                     formik.setFieldValue('multiMediaContent', e.target.files[0])
                                 }}}
                                 />
-                                <Box sx={{display: 'flex', maxWidth: '90%'}}>
+                                <Box className={imageBox}>
                                     <label htmlFor="multiMediaContent">
                                         <Fab component='span' onClick={() => formik.setFieldTouched('multiMediaContent')}>
                                             <AddPhotoAlternateIcon />
                                         </Fab>
                                     </label>
                                     {formik.errors.multiMediaContent && formik.touched.multiMediaContent 
-                                    ? <Typography sx={{margin: '5% 0 0 3%', color: '#D32E2E'}}>{formik.errors.multiMediaContent}</Typography> 
-                                    : <Typography sx={{margin: '5% 0 0 3%' }} noWrap={true}>{formik.values.multiMediaContent ? URL.createObjectURL(formik.values.multiMediaContent) : ''}</Typography>}
+                                    ? <Typography className={imageError}>{formik.errors.multiMediaContent}</Typography> 
+                                    : <Typography className={imageText} noWrap={true}>{formik.values.multiMediaContent ? URL.createObjectURL(formik.values.multiMediaContent) : ''}</Typography>}
                                 </Box>
                                 {formik.values.multiMediaContent ?
                                 <img 
-                                    style={{marginTop: '2vh', maxWidth: '100%', maxHeight: '50vh'}}
+                                    className={image}
                                     src={URL.createObjectURL(formik.values.multiMediaContent)}
                                     srcSet={URL.createObjectURL(formik.values.multiMediaContent)}
                                     alt={URL.createObjectURL(formik.values.multiMediaContent)}
@@ -163,7 +220,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                                 />
                             </Grid>
                         </Grid>
-                        <Box sx={{display: 'flex', justifyContent: 'flex-end', paddingTop: '2vh'}}>
+                        <Box className={submitButton}>
                             <Button variant='contained' type='submit' disabled={formik.isSubmitting}> Create Post </Button>
                         </Box>
                     </Form>
