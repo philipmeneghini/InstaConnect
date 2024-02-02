@@ -19,7 +19,7 @@ const postBoxStyle = {
     transform: 'translate(-50%, -50%)',
     width: '40vw',
     maxHeight: '95vh',
-    bgcolor: 'whitesmoke',
+    bgcolor: 'white',
     border: '1px solid #000',
     p: '2vh',
     overflowY: 'auto',
