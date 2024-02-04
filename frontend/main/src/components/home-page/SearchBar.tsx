@@ -1,4 +1,4 @@
-import { Avatar, Box, InputBase, Menu, MenuItem, Modal, Typography, alpha, styled } from '@mui/material'
+import { Avatar, Box, Fade, InputBase, Menu, MenuItem, Modal, Typography, alpha, styled } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import SearchIcon from '@mui/icons-material/Search'
 import { Paths } from '../../utils/Constants'
@@ -8,6 +8,7 @@ import { _apiClient } from '../../App'
 import PostContentBox from './PostContentBox'
 import { UserContents } from '../../pages/main-page/HomePage'
 import useUser from '../../hooks/useUser'
+import useDebounce from '../../hooks/useDebounce'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -71,8 +72,10 @@ const SearchBar = () => {
     const [ contentsSearch, setContentsSearch ] = useState<ContentModel[]>([])
     const [ contentOpen, setContentOpen ] = useState<ContentModel>()
     const [ contentUser, setContentUser ] = useState<UserModel>()
+    const [ search, setSearch ] = useState<string>('')
 
     const [ user ] = useUser()
+    const [ debouncedSearch ] = useDebounce<string>(search)
 
     useEffect(() => {
         const GetContentUser = async () => {
@@ -94,6 +97,10 @@ const SearchBar = () => {
 
     }, [contentOpen])
 
+    useEffect(() => {
+        handleSearchOpen()
+    }, [ debouncedSearch])
+
     const navigate = useNavigate()
 
     const navigateToProfile = (email: string) => {
@@ -110,25 +117,25 @@ const SearchBar = () => {
         }
     }
 
-    const handleKeyPress = (evt: any) => {
-        if (evt.key === 'Enter') {
-            handleSearchOpen(evt.target.value, evt.currentTarget)
+    const handleKeyPress = (evt: React.KeyboardEvent<HTMLElement>) => {
+        if(anchorSearch == null) {
+            setAnchorSearch(evt.currentTarget)
         }
     }
 
-    const handleSearchOpen = async (searchParam: string, target: HTMLElement) => {
+    const handleSearchOpen = async () => {
         let users: UserModel[]
         let contents: ContentModel[]
 
         try {
-            users = await  _apiClient.search(searchParam)
+            users = await  _apiClient.search(debouncedSearch)
         }
         catch{
             users = []
         }
 
         try{
-            contents = await _apiClient.search2(searchParam)
+            contents = await _apiClient.search2(debouncedSearch)
         }
         catch {
             contents = []
@@ -136,7 +143,6 @@ const SearchBar = () => {
 
         if (contents.length > 0 || users.length > 0) {
             setSearchOpen(true)
-            setAnchorSearch(target)
         }
         else {
             setSearchOpen(false)
@@ -169,6 +175,8 @@ const SearchBar = () => {
                 <StyledInputBase
                 placeholder='Search…'
                 inputProps={{ 'aria-label': 'search' }}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleKeyPress}
                 />
             </Search>
@@ -176,6 +184,8 @@ const SearchBar = () => {
             anchorEl={anchorSearch}
             id='search-menu'
             open={searchOpen}
+            disableAutoFocus
+            TransitionComponent={Fade}
             onClose={handleSearchClose}
             onClick={handleSearchClose}
             PaperProps={{
