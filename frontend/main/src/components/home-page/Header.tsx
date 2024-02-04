@@ -14,6 +14,53 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    theme => ({
+        sideMenuBox: {
+            overflow: 'hidden', 
+            displaywidth: '20vw'
+        },
+        sideMenuCloseButton: {
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'flex-end'
+        },
+        sideMenuList: {
+            paddingTop: '0', 
+            height: '90vh'
+        },
+        sideMenuListButton: {
+            paddingRight: '0', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            fontSize: '1.4rem'
+        },
+        sideMenuListItem: {
+            overflowY: 'auto', 
+            maxHeight: '65vh'
+        },
+        sideMenuFooter: {
+            display: 'flex',
+            gap: 1,
+            p: 1.5,
+            pb: 2,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+        },
+        headerMenuDrawer: {
+            flexGrow: 1, 
+            display: 'flex', 
+            justifyContent: 'start'
+        },
+        headerMenuProfile: {
+            flexGrow: 0, 
+            display: 'flex', 
+            justifyContent: 'end'
+        }
+    })
+)
 
 export interface FollowContents {
     email : string
@@ -36,6 +83,18 @@ export const Header = ( props: HeaderProps ) => {
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
     const navigate = useNavigate()
+    const { classes } = useStyles()
+
+    const {
+        sideMenuBox,
+        sideMenuCloseButton,
+        sideMenuFooter,
+        sideMenuList,
+        sideMenuListButton,
+        sideMenuListItem,
+        headerMenuDrawer,
+        headerMenuProfile
+    } = classes
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorUser(event.currentTarget)
@@ -91,9 +150,9 @@ export const Header = ( props: HeaderProps ) => {
     }
 
     const sideMenu = () => (
-        <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
+        <Box className={sideMenuBox}>
             <Box sx={{height: '10vh'}}>
-                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
+                <Box className={sideMenuCloseButton}>
                     <IconButton onClick={handleDrawerClose}>
                         <ChevronLeftIcon />
                     </IconButton>
@@ -101,15 +160,15 @@ export const Header = ( props: HeaderProps ) => {
                 <Divider />
             </Box>
             <Box sx={{height:'80vh'}}>
-                <List component='nav' sx={{paddingTop: '0', height: '90vh'}}>
-                    <ListItemButton onClick={handleFollowingClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+                <List component='nav' className={sideMenuList}>
+                    <ListItemButton className={sideMenuListButton} onClick={handleFollowingClick}>
                         Following
                         <ListItemIcon>
                             {followingOpen? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </ListItemIcon>
                     </ListItemButton>
                     <Collapse in={followingOpen} timeout='auto' unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component='div' disablePadding>
+                        <List className={sideMenuListItem} component='div' disablePadding>
                             {following.map(following => (
                                 <ListItemButton key={following.email} onClick={() => navigateToProfile(following.email)} sx={{ pl: 4 }}>
                                     <ListItemAvatar>
@@ -119,14 +178,14 @@ export const Header = ( props: HeaderProps ) => {
                                 </ListItemButton>))}
                         </List>
                     </Collapse>
-                    <ListItemButton onClick={handleFollowersClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+                    <ListItemButton className={sideMenuListButton} onClick={handleFollowersClick}>
                         Followers
                         <ListItemIcon>
                             {followersOpen ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </ListItemIcon>
                     </ListItemButton>
-                    <Collapse in={followersOpen} timeout="auto" unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                    <Collapse in={followersOpen} timeout='auto' unmountOnExit>
+                        <List className={sideMenuListItem} component='div' disablePadding>
                             {followers.map(follower => (
                                 <ListItemButton key={follower.email} onClick={() => navigateToProfile(follower.email)} sx={{ pl: 4 }}>
                                     <ListItemAvatar>
@@ -140,16 +199,12 @@ export const Header = ( props: HeaderProps ) => {
             </Box>
             <Box sx={{height: '10vh'}}>
                 <Divider/>
-                <Box
-                sx={{
-                    display: 'flex',
-                    gap: 1,
-                    p: 1.5,
-                    pb: 2,
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                }}
-                >
+                <Box sx={{display: 'flex',
+            gap: 1,
+            p: 1.5,
+            pb: 2,
+            borderTop: '1px solid',
+            borderColor: 'divider',}}>
                     <Avatar src={profilePicture}/>
                     <div>
                         <Typography>{props?.user?.firstName} {props?.user?.lastName}</Typography>
@@ -167,7 +222,7 @@ export const Header = ( props: HeaderProps ) => {
             <Container maxWidth='xl'>
                 <Toolbar disableGutters>
                     <Grid container>
-                        <Grid item xs = {5} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'start' }}>
+                        <Grid item xs={5} className={headerMenuDrawer}>
                             <IconButton onClick={handleMenuItemClick} color='inherit'>
                                 {menuOpen ? <MenuOpenIcon/> : <MenuIcon/>}
                             </IconButton>
@@ -182,7 +237,7 @@ export const Header = ( props: HeaderProps ) => {
                                         borderRight: '0.1vw solid black',
                                         backgroundColor: '#e6e6e6',
                                     }
-                                    }}
+                                }}
                             > 
                                 {sideMenu()}
                             </Drawer>
@@ -195,7 +250,7 @@ export const Header = ( props: HeaderProps ) => {
                                 </Typography>
                             </IconButton>
                         </Grid>
-                        <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
+                        <Grid item xs={5} className={headerMenuProfile}>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
                                     <Avatar alt='Remy Sharp' src={profilePicture}/>
