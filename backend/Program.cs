@@ -11,6 +11,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Models.Config;
 using Backend.Models.Validation;
+using Backend.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Backend.Util;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +32,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-
+builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateCreateHandler>();
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -54,7 +58,18 @@ builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build
     build.WithOrigins(ApplicationConstants.Star).AllowAnyMethod().AllowAnyHeader();
 }));
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString() });
+    });
+    options.AddPolicy("UserPolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.RegularUser.ToString() });
+        policy.Requirements.Add(new UserUpdateCreateRequirement());
+    });
+});
 
 builder.Services.AddAuthentication(options =>
 {

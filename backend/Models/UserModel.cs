@@ -2,6 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Util.Constants;
 using System.ComponentModel.DataAnnotations;
+using Backend.Util;
 
 namespace Backend.Models
 {
@@ -49,6 +50,9 @@ namespace Backend.Models
         [Required, EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; }
+
+        [BsonElement("role")]
+        public Role Role { get; set; }
 
         [BsonIgnore]
         public string? ProfilePictureUrl { get; set; }

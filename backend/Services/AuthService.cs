@@ -57,7 +57,8 @@ namespace Backend.Services
             {
                 new Claim(ApplicationConstants.Email, user.Email),
                 new Claim(ApplicationConstants.Name, fullName),    
-                new Claim(ApplicationConstants.DateOfBirth, user.BirthDate)
+                new Claim(ApplicationConstants.DateOfBirth, user.BirthDate ?? string.Empty),
+                new Claim(ApplicationConstants.Role, user.Role.ToString())
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -125,6 +126,8 @@ namespace Backend.Services
                     res.FullName = claim.Value;
                 else if (claim.Type.Equals(ApplicationConstants.DateOfBirth, StringComparison.OrdinalIgnoreCase))
                     res.BirthDate = claim.Value;
+                else if (claim.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase))
+                    res.Role = claim.Value;
             }
             return res;
         }

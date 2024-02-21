@@ -139,5 +139,9 @@ namespace Util.Constants
         static public readonly string I = "i";
         static public readonly string BlankString = " ";
         #endregion
+
+        #region Roles
+        static public readonly string Role = nameof(Role);
+        #endregion
     }
 }
