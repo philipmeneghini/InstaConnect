@@ -1,4 +1,4 @@
-import { Avatar, Box, Fade, InputBase, Menu, MenuItem, Modal, Typography, alpha, styled } from '@mui/material'
+import { Avatar, Box, InputBase, Menu, MenuItem, Modal, Typography, alpha, styled } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import SearchIcon from '@mui/icons-material/Search'
 import { Paths } from '../../utils/Constants'
@@ -17,7 +17,7 @@ const postBoxStyle = {
     transform: 'translate(-50%, -50%)',
     width: '40vw',
     maxHeight: '90vh',
-    bgcolor: 'whitesmoke',
+    bgcolor: 'white',
     border: '1px solid #000',
     p: '2vh',
     overflowY: 'auto',
@@ -77,6 +77,7 @@ const SearchBar = () => {
     const [ user ] = useUser()
     const [ debouncedSearch ] = useDebounce<string>(search)
 
+
     useEffect(() => {
         const GetContentUser = async () => {
             if (contentOpen !== undefined && contentOpen !== null) {
@@ -98,8 +99,36 @@ const SearchBar = () => {
     }, [contentOpen])
 
     useEffect(() => {
+        const handleSearchOpen = async () => {
+            let users: UserModel[]
+            let contents: ContentModel[]
+    
+            try {
+                users = await  _apiClient.search(debouncedSearch)
+            }
+            catch{
+                users = []
+            }
+    
+            try{
+                contents = await _apiClient.search2(debouncedSearch)
+            }
+            catch {
+                contents = []
+            }
+    
+            if (contents.length > 0 || users.length > 0) {
+                setSearchOpen(true)
+            }
+            else {
+                setSearchOpen(false)
+            }
+            setUsersSearch(users)
+            setContentsSearch(contents)
+        }
+
         handleSearchOpen()
-    }, [ debouncedSearch])
+    }, [ debouncedSearch ])
 
     const navigate = useNavigate()
 
@@ -117,7 +146,10 @@ const SearchBar = () => {
         }
     }
 
-    const handleKeyPress = (evt: React.KeyboardEvent<HTMLElement>) => {
+    const handleKeyPress = async (evt: React.KeyboardEvent<HTMLElement>) => {
+        if (evt.key === 'Enter') {
+            await handleSearchOpen()
+        }
         if(anchorSearch == null) {
             setAnchorSearch(evt.currentTarget)
         }
@@ -146,7 +178,6 @@ const SearchBar = () => {
         }
         else {
             setSearchOpen(false)
-            setAnchorSearch(null)
         }
         setUsersSearch(users)
         setContentsSearch(contents)
@@ -154,8 +185,8 @@ const SearchBar = () => {
 
     const handleSearchClose = () => {
         setSearchOpen(false)
-        setUsersSearch([])
         setContentsSearch([])
+        setUsersSearch([])
     }
 
     const openContent = (content: ContentModel) => {
@@ -185,14 +216,15 @@ const SearchBar = () => {
             id='search-menu'
             open={searchOpen}
             disableAutoFocus
-            TransitionComponent={Fade}
             onClose={handleSearchClose}
             onClick={handleSearchClose}
             PaperProps={{
                 elevation: 0,
                 sx: {
-                overflow: 'auto',
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 maxHeight: '80vh',
+                maxWidth: '25vw',
                 filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
                 mt: 1.5,
                 '& .MuiAvatar-root': {
