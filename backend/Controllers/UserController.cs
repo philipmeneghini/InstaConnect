@@ -18,7 +18,7 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("User")]
-        public async Task<UserModel> GetUser(string? email)
+        public async Task<UserModel> GetUser([FromQuery] string? email)
         {
             return await _userService.GetUserAsync(email);
         }
@@ -57,9 +57,9 @@ namespace InstaConnect.Controllers
             return await _userService.UpdateUsersAsync(newUsers); 
         }
 
-        [Authorize(Policy = "UserPolicy")]
+        [Authorize(Policy = "UserDeletePolicy")]
         [HttpDelete("User")]
-        public async Task<ActionResult<UserModel>> DeleteUser(string? email)
+        public async Task<ActionResult<UserModel>> DeleteUser([FromQuery] string? email)
         {
             return await _userService.DeleteUserAsync(email);
         }

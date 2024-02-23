@@ -33,9 +33,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateDeleteHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateDeleteHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateDeleteHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -69,7 +70,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("UserPolicy", policy =>
     {
         policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
-        policy.Requirements.Add(new UserUpdateDeleteRequirement());
+        policy.Requirements.Add(new UserUpdateRequirement());
     });
     options.AddPolicy("ContentPolicy", policy =>
     {
@@ -80,7 +81,12 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
         policy.Requirements.Add(new CommentCreateUpdateDeleteRequirement());
-    })
+    });
+    options.AddPolicy("UserDeletePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
+        policy.Requirements.Add(new UserDeleteRequirement());
+    });
 });
 
 builder.Services.AddAuthentication(options =>

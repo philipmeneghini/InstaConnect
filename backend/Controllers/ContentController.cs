@@ -18,13 +18,13 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("Content")]
-        public async Task<ActionResult<ContentModel>> GetContent(string? id)
+        public async Task<ActionResult<ContentModel>> GetContent([FromQuery] string? id)
         {
             return await _contentService.GetContentAsync(id);
         }
 
         [HttpGet("Contents")]
-        public async Task<ActionResult<List<ContentModel>>> GetContents(string? email)
+        public async Task<ActionResult<List<ContentModel>>> GetContents([FromQuery] string? email)
         {
             return await _contentService.GetContentsAsync(email);
         }
@@ -67,7 +67,7 @@ namespace InstaConnect.Controllers
 
         [Authorize(Policy = "ContentPolicy")]
         [HttpDelete("Contents")]
-        public async Task<ActionResult<List<ContentModel>>> DeleteContents([FromBody] List<string>? ids)
+        public async Task<ActionResult<List<ContentModel>>> DeleteContents([FromQuery] List<string>? ids)
         {
             return await _contentService.DeleteContentsAsync(ids);
         }
