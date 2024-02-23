@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class EmailController : ControllerBase
@@ -16,14 +17,13 @@ namespace Backend.Controllers
             _emailService = emailService;
         }
 
-        [Authorize]
         [HttpPost("Registration")]
         public async Task<EmailResponse> SendRegistrationEmail([FromBody] UserModel user)
         {
             return await _emailService.SendRegistrationEmailAsync(user);
         }
 
-        [Authorize]
+        [Authorize(Policy = "UserPolicy")]
         [HttpPost("ResetPassword")]
         public async Task<EmailResponse> SendResetPasswordEmail([FromBody] UserModel user)
         {
