@@ -4,5 +4,6 @@
     {
         Administrator = 1,
         RegularUser = 2,
+        Guest = 3,
     }
 }

@@ -28,8 +28,8 @@ namespace Backend.Authorization
             var email = input?.Email;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
             if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase) 
-                && !string.IsNullOrEmpty(email) 
-                && !string.IsNullOrEmpty(loggedInEmail))
+                || string.IsNullOrEmpty(email) 
+                || string.IsNullOrEmpty(loggedInEmail))
             {
                 context.Fail();
                 return Task.CompletedTask;

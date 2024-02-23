@@ -13,7 +13,6 @@ using Backend.Models.Config;
 using Backend.Models.Validation;
 using Backend.Authorization;
 using Microsoft.AspNetCore.Authorization;
-using Backend.Util;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,12 +30,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateDeleteHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateDeleteHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
+
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -47,6 +41,12 @@ builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdVal
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();
 builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
 builder.Services.AddScoped<ISearchService<ContentModel>, ContentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -55,6 +55,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {
@@ -65,27 +67,41 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy =>
     {
-        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString() });
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminRoleList);
+    });
+    options.AddPolicy("AdminGuestPolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminGuestRoleList);
     });
     options.AddPolicy("UserPolicy", policy =>
     {
-        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
         policy.Requirements.Add(new UserUpdateRequirement());
     });
     options.AddPolicy("ContentPolicy", policy =>
     {
-        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
-        policy.Requirements.Add(new ContentCreateUpdateDeleteRequirement());
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new ContentCreateUpdateRequirement());
     });
     options.AddPolicy("CommentPolicy", policy =>
     {
-        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
-        policy.Requirements.Add(new CommentCreateUpdateDeleteRequirement());
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new CommentCreateUpdateRequirement());
     });
     options.AddPolicy("UserDeletePolicy", policy =>
     {
-        policy.RequireClaim(ApplicationConstants.Role, new string[] { Role.Administrator.ToString(), Role.RegularUser.ToString() });
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
         policy.Requirements.Add(new UserDeleteRequirement());
+    });
+    options.AddPolicy("ContentDeletePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new ContentDeleteRequirement());
+    });
+    options.AddPolicy("CommentDeletePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new CommentDeleteRequirement());
     });
 });
 

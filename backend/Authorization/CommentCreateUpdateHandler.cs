@@ -5,15 +5,15 @@ using Util.Constants;
 
 namespace Backend.Authorization
 {
-    public class CommentCreateUpdateDeleteHandler : AuthorizationHandler<CommentCreateUpdateDeleteRequirement>
+    public class CommentCreateUpdateHandler : AuthorizationHandler<CommentCreateUpdateRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public CommentCreateUpdateDeleteHandler(IHttpContextAccessor httpContextAccessor)
+        public CommentCreateUpdateHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, CommentCreateUpdateDeleteRequirement requirement)
+            (AuthorizationHandlerContext context, CommentCreateUpdateRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -27,8 +27,8 @@ namespace Backend.Authorization
             var email = input?.Email;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
             if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
-                && !string.IsNullOrEmpty(email)
-                && !string.IsNullOrEmpty(loggedInEmail))
+                || string.IsNullOrEmpty(email)
+                || string.IsNullOrEmpty(loggedInEmail))
             {
                 context.Fail();
                 return Task.CompletedTask;

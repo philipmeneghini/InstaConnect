@@ -88,6 +88,26 @@ namespace Backend.Services
             return comments;
         }
 
+        public List<CommentModel> GetComments(List<string>? ids)
+        {
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, ids.FirstOrDefault());
+            bool firstId = true;
+            foreach (var id in ids)
+            {
+                var validationResult = _getDeleteCommentValidator.Validate(new CommentIdValidationModel(id), Options => Options.IncludeRuleSets(ApplicationConstants.Delete));
+                ThrowExceptions(validationResult);
+
+                if (firstId)
+                    filter |= Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
+                firstId = false;
+            }
+
+            var comments = GetModels(filter);
+
+            return comments;
+        }
+
         public CommentModel CreateComment(CommentModel? newComment)
         {
             if (newComment == null) throw new InstaBadRequestException(ApplicationConstants.CommentEmpty);

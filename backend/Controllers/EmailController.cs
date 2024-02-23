@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
-    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class EmailController : ControllerBase
@@ -17,6 +16,7 @@ namespace Backend.Controllers
             _emailService = emailService;
         }
 
+        [Authorize(Policy = "AdminGuestPolicy")]
         [HttpPost("Registration")]
         public async Task<EmailResponse> SendRegistrationEmail([FromBody] UserModel user)
         {

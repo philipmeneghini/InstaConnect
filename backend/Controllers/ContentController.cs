@@ -58,14 +58,14 @@ namespace InstaConnect.Controllers
             return await _contentService.UpdateContentsAsync(newContents);
         }
 
-        [Authorize(Policy = "ContentPolicy")]
+        [Authorize(Policy = "ContentDeletePolicy")]
         [HttpDelete("Content")]
-        public async Task<ActionResult<ContentModel>> DeleteContent(string? id)
+        public async Task<ActionResult<ContentModel>> DeleteContent([FromQuery]string? id)
         {
             return await _contentService.DeleteContentAsync(id);
         }
 
-        [Authorize(Policy = "ContentPolicy")]
+        [Authorize(Policy = "ContentDeletePolicy")]
         [HttpDelete("Contents")]
         public async Task<ActionResult<List<ContentModel>>> DeleteContents([FromQuery] List<string>? ids)
         {

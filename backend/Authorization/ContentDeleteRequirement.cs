@@ -2,7 +2,7 @@
 
 namespace Backend.Authorization
 {
-    public class CommentCreateUpdateDeleteRequirement : IAuthorizationRequirement
+    public class ContentDeleteRequirement : IAuthorizationRequirement
     {
     }
 }

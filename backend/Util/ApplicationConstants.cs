@@ -142,6 +142,20 @@ namespace Util.Constants
 
         #region Roles
         static public readonly string Role = nameof(Role);
+        static public readonly string[] AdminRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString() 
+        };
+        static public readonly string[] AdminUserRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString(), 
+            Backend.Util.Role.RegularUser.ToString() 
+        };
+        static public readonly string[] AdminGuestRoleList = new string[]
+        {
+            Backend.Util.Role.Administrator.ToString(),
+            Backend.Util.Role.Guest.ToString()
+        };
         #endregion
     }
 }

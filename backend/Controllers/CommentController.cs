@@ -18,13 +18,13 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("Comment")]
-        public async Task<ActionResult<CommentModel>> GetComment(string? id)
+        public async Task<ActionResult<CommentModel>> GetComment([FromQuery] string? id)
         {
             return await _commentService.GetCommentAsync(id);
         }
 
         [HttpGet("Comments")]
-        public async Task<ActionResult<List<CommentModel>>> GetContents(string? contentId)
+        public async Task<ActionResult<List<CommentModel>>> GetContents([FromQuery] string? contentId)
         {
             return await _commentService.GetCommentsAsync(contentId);
         }
@@ -58,16 +58,16 @@ namespace InstaConnect.Controllers
             return await _commentService.UpdateCommentsAsync(newComments);
         }
 
-        [Authorize(Policy = "CommentPolicy")]
+        [Authorize(Policy = "CommentDeletePolicy")]
         [HttpDelete("Comment")]
-        public async Task<ActionResult<CommentModel>> DeleteComment(string? id)
+        public async Task<ActionResult<CommentModel>> DeleteComment([FromQuery] string? id)
         {
             return await _commentService.DeleteCommentAsync(id);
         }
 
-        [Authorize(Policy = "CommentPolicy")]
+        [Authorize(Policy = "CommentDeletePolicy")]
         [HttpDelete("Comments")]
-        public async Task<ActionResult<List<CommentModel>>> DeleteComments([FromBody] List<string>? ids)
+        public async Task<ActionResult<List<CommentModel>>> DeleteComments([FromQuery] List<string>? ids)
         {
             return await _commentService.DeleteCommentsAsync(ids);
         }

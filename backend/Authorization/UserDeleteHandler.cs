@@ -24,6 +24,11 @@ namespace Backend.Authorization
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
             var query = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase));
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
+            if (query.Value.Count == 0)
+            {
+                context.Fail();
+                return Task.CompletedTask;
+            }
             foreach (var value in query.Value)
             {
                 if (value != loggedInEmail)

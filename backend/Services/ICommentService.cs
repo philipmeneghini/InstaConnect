@@ -8,6 +8,7 @@ namespace Backend.Services.Interfaces
         public Task<CommentModel> GetCommentAsync(string? id);
 
         public List<CommentModel> GetComments(string? contentId);
+        public List<CommentModel> GetComments(List<string>? ids);
         public Task<List<CommentModel>> GetCommentsAsync(string? contentId);
 
         public CommentModel CreateComment(CommentModel? comment);
