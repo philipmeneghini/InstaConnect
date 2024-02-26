@@ -52,7 +52,7 @@ namespace Backend.Models
         public string Email { get; set; }
 
         [BsonElement("role")]
-        public Role Role { get; set; }
+        public Role? Role { get; set; }
 
         [BsonIgnore]
         public string? ProfilePictureUrl { get; set; }

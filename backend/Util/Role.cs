@@ -5,5 +5,6 @@
         Administrator = 1,
         RegularUser = 2,
         Guest = 3,
+        Unknown = 4
     }
 }

@@ -11,10 +11,12 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using Backend.Util;
+using System.Data;
 
 namespace Backend.Services
 {
-    public class UserService : Repository<UserModel>, IUserService, ISearchService<UserModel>
+    public class UserService : Repository<UserModel>, IUserService, IRoleService, ISearchService<UserModel>
     {
         private IMediaService _mediaService;
         private IValidator<UserEmailValidationModel> _deleteGetUserValidator;
@@ -182,6 +184,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref newUser);
+            newUser.Role = Role.RegularUser;
             var user = CreateModel(newUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -209,6 +212,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref newUser);
+            newUser.Role = Role.RegularUser;
             var user = await CreateModelAsync(newUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -238,6 +242,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
 
+                newUser.Role = Role.RegularUser;
                 result.Add(newUser);
             }
 
@@ -262,6 +267,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
 
+                newUser.Role = Role.RegularUser;
                 result.Add(newUser);
             }
 
@@ -284,6 +290,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref updatedUser);
+            updatedUser.Role = null;
             var user = UpdateModel(updatedUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -311,6 +318,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref updatedUser);
+            updatedUser.Role = null;
             var user = await UpdateModelAsync(updatedUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -340,6 +348,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update));
                 ThrowExceptions(validationResult);
 
+                user.Role = null;
                 result.Add(user);
             }
 
@@ -364,6 +373,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update));
                 ThrowExceptions(validationResult);
 
+                user.Role = null;
                 result.Add(user);
             }
 
@@ -497,6 +507,74 @@ namespace Backend.Services
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
 
             return users;
+        }
+
+        public UserModel AssignRole(RoleModel? role)
+        {
+            if (role == null) 
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            UserModel user = GetUser(role.Email);
+            user.Role = role.Role;
+            RemoveUrls(ref user);
+            UserModel resultingUser = UpdateUser(user);
+
+            return resultingUser;
+        }
+
+        public async Task<UserModel> AssignRoleAsync(RoleModel? role)
+        {
+            if (role == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            UserModel user = await GetUserAsync(role.Email);
+            user.Role = role.Role;
+            RemoveUrls(ref user);
+            UserModel resultingUser = await UpdateUserAsync(user);
+
+            return resultingUser;
+        }
+
+        public List<UserModel> AssignRoles(List<RoleModel>? roles)
+        {
+            if (roles == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            List<string> emails = new List<string>();
+            roles.ForEach(r => emails.Add(r.Email));
+            List<UserModel> users = GetUsers(emails);
+            foreach(var user in users)
+            {
+                var associatedRoleModel = roles.FirstOrDefault(r => r.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase));
+                Role? role = associatedRoleModel == null ? null : associatedRoleModel.Role;
+                user.Role = role;
+            }
+            RemoveUrls(ref users);
+
+            List<UserModel> resultingUsers = UpdateUsers(users);
+
+            return resultingUsers;
+        }
+
+        public async Task<List<UserModel>> AssignRolesAsync(List<RoleModel>? roles)
+        {
+            if (roles == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            List<string> emails = new List<string>();
+            roles.ForEach(r => emails.Add(r.Email));
+            List<UserModel> users = await GetUsersAsync(emails);
+            foreach (var user in users)
+            {
+                var associatedRoleModel = roles.FirstOrDefault(r => r.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase));
+                Role? role = associatedRoleModel == null ? null : associatedRoleModel.Role;
+                user.Role = role;
+            }
+            RemoveUrls(ref users);
+
+            List<UserModel> resultingUsers = await UpdateUsersAsync(users);
+
+            return resultingUsers;
         }
 
         private void RemoveUrls(ref UserModel user)

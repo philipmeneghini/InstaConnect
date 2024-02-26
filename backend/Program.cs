@@ -49,6 +49,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();
 builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
 builder.Services.AddScoped<ISearchService<ContentModel>, ContentService>();
+builder.Services.AddScoped<IRoleService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IUserService, UserService>();

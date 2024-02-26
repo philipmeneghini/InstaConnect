@@ -73,6 +73,7 @@ namespace Util.Constants
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
         static public readonly string NoSearchParam = "No search parameters passed in!";
+        static public readonly string NoRolesPassedIn = "No role or user has been passed in!";
         #endregion
 
         #region CRUD Operations
