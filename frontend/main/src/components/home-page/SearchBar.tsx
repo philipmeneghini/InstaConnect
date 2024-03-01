@@ -68,6 +68,7 @@ const SearchBar = () => {
 
     const [ anchorSearch, setAnchorSearch ] = useState<HTMLElement | null>(null)
     const [ searchOpen, setSearchOpen ] = useState<boolean>(false)
+    const [ noResults, setNoResults ] = useState<boolean>(false)
     const [ usersSearch, setUsersSearch ] = useState<UserModel[]>([])
     const [ contentsSearch, setContentsSearch ] = useState<ContentModel[]>([])
     const [ contentOpen, setContentOpen ] = useState<ContentModel>()
@@ -99,34 +100,6 @@ const SearchBar = () => {
     }, [contentOpen])
 
     useEffect(() => {
-        const handleSearchOpen = async () => {
-            let users: UserModel[]
-            let contents: ContentModel[]
-    
-            try {
-                users = await  _apiClient.search(debouncedSearch)
-            }
-            catch{
-                users = []
-            }
-    
-            try{
-                contents = await _apiClient.search2(debouncedSearch)
-            }
-            catch {
-                contents = []
-            }
-    
-            if (contents.length > 0 || users.length > 0) {
-                setSearchOpen(true)
-            }
-            else {
-                setSearchOpen(false)
-            }
-            setUsersSearch(users)
-            setContentsSearch(contents)
-        }
-
         handleSearchOpen()
     }, [ debouncedSearch ])
 
@@ -148,6 +121,7 @@ const SearchBar = () => {
 
     const handleKeyPress = async (evt: React.KeyboardEvent<HTMLElement>) => {
         if (evt.key === 'Enter') {
+            setNoResults(false)
             await handleSearchOpen()
         }
         if(anchorSearch == null) {
@@ -173,11 +147,12 @@ const SearchBar = () => {
             contents = []
         }
 
+        setSearchOpen(true)
         if (contents.length > 0 || users.length > 0) {
-            setSearchOpen(true)
+            setNoResults(false)
         }
         else {
-            setSearchOpen(false)
+            setNoResults(true)
         }
         setUsersSearch(users)
         setContentsSearch(contents)
@@ -185,6 +160,7 @@ const SearchBar = () => {
 
     const handleSearchClose = () => {
         setSearchOpen(false)
+        setNoResults(false)
         setContentsSearch([])
         setUsersSearch([])
     }
@@ -197,6 +173,10 @@ const SearchBar = () => {
         setContentOpen(undefined)
     }
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setSearch(e.target.value)
+    }
+
     return (
         <>
             <Search>
@@ -207,7 +187,7 @@ const SearchBar = () => {
                 placeholder='Search…'
                 inputProps={{ 'aria-label': 'search' }}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleChange}
                 onKeyDown={handleKeyPress}
                 />
             </Search>
@@ -250,16 +230,21 @@ const SearchBar = () => {
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-                <Typography textAlign='center'> <strong> Users </strong> </Typography>
-                {usersSearch.map(user => 
-                    <MenuItem key={user?.id} onClick={() => navigateToProfile(user?.email)}>
-                        <Avatar src={user?.profilePictureUrl}/> {user?.firstName} {user?.lastName}
-                    </MenuItem>)}
-                <Typography textAlign='center'> <strong> Posts </strong> </Typography>
-                {contentsSearch.map(content => 
-                    <MenuItem key={content?.id} onClick={() => openContent(content)}>
-                        <Avatar src={content?.mediaUrl}/> {content?.caption}
-                    </MenuItem>)}
+            {noResults  
+                ? <Typography textAlign='center' padding={'1vh 1vw'}> <em> No Results Found </em></Typography> 
+                : <>
+                    <Typography textAlign='center'> <strong> Users </strong> </Typography>
+                    {usersSearch.map(user => 
+                        <MenuItem key={user?.id} onClick={() => navigateToProfile(user?.email)}>
+                            <Avatar src={user?.profilePictureUrl}/> {user?.firstName} {user?.lastName}
+                        </MenuItem>)}
+                    <Typography textAlign='center'> <strong> Posts </strong> </Typography>
+                    {contentsSearch.map(content => 
+                        <MenuItem key={content?.id} onClick={() => openContent(content)}>
+                            <Avatar src={content?.mediaUrl}/> {content?.caption}
+                        </MenuItem>)}
+                </>
+            }
             </Menu>
             <Modal
             open={contentOpen ? true : false}
