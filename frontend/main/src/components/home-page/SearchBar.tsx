@@ -68,7 +68,7 @@ const SearchBar = () => {
 
     const [ anchorSearch, setAnchorSearch ] = useState<HTMLElement | null>(null)
     const [ searchOpen, setSearchOpen ] = useState<boolean>(false)
-    const [ noResults, setNoResults ] = useState<boolean>(false)
+    const [ noResults, setNoResults ] = useState<string>('')
     const [ usersSearch, setUsersSearch ] = useState<UserModel[]>([])
     const [ contentsSearch, setContentsSearch ] = useState<ContentModel[]>([])
     const [ contentOpen, setContentOpen ] = useState<ContentModel>()
@@ -121,7 +121,6 @@ const SearchBar = () => {
 
     const handleKeyPress = async (evt: React.KeyboardEvent<HTMLElement>) => {
         if (evt.key === 'Enter') {
-            setNoResults(false)
             await handleSearchOpen()
         }
         if(anchorSearch == null) {
@@ -132,6 +131,10 @@ const SearchBar = () => {
     const handleSearchOpen = async () => {
         let users: UserModel[]
         let contents: ContentModel[]
+        if (debouncedSearch === '') {
+            setNoResults('Please type your search...')
+            return
+        }
 
         try {
             users = await  _apiClient.search(debouncedSearch)
@@ -149,20 +152,18 @@ const SearchBar = () => {
 
         setSearchOpen(true)
         if (contents.length > 0 || users.length > 0) {
-            setNoResults(false)
+            setNoResults('')
+            setUsersSearch(users)
+            setContentsSearch(contents)
         }
         else {
-            setNoResults(true)
+            setNoResults('No Results Found')
         }
-        setUsersSearch(users)
-        setContentsSearch(contents)
     }
 
     const handleSearchClose = () => {
         setSearchOpen(false)
-        setNoResults(false)
-        setContentsSearch([])
-        setUsersSearch([])
+        setNoResults('')
     }
 
     const openContent = (content: ContentModel) => {
@@ -230,8 +231,8 @@ const SearchBar = () => {
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-            {noResults  
-                ? <Typography textAlign='center' padding={'1vh 1vw'}> <em> No Results Found </em></Typography> 
+            {noResults !== ''  
+                ? <Typography textAlign='center' padding={'1vh 1vw'}> <em> {noResults} </em></Typography> 
                 : <>
                     <Typography textAlign='center'> <strong> Users </strong> </Typography>
                     {usersSearch.map(user => 
