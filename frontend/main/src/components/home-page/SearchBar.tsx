@@ -133,6 +133,8 @@ const SearchBar = () => {
         let contents: ContentModel[]
         if (debouncedSearch === '') {
             setNoResults('Please type your search...')
+            setUsersSearch([])
+            setContentsSearch([])
             return
         }
 
