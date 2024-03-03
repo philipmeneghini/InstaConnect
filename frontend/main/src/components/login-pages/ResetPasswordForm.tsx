@@ -1,24 +1,19 @@
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import { Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid,TextField } from '@mui/material'
-import { FormProperties } from '../../utils/FormProperties'
-import SubmissionAlert from './SubmissionAlert'
 import { _apiClient } from '../../App'
 import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { ApiException } from '../../api/Client'
+import { NotificationContext } from '../NotificationProvider'
 
 export interface ResetPasswordFormValues {
     email: string
 }
 
 export const ResetPasswordForm = () => {
-    const [passwordReset, setPasswordReset] = useState<FormProperties>({
-        isOpen: false,
-        isSuccess: false,
-        message: ''
-      });
+    const notificationContext = useContext(NotificationContext)
 
     const initialValues : ResetPasswordFormValues = {
         email: ''
@@ -26,21 +21,13 @@ export const ResetPasswordForm = () => {
 
     const onSubmit = async (values: ResetPasswordFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<ResetPasswordFormValues>): Promise<void> => {
         if (!values.email) {
-            setPasswordReset({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Email Field Missing'
-            })
+            notificationContext.openNotification(false, 'Email Field Missing')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<ResetPasswordFormValues>  = await validateForm(values)
         if (errors.email) {
-            setPasswordReset({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Email is Invalid'
-            })
+            notificationContext.openNotification(false, 'Email is Invalid')
             setSubmitting(false)
             return
         }
@@ -50,32 +37,18 @@ export const ResetPasswordForm = () => {
             const userResponse = await _apiClient.userGET(values.email)
             const emailResponse = await _apiClient.resetPassword(userResponse)
             if (emailResponse.sent) {
-                setPasswordReset({
-                    isOpen: true,
-                    isSuccess: true,
-                    message: `An Email Has Been Sent To ${userResponse.email}`
-                })
+                notificationContext.openNotification(true, `An Email Has Been Sent To ${userResponse.email}`)
                 resetForm()
             }
             else {
-                setPasswordReset({
-                    isOpen: true,
-                    isSuccess: false,
-                    message: `Email To ${userResponse.email} Failed to Send`
-                })
+                notificationContext.openNotification(false, `Email To ${userResponse.email} Failed to Send`)
             }
         }
         catch(err: any){
-            let failedEmailResult: FormProperties = {
-                isOpen: true,
-                isSuccess: false,
-                message: ''
-            }
             if (err instanceof ApiException)
-                failedEmailResult.message = err.response
+                notificationContext.openNotification(false, err.response)
             else
-                failedEmailResult.message = 'Internal Server Error'
-            setPasswordReset(failedEmailResult)
+                notificationContext.openNotification(false, 'Internal Server Error')
         }
         setSubmitting(false)
         localStorage.setItem('token', '')
@@ -114,7 +87,6 @@ export const ResetPasswordForm = () => {
                 </Form>)   
             }
             </Formik>
-            <SubmissionAlert value={passwordReset} setValue={setPasswordReset} />
         </>
     )
 }

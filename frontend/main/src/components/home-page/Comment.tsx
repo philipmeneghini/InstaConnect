@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { CommentModel } from '../../api/Client'
 import { Box, Checkbox, IconButton, Tooltip, Typography, TextField, Button } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -8,11 +8,10 @@ import EditIcon from '@mui/icons-material/Edit'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { _apiClient } from '../../App'
-import { FormProperties } from '../../utils/FormProperties'
-import SubmissionAlert from '../login-pages/SubmissionAlert'
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
+import { NotificationContext } from '../NotificationProvider'
 
 const useStyles = makeStyles<{ hover: boolean }>()(
     (theme, { hover }) => ({
@@ -74,11 +73,7 @@ const Comment = (props: CommentProps) => {
     const [ hoverDisplay, setHoverDisplay ] = useState<boolean>(false)
     const [ deleted, setDeleted ] = useState<boolean>(false)
     const [ user ] = useUser()
-    const [ alert, setAlert ] = useState<FormProperties>({
-        isOpen: false,
-        isSuccess: true,
-        message: ''
-    })
+    const notificationContext = useContext(NotificationContext)
 
     useEffect(() => {
         if(!user?.email) {
@@ -117,12 +112,9 @@ const Comment = (props: CommentProps) => {
             newComment.dateCreated = undefined
             newComment.dateUpdated = undefined
             if (liked) {
-                console.log('HandleLike - liked before- ' + likes)
                 newLikes.splice(likes?.indexOf(user?.email as string), 1)
-                console.log( 'HandleLike - liked after-' + likes)
                 newComment.likes = newLikes
                 await _apiClient.commentPUT( newComment)
-                console.log('HandleLike- Likes setting to state ' + newLikes)
                 setLikes(newLikes)
                 setLiked(false)
             }
@@ -130,17 +122,12 @@ const Comment = (props: CommentProps) => {
                 newLikes.push(user?.email as string)
                 newComment.likes = newLikes
                 await _apiClient.commentPUT( newComment )
-                console.log(' HandleLike - Not Liked: ' + newComment.likes)
                 setLikes(newLikes)
                 setLiked(true)
             }
         }
         catch (err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Error changing like status : ' + err.message
-            })
+            notificationContext.openNotification(false, 'Error changing like status : ' + err.message)
         }
     }
 
@@ -172,19 +159,11 @@ const Comment = (props: CommentProps) => {
     const handleDelete = async () => {
         try {
             await _apiClient.commentDELETE(props?.comment?.id)
-            setAlert({
-                isOpen: true,
-                isSuccess: true,
-                message: 'Successfully Deleted Comment!'
-            })
+            notificationContext.openNotification(true, 'Successfully Deleted Comment!')
             setDeleted(true)
         }
         catch (err: any){
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Error Deleting Comment : ' + err.message
-            })
+            notificationContext.openNotification(false, 'Error Deleting Comment : ' + err.message)
             setDeleted(false)
         }
     }
@@ -200,19 +179,11 @@ const Comment = (props: CommentProps) => {
             newComment.dateUpdated = undefined
             newComment.body = commentBody
             await _apiClient.commentPUT(newComment)
-            setAlert({
-                isOpen: true,
-                isSuccess: true,
-                message: 'Successfully Changed Comment!'
-            })
+            notificationContext.openNotification(true, 'Successfully Changed Comment!')
             setEditMode(false)
         }
         catch (err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Error Editing Comment : ' + err.message
-            })
+            notificationContext.openNotification(false, 'Error Editing Comment : ' + err.message)
             setCommentBody(props?.comment?.body ?? '')
         }
     }
@@ -284,7 +255,6 @@ const Comment = (props: CommentProps) => {
             </Box>
         </>
         : <></>}
-        <SubmissionAlert value={alert} setValue={setAlert}/>
     </>)
 }
 

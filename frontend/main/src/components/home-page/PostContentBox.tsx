@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
@@ -15,10 +15,9 @@ import { Paths } from '../../utils/Constants'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
-import SubmissionAlert from '../login-pages/SubmissionAlert'
-import { FormProperties } from '../../utils/FormProperties'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import Comment from './Comment'
+import { NotificationContext } from '../NotificationProvider'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -56,11 +55,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
     const [ deleting, setDeleting ] = useState<boolean>(false)
-    const [ alert, setAlert ] = useState<FormProperties>({
-        isOpen: false,
-        isSuccess: true,
-        message: ''
-    })
+    const notificationContext = useContext(NotificationContext)
 
     const isContentLiked = useMemo((): boolean | undefined => {
         const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
@@ -124,11 +119,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
+            notificationContext.openNotification(false, err.message)
         }
     }
 
@@ -149,11 +140,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setNewComment('')
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
+            notificationContext.openNotification(false, err.message)
         }
     }
 
@@ -193,18 +180,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const handleDeleteModal = async () => {
         try {
            await _apiClient.contentDELETE(props?.userContent?.content?.id)
-            setAlert({
-                isOpen: true,
-                isSuccess: true,
-                message: 'Successfully deleted post!'
-            })
+            notificationContext.openNotification(true, 'Successfully deleted post!')
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
+            notificationContext.openNotification(false, err.message)
         }
         setDeleting(false)
         setTimeout(() => 
@@ -240,21 +219,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
         console.log(newContent)
         try {
             await _apiClient.contentPUT(newContent)
-            setAlert({
-                isSuccess: true,
-                isOpen: true,
-                message: 'Post Successfully Updated!'
-            })
+            notificationContext.openNotification(true, 'Post Successfully Updated!')
             setTimeout(() => 
             { setContent(newContent) }, 
             3000)
         }
         catch {
-            setAlert({
-                isSuccess: false,
-                isOpen: true,
-                message: 'Post Failed to Update!'
-            })
+            notificationContext.openNotification(false, 'Post Failed to Update!')
         }
         setEditMode(false)
     }
@@ -398,7 +369,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <DeleteConfirmation handleCancel={handleCancelModal} handleDelete={handleDeleteModal}/>
                     </Box>
                 </Modal>
-                <SubmissionAlert value={alert} setValue={setAlert}/>
             </>)
 }
 
