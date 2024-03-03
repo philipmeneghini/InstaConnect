@@ -158,12 +158,13 @@ const SearchBar = () => {
         }
         else {
             setNoResults('No Results Found')
+            setUsersSearch([])
+            setContentsSearch([])
         }
     }
 
     const handleSearchClose = () => {
         setSearchOpen(false)
-        setNoResults('')
     }
 
     const openContent = (content: ContentModel) => {
