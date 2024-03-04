@@ -73,6 +73,7 @@ namespace Util.Constants
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
         static public readonly string NoSearchParam = "No search parameters passed in!";
+        static public readonly string NoRolesPassedIn = "No role or user has been passed in!";
         #endregion
 
         #region CRUD Operations
@@ -138,6 +139,24 @@ namespace Util.Constants
         #region RegEx
         static public readonly string I = "i";
         static public readonly string BlankString = " ";
+        #endregion
+
+        #region Roles
+        static public readonly string Role = nameof(Role);
+        static public readonly string[] AdminRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString() 
+        };
+        static public readonly string[] AdminUserRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString(), 
+            Backend.Util.Role.RegularUser.ToString() 
+        };
+        static public readonly string[] AdminGuestRoleList = new string[]
+        {
+            Backend.Util.Role.Administrator.ToString(),
+            Backend.Util.Role.Guest.ToString()
+        };
         #endregion
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -24,7 +25,6 @@ namespace Backend.Controllers
             return await _authService.Login(login);
         }
 
-        [Authorize]
         [HttpPost("Register")]
         public async Task<UserModel> Register([FromBody] LoginBody request)
         {

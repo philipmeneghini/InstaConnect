@@ -10,7 +10,6 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using System.Text.RegularExpressions;
 
 namespace Backend.Services
@@ -87,6 +86,30 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
+            var contents = GetModels(filter);
+
+            if (contents.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
+            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            return contents;
+        }
+
+        public List<ContentModel> GetContents(List<string> ids)
+        {
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, ids.FirstOrDefault());
+            bool firstId = true;
+            foreach (var id in ids)
+            {
+                var validationResult = _deleteGetContentValidator.Validate(new ContentIdValidationModel(id), Options => Options.IncludeRuleSets(ApplicationConstants.Delete));
+                ThrowExceptions(validationResult);
+
+                if (firstId)
+                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
+                firstId = false;
+            }
+
             var contents = GetModels(filter);
 
             if (contents.Count == 0)

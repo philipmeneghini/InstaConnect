@@ -8,6 +8,7 @@ namespace Backend.Services.Interfaces
         public Task<ContentModel> GetContentAsync(string? id);
 
         public List<ContentModel> GetContents(string? email);
+        public List<ContentModel> GetContents(List<string> ids);
         public Task<List<ContentModel>> GetContentsAsync(string? email);
 
         public ContentModel CreateContent(ContentModel? content);
