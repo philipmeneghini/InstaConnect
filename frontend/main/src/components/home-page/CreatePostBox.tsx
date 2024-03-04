@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, MediaType } from '../../api/Client'
 import React from 'react'
@@ -6,10 +6,9 @@ import { Avatar, Box, Button, Fab, Grid, TextField, Typography } from '@mui/mate
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik'
 import * as Yup from 'yup'
-import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
-import SubmissionAlert from '../login-pages/SubmissionAlert'
 import useUser from '../../hooks/useUser'
+import { NotificationContext } from '../NotificationProvider'
 
 interface ContentPostValues {
     multiMediaContent: File | undefined
@@ -23,11 +22,7 @@ interface CreatePostProps {
 export const CreatePostBox = ( props: CreatePostProps ) => {
 
     const [ user ] = useUser()
-    const [ post, setPost ] = useState<FormProperties>(({
-        isOpen: false,
-        isSuccess: false,
-        message: ''
-      }))
+    const notificationContext = useContext(NotificationContext)
 
     const initialValues: ContentPostValues = {
         multiMediaContent: undefined,
@@ -41,30 +36,18 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
 
     const onSubmit = async (values: ContentPostValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<ContentPostValues>) => {
         if (!values.caption || !values.multiMediaContent) {
-            setPost({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Caption and/or Photo Content Missing!'
-            })
+            notificationContext.openNotification(false, 'Caption and/or Photo Content Missing!')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<ContentPostValues>  = await validateForm(values)
         if (errors.caption || errors.multiMediaContent) {
-            setPost({
-                isOpen: true,
-                isSuccess: false,
-                message: 'One Or More Fields Are Invalid!'
-            })
+            notificationContext.openNotification(false, 'One Or More Fields Are Invalid!')
             setSubmitting(false)
             return
         }
         if (!user){
-            setPost({
-                isOpen: true,
-                isSuccess: false,
-                message: 'You Must Be Logged In!'
-            })
+            notificationContext.openNotification(false, 'You Must Be Logged In!')
         }
         try {
             let newContent : ContentModel = {
@@ -75,31 +58,19 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
             }
             const contentResponse = await _apiClient.contentPOST(newContent)
             if (!contentResponse.uploadMediaUrl || !contentResponse.id) {
-                setPost({
-                    isOpen: true,
-                    isSuccess: false,
-                    message: 'Error When Creating Post!'
-                })
+                notificationContext.openNotification(false, 'Error When Creating Post!')
                 return
             }
             await axios.put(contentResponse.uploadMediaUrl as string, 
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
-            setPost({
-                isOpen: true,
-                isSuccess: true,
-                message: 'Post Successfully Created!'
-            })
+            notificationContext.openNotification(true, 'Post Successfully Created!')
             setTimeout(() => 
             { handleSuccessfulClose(resetForm) }, 
             3000)
         }
         catch(err: any) {
-            setPost({
-                isOpen: true,
-                isSuccess: false,
-                message: `Error: ${err.message}`
-            })
+            notificationContext.openNotification(false, `Error: ${err.message}`)
         }
     }
 
@@ -169,7 +140,6 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                     </Form>
                     )}
                 </Formik>
-                <SubmissionAlert value={post} setValue={setPost}/>
             </>)
 }
 

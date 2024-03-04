@@ -1,13 +1,11 @@
-import { useState } from 'react'
+import { useContext } from 'react'
 import { ApiException, UserModel } from '../../api/Client'
 import React from 'react'
 import { Avatar, Box, Button, Checkbox, Fab, FormControlLabel, Grid, IconButton, TextField, Typography } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { FormProperties } from '../../utils/FormProperties'
 import axios from 'axios'
-import SubmissionAlert from '../login-pages/SubmissionAlert'
 import dayjs, { Dayjs } from 'dayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import DatePickerField from '../login-pages/DatePickerField'
@@ -16,6 +14,7 @@ import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
 import { _apiClient } from '../../App'
 import useProfilePicture from '../../hooks/useProfilePicture'
+import { NotificationContext } from '../NotificationProvider'
 
 interface EditProfileValues {
     profilePicture: File | undefined
@@ -33,11 +32,7 @@ interface EditProfileProps {
 export const EditProfile = ( props: EditProfileProps ) => {
 
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
-    const [ userEdits, setUserEdits ] = useState<FormProperties>(({
-        isOpen: false,
-        isSuccess: false,
-        message: ''
-      }))
+    const notificationContext = useContext(NotificationContext)
 
     const navigate = useNavigate()
     
@@ -78,21 +73,13 @@ export const EditProfile = ( props: EditProfileProps ) => {
 
     const onSubmit = async (values: EditProfileValues, { setSubmitting, validateForm }: FormikHelpers<EditProfileValues>) => {
         if (!values.birthDate || !values.firstName || !values.lastName) {
-            setUserEdits({
-                isOpen: true,
-                isSuccess: false,
-                message: 'One or more fields missing!'
-            })
+            notificationContext.openNotification(false, 'One or more fields missing!')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<EditProfileValues>  = await validateForm(values)
         if (errors.birthDate || errors.firstName || errors.lastName || errors.resetPassword || errors.profilePicture) {
-            setUserEdits({
-                isOpen: true,
-                isSuccess: false,
-                message: 'One Or More Fields Are Invalid!'
-            })
+            notificationContext.openNotification(false, 'One Or More Fields Are Invalid!')
             setSubmitting(false)
             return
         }
@@ -111,40 +98,22 @@ export const EditProfile = ( props: EditProfileProps ) => {
                 if (values.resetPassword) {
                     const emailResponse = await _apiClient.resetPassword(userResponse)
                     if (emailResponse.sent) {
-                        setUserEdits({
-                            isOpen: true,
-                            isSuccess: true,
-                            message: `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`
-                        })
+                        notificationContext.openNotification(true, `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`)
                     }
                     else {
-                        setUserEdits({
-                            isOpen: true,
-                            isSuccess: false,
-                            message: `Email To ${userResponse.email} Failed to Send To Update Your Password`
-                        })
+                        notificationContext.openNotification(false, `Email To ${userResponse.email} Failed to Send To Update Your Password`)
                     }
                 }
             }
             else {
-                setUserEdits({
-                    isOpen: true,
-                    isSuccess: false,
-                    message: 'No User Is Logged In!'
-                })
+                notificationContext.openNotification(false, 'No User Is Logged In!')
             }
         }
         catch(err: any) {
-            let failedUserEditResult: FormProperties = {
-                isOpen: true,
-                isSuccess: false,
-                message: ''
-            }
             if (err instanceof ApiException)
-                failedUserEditResult.message = err.response
+                notificationContext.openNotification(false, err.response)
             else
-                failedUserEditResult.message = 'Internal Server Error'
-            setUserEdits(failedUserEditResult)
+                notificationContext.openNotification(false, 'Internal Server Error')
         }
     }
 
@@ -256,7 +225,6 @@ export const EditProfile = ( props: EditProfileProps ) => {
                     </Form>
                     )}
                 </Formik>
-                <SubmissionAlert value={userEdits} setValue={setUserEdits}/>
             </>)
 }
 
