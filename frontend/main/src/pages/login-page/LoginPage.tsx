@@ -9,7 +9,7 @@ import { Paths } from '../../utils/Constants'
 import { ApiException, LoginResponse } from '../../api/Client'
 import { useNavigate } from 'react-router-dom'
 import LoginFooter from '../../components/login-pages/LoginFooter'
-import { NotificationContext } from '../../components/NotificationProvider'
+import { NotificationContext } from '../../components/context-provider/NotificationProvider'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')

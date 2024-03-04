@@ -8,7 +8,7 @@ import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers, FormikS
 import * as Yup from 'yup'
 import axios from 'axios'
 import useUser from '../../hooks/useUser'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 interface ContentPostValues {
     multiMediaContent: File | undefined

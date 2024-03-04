@@ -608,21 +608,21 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param body (optional) 
+     * @param ids (optional) 
      * @return Success
      */
-    commentsDELETE(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
-        let url_ = this.baseUrl + "/Comment/Comments";
+    commentsDELETE(ids?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+        let url_ = this.baseUrl + "/Comment/Comments?";
+        if (ids === null)
+            throw new Error("The parameter 'ids' cannot be null.");
+        else if (ids !== undefined)
+            ids && ids.forEach(item => { url_ += "ids=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_: AxiosRequestConfig = {
-            data: content_,
             method: "DELETE",
             url: url_,
             headers: {
-                "Content-Type": "application/json",
                 "Accept": "text/plain"
             },
             cancelToken
@@ -1072,21 +1072,21 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param body (optional) 
+     * @param ids (optional) 
      * @return Success
      */
-    contentsDELETE(body?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
-        let url_ = this.baseUrl + "/Content/Contents";
+    contentsDELETE(ids?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
+        let url_ = this.baseUrl + "/Content/Contents?";
+        if (ids === null)
+            throw new Error("The parameter 'ids' cannot be null.");
+        else if (ids !== undefined)
+            ids && ids.forEach(item => { url_ += "ids=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_: AxiosRequestConfig = {
-            data: content_,
             method: "DELETE",
             url: url_,
             headers: {
-                "Content-Type": "application/json",
                 "Accept": "text/plain"
             },
             cancelToken
@@ -1243,6 +1243,122 @@ export class Client extends AuthorizedApiBase {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
         return Promise.resolve<EmailResponse>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    role(body?: RoleModel | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel> {
+        let url_ = this.baseUrl + "/api/Role/Role";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "PUT",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processRole(_response);
+        });
+    }
+
+    protected processRole(response: AxiosResponse): Promise<UserModel> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<UserModel>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<UserModel>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    roles(body?: RoleModel[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+        let url_ = this.baseUrl + "/api/Role/Roles";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "PUT",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processRoles(_response);
+        });
+    }
+
+    protected processRoles(response: AxiosResponse): Promise<UserModel[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<UserModel[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<UserModel[]>(null as any);
     }
 
     /**
@@ -1798,6 +1914,8 @@ export interface JwtModel {
     email?: string | undefined;
     fullName?: string | undefined;
     birthDate?: string | undefined;
+    role?: string | undefined;
+    expiration?: number | undefined;
 }
 
 export interface LoginBody {
@@ -1816,6 +1934,18 @@ export enum MediaType {
     _3 = 3,
 }
 
+export enum Role {
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+}
+
+export interface RoleModel {
+    email: string;
+    role: Role;
+}
+
 export interface UserModel {
     id?: string | undefined;
     password?: string | undefined;
@@ -1825,6 +1955,7 @@ export interface UserModel {
     followers?: string[] | undefined;
     following?: string[] | undefined;
     email: string;
+    role?: Role;
     profilePictureUrl?: string | undefined;
     photosUrl?: string | undefined;
     reelsUrl?: string | undefined;

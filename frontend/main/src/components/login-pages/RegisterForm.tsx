@@ -9,7 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import DatePickerField from './DatePickerField'
 import { ApiException } from '../../api/Client'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 export interface RegisterFormValues {
     firstName: string

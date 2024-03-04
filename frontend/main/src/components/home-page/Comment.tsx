@@ -11,7 +11,7 @@ import { _apiClient } from '../../App'
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 const useStyles = makeStyles<{ hover: boolean }>()(
     (theme, { hover }) => ({

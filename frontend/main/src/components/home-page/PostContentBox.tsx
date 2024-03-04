@@ -17,7 +17,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import Comment from './Comment'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 const postBoxStyle = {
     position: 'absolute',

@@ -67,7 +67,7 @@ namespace Backend.Services
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddMinutes(6),
                 signingCredentials: creds);
 
             var jwt = jwtTokenHandler.WriteToken(token);
@@ -128,6 +128,8 @@ namespace Backend.Services
                     res.BirthDate = claim.Value;
                 else if (claim.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase))
                     res.Role = claim.Value;
+                else if (claim.Type.Equals(ApplicationConstants.Exp, StringComparison.OrdinalIgnoreCase))
+                    res.Expiration = Int32.Parse(claim.Value);
             }
             return res;
         }

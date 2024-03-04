@@ -6,7 +6,7 @@ import { _apiClient } from '../../App'
 import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { ApiException } from '../../api/Client'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 export interface ResetPasswordFormValues {
     email: string
