@@ -33,9 +33,15 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet("VerifyToken")]
-        public JwtModel VerifyToken(string token)
+        public JwtModel VerifyToken([FromQuery] string token)
         {
             return _authService.VerifyToken(token);
+        }
+
+        [HttpGet("RefreshToken")]
+        public async Task<LoginResponse> RefreshToken([FromHeader(Name ="Authorization")] string? token)
+        {
+            return await _authService.RefreshToken(token);
         }
     }
 }

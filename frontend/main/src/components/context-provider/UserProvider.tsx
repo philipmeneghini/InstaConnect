@@ -1,7 +1,7 @@
 import React, { useState, createContext, useEffect, useContext } from 'react'
 import { JwtModel, UserModel } from '../../api/Client'
 import { _apiClient } from '../../App'
-import { Box, Modal, Typography } from '@mui/material'
+import { Box, Button, Modal, Typography } from '@mui/material'
 import { useNavigate } from 'react-router'
 import { Paths } from '../../utils/Constants'
 import { NotificationContext } from './NotificationProvider'
@@ -13,6 +13,7 @@ export const UserContext =
 
 const UserProvider = (props: any) => {
     const [ user, setUser ] = useState<UserModel>()
+    const [ timeRemaining, setTimeRemaining ] = useState<number>()
     const [ jwt, setJwt ] = useState<JwtModel>()
     const [ popup, setPopup ] = useState<boolean>(false)
     const notificationContext = useContext(NotificationContext)
@@ -45,12 +46,13 @@ const UserProvider = (props: any) => {
       if (jwt?.expiration) {
         const interval = setInterval(() => {
           const timeRemaining = Math.abs(jwt?.expiration as number) - (Date.now()/1000)
+          setTimeRemaining(Math.round(timeRemaining/60))
           setPopup(timeRemaining <= 300)
           if (timeRemaining <= 0) {
             localStorage.removeItem('token')
             setPopup(false)
             navigate(Paths['Login'], { replace: true })
-            notificationContext.openNotification(false, 'Logging out due to inactivity')
+            notificationContext.openNotification(false, 'Logged out due to inactivity')
           }
         }, 3000)
 
@@ -59,6 +61,20 @@ const UserProvider = (props: any) => {
         }
       }
     }, [ jwt ])
+
+    const handleLogout = () => {
+      localStorage.removeItem('token')
+      setPopup(false)
+      navigate(Paths['Login'], { replace: true })
+      notificationContext.openNotification(true, 'Successfully logged out')
+    }
+
+    const handleContinueSession = async () => {
+      const response = await _apiClient.refreshToken()
+      localStorage.setItem('token', response.token ?? '')
+      setPopup(false)
+      notificationContext.openNotification(true, 'Successfully refreshed user session')
+    }
 
     const getUser = () => {
       return user
@@ -80,8 +96,17 @@ const UserProvider = (props: any) => {
               }}
             >
               <Typography> 
-                Your session is ending. If you would like to continue please hit the continue button below. Otherwise hit logout.
+                Your session is ending in {timeRemaining} {timeRemaining === 1 ? 'minute' : 'minutes'}. If you would like to continue please hit the continue button below. Otherwise hit logout.
               </Typography>
+              <Box 
+                sx={{p: '1vh', display: 'flex', justifyContent: 'space-between'}}>
+                <Button onClick={handleContinueSession} variant='contained'>
+                  Continue Session
+                </Button>
+                <Button onClick={handleLogout} variant='contained'>
+                  Logout
+                </Button>
+              </Box>
             </Box>
           </Modal>
           {props.children}
