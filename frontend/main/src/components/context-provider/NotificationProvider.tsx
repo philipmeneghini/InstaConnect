@@ -8,12 +8,16 @@ interface FormProperties {
     statusCode?: number | undefined
   }
 
+interface NotificationProviderProps {
+    children: React.ReactNode
+  }
+
 export const NotificationContext =
     createContext({
         openNotification: (isSuccess: boolean, message: string) => {}
     })
 
-const NotificationProvider = (props: any) => {
+const NotificationProvider = (props: NotificationProviderProps) => {
     const [ notification, setNotification ] = useState<FormProperties>({
         isOpen: false,
         isSuccess: false,

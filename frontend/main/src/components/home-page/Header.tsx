@@ -2,7 +2,7 @@ import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, 
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
@@ -14,6 +14,8 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
+import { UserContext } from '../context-provider/UserProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 export interface FollowContents {
     email : string
@@ -35,6 +37,8 @@ export const Header = ( props: HeaderProps ) => {
     const [ following ] = useFollowers(props?.user?.following, followingOpen)
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
+    const userContext = useContext(UserContext)
+    const notificationContext = useContext(NotificationContext)
     const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -52,8 +56,9 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleLogout = () => {
         setAnchorUser(null)
-        localStorage.removeItem('token')
+        userContext.updateToken(null)
         navigate(Paths['Login'], { replace: true })
+        notificationContext.openNotification(true, 'Successfully logged out!')
     }
 
     const handleMenuItemClick = () => {

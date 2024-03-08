@@ -22,23 +22,27 @@ const useStyles = makeStyles()(
       buttonWrapper: { 
         display: 'flex', 
         justifyContent: 'space-between',
-        p: '1vh'
+        paddingTop: '1vh'
       }
 }))
 
-export const UserContext =
-    createContext({
-        getUser: () => {}
-    })
+interface UserProviderProps {
+  children: React.ReactNode
+}
 
-const UserProvider = (props: any) => {
+export const UserContext = createContext<{user: UserModel|undefined, updateToken: (newToken: string|null) => void}>({
+        user: undefined,
+        updateToken: (newToken: string|null) => {}, 
+      })
+
+const UserProvider = (props: UserProviderProps) => {
     const [ user, setUser ] = useState<UserModel>()
     const [ timeRemaining, setTimeRemaining ] = useState<number>()
     const [ token, setToken ] = useState<string|null>(localStorage.getItem('token'))
     const [ jwt, setJwt ] = useState<JwtModel>()
     const [ popup, setPopup ] = useState<boolean>(false)
-    const notificationContext = useContext(NotificationContext)
 
+    const notificationContext = useContext(NotificationContext)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -68,13 +72,13 @@ const UserProvider = (props: any) => {
         const interval = setInterval(() => {
           const timeRemaining = Math.abs(jwt?.expiration as number) - (Date.now()/1000)
           setTimeRemaining(Math.round(timeRemaining/60))
-          console.log(timeRemaining)
           setPopup(timeRemaining <= 300)
           if (timeRemaining <= 0) {
             localStorage.removeItem('token')
             setPopup(false)
             navigate(Paths['Login'], { replace: true })
             notificationContext.openNotification(false, 'Logged out due to inactivity')
+            setToken(null)
           }
         }, 30000)
 
@@ -85,6 +89,7 @@ const UserProvider = (props: any) => {
     }, [ jwt, navigate, notificationContext ])
 
     const { classes } = useStyles()
+
     const {
       modalBox,
       buttonWrapper
@@ -92,6 +97,7 @@ const UserProvider = (props: any) => {
 
     const handleLogout = () => {
       localStorage.removeItem('token')
+      setToken(null)
       setPopup(false)
       navigate(Paths['Login'], { replace: true })
       notificationContext.openNotification(true, 'Successfully logged out')
@@ -105,15 +111,16 @@ const UserProvider = (props: any) => {
       notificationContext.openNotification(true, 'Successfully refreshed user session')
     }
 
-    const getUser = () => {
-      return user
+    const updateToken = (newToken: string|null) => {
+      setToken(newToken)
+      localStorage.setItem('token', newToken as string)
     }
 
     return (
-        <UserContext.Provider value={{getUser}}>
+        <UserContext.Provider value={{user, updateToken}}>
           <Modal open={popup}>
             <Box className={modalBox}>
-              <Typography> 
+              <Typography textAlign={'center'}> 
                 Your session is ending in {timeRemaining} {timeRemaining === 1 ? 'minute' : 'minutes'}. If you would like to continue please hit the continue button below. Otherwise hit logout.
               </Typography>
               <Box className={buttonWrapper}>

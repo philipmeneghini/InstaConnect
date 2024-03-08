@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react'
 import { CommentModel } from '../../api/Client'
 import { Box, Checkbox, IconButton, Tooltip, Typography, TextField, Button } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import useUser from '../../hooks/useUser'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import EditIcon from '@mui/icons-material/Edit'
 import EditOffIcon from '@mui/icons-material/EditOff'
@@ -12,6 +11,7 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { NotificationContext } from '../context-provider/NotificationProvider'
+import { UserContext } from '../context-provider/UserProvider'
 
 const useStyles = makeStyles<{ hover: boolean }>()(
     (theme, { hover }) => ({
@@ -72,7 +72,8 @@ const Comment = (props: CommentProps) => {
     const [ deleteMode, setDeleteMode ] = useState<boolean>(false)
     const [ hoverDisplay, setHoverDisplay ] = useState<boolean>(false)
     const [ deleted, setDeleted ] = useState<boolean>(false)
-    const [ user ] = useUser()
+    
+    const { user } = useContext(UserContext)
     const notificationContext = useContext(NotificationContext)
 
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
@@ -7,8 +7,8 @@ import { Box, CircularProgress, Fab, Modal, Paper, Tooltip } from '@mui/material
 import PostContentBox from '../../components/home-page/PostContentBox'
 import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
-import useUser from '../../hooks/useUser'
 import { dateCreatedDescendingUserContents } from '../../utils/Sorters'
+import { UserContext } from '../../components/context-provider/UserProvider'
 
 const fabStyling = {
     position: 'fixed',
@@ -35,10 +35,11 @@ export interface UserContents {
 }
 
 export const HomePage = () => {
-    const [ user ] = useUser()
     const [ contents, setContents ] = useState<UserContents[]> ([])
     const [ contentLoadMessage, setContentLoadMessage ] = useState<string | null>(null)
     const [ createPostOpen, setCreatePostOpen ] = useState<boolean>(false)
+
+    const { user } = useContext(UserContext)
 
     useEffect(() => {
         const getUsersFollowing = async(user: UserModel | undefined) => {
