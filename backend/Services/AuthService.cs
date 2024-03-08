@@ -67,7 +67,7 @@ namespace Backend.Services
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(6),
+                expires: DateTime.Now.AddHours(1),
                 signingCredentials: creds);
 
             var jwt = jwtTokenHandler.WriteToken(token);
