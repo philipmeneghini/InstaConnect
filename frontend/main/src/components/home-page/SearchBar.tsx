@@ -236,7 +236,7 @@ const SearchBar = () => {
             >
             {noResults !== ''  
                 ? <Typography textAlign='center' padding={'1vh 1vw'}> <em> {noResults} </em></Typography> 
-                : <>
+                : <div>
                     <Typography textAlign='center'> <strong> Users </strong> </Typography>
                     {usersSearch.map(user => 
                         <MenuItem key={user?.id} onClick={() => navigateToProfile(user?.email)}>
@@ -247,7 +247,7 @@ const SearchBar = () => {
                         <MenuItem key={content?.id} onClick={() => openContent(content)}>
                             <Avatar src={content?.mediaUrl}/> {content?.caption}
                         </MenuItem>)}
-                </>
+                </div>
             }
             </Menu>
             <Modal
