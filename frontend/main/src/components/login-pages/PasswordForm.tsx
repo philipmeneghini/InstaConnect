@@ -7,7 +7,7 @@ import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { useNavigate } from 'react-router-dom'
 import { ApiException, LoginResponse } from '../../api/Client'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 export interface PasswordFormValues {
     password: string

@@ -11,5 +11,7 @@ namespace Backend.Services.Interfaces
         public string GenerateToken(UserModel user);
 
         public JwtModel VerifyToken(string token);
+
+        public Task<LoginResponse> RefreshToken(string? headerAuthorization);
     }
 }

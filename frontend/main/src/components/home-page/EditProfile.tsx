@@ -14,7 +14,7 @@ import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
 import { _apiClient } from '../../App'
 import useProfilePicture from '../../hooks/useProfilePicture'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 
 interface EditProfileValues {
     profilePicture: File | undefined

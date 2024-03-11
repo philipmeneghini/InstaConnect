@@ -119,6 +119,7 @@ namespace Util.Constants
 
         #region Authentication
         static public readonly string DateOfBirth = nameof(DateOfBirth);
+        static public readonly string Exp = "exp";
         static public readonly string Name = nameof(Name);
         static public readonly string MisingEmailOrPassword = "missing email or password";
         static public readonly string InvalidPassword = "invalid password";

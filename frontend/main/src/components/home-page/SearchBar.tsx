@@ -1,5 +1,5 @@
 import { Avatar, Box, InputBase, Menu, MenuItem, Modal, Typography, alpha, styled } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import SearchIcon from '@mui/icons-material/Search'
 import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
@@ -7,8 +7,8 @@ import { ContentModel, UserModel } from '../../api/Client'
 import { _apiClient } from '../../App'
 import PostContentBox from './PostContentBox'
 import { UserContents } from '../../pages/main-page/HomePage'
-import useUser from '../../hooks/useUser'
 import useDebounce from '../../hooks/useDebounce'
+import { UserContext } from '../context-provider/UserProvider'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -75,7 +75,7 @@ const SearchBar = () => {
     const [ contentUser, setContentUser ] = useState<UserModel>()
     const [ search, setSearch ] = useState<string>('')
 
-    const [ user ] = useUser()
+    const { user } = useContext(UserContext)
     const [ debouncedSearch ] = useDebounce<string>(search)
 
 
@@ -236,7 +236,7 @@ const SearchBar = () => {
             >
             {noResults !== ''  
                 ? <Typography textAlign='center' padding={'1vh 1vw'}> <em> {noResults} </em></Typography> 
-                : <>
+                : <div>
                     <Typography textAlign='center'> <strong> Users </strong> </Typography>
                     {usersSearch.map(user => 
                         <MenuItem key={user?.id} onClick={() => navigateToProfile(user?.email)}>
@@ -247,7 +247,7 @@ const SearchBar = () => {
                         <MenuItem key={content?.id} onClick={() => openContent(content)}>
                             <Avatar src={content?.mediaUrl}/> {content?.caption}
                         </MenuItem>)}
-                </>
+                </div>
             }
             </Menu>
             <Modal

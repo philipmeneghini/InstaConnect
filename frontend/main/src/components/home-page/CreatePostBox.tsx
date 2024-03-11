@@ -7,8 +7,8 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik'
 import * as Yup from 'yup'
 import axios from 'axios'
-import useUser from '../../hooks/useUser'
-import { NotificationContext } from '../NotificationProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
+import { UserContext } from '../context-provider/UserProvider'
 
 interface ContentPostValues {
     multiMediaContent: File | undefined
@@ -21,7 +21,7 @@ interface CreatePostProps {
 
 export const CreatePostBox = ( props: CreatePostProps ) => {
 
-    const [ user ] = useUser()
+    const { user } = useContext(UserContext)
     const notificationContext = useContext(NotificationContext)
 
     const initialValues: ContentPostValues = {

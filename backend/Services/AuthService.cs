@@ -99,6 +99,16 @@ namespace Backend.Services
             }
         }
 
+        public async Task<LoginResponse> RefreshToken(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) throw new InstaBadRequestException(ApplicationConstants.NoToken);
+            var jwt = VerifyToken(token.Substring(7));
+
+            UserModel user = await _userService.GetUserAsync(jwt.Email);
+
+            return new LoginResponse { Token = GenerateToken(user) };
+        }
+
         private string Hash(string password)
         {
             using( var alg = new Rfc2898DeriveBytes (
@@ -128,6 +138,8 @@ namespace Backend.Services
                     res.BirthDate = claim.Value;
                 else if (claim.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase))
                     res.Role = claim.Value;
+                else if (claim.Type.Equals(ApplicationConstants.Exp, StringComparison.OrdinalIgnoreCase))
+                    res.Expiration = Int32.Parse(claim.Value);
             }
             return res;
         }

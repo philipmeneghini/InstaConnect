@@ -9,13 +9,15 @@ import { Paths } from '../../utils/Constants'
 import { ApiException, LoginResponse } from '../../api/Client'
 import { useNavigate } from 'react-router-dom'
 import LoginFooter from '../../components/login-pages/LoginFooter'
-import { NotificationContext } from '../../components/NotificationProvider'
+import { NotificationContext } from '../../components/context-provider/NotificationProvider'
+import { UserContext } from '../../components/context-provider/UserProvider'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [showPassword, setShowPassword] = useState(false)
     const notificationContext = useContext(NotificationContext)
+    const userContext = useContext(UserContext)
 
     const navigate = useNavigate()
 
@@ -24,7 +26,7 @@ export const LoginPage = () => {
     }
 
     const handleSuccessfulLogin = ( jwt: string ) => {
-      localStorage.setItem('token', jwt)
+      userContext.updateToken(jwt)
       navigate(Paths['Home'], { replace: true })
     }
 
