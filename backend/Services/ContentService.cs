@@ -17,13 +17,20 @@ namespace Backend.Services
     public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
         private readonly IMediaService _mediaService;
+        private readonly INotificationHub _notificationHub;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
         private readonly IValidator<ContentModel> _createUpdateContentValidator;
         private readonly IValidator<ContentEmailValidationModel> _emailContentValidator;
 
-        public ContentService(IMediaService mediaService, IValidator<ContentIdValidationModel> deleteGetContentValidator, IValidator<ContentEmailValidationModel> emailContentValidator, IValidator<ContentModel> createUpdateContentValidator, IOptions<MongoSettings<ContentModel>> settings): base(settings)
+        public ContentService(IMediaService mediaService, 
+                              INotificationHub notificationHub,
+                              IValidator<ContentIdValidationModel> deleteGetContentValidator, 
+                              IValidator<ContentEmailValidationModel> emailContentValidator, 
+                              IValidator<ContentModel> createUpdateContentValidator, 
+                              IOptions<MongoSettings<ContentModel>> settings): base(settings)
         {
             _mediaService = mediaService;
+            _notificationHub = notificationHub;
             _deleteGetContentValidator = deleteGetContentValidator;
             _createUpdateContentValidator = createUpdateContentValidator;
             _emailContentValidator = emailContentValidator;
@@ -210,6 +217,12 @@ namespace Backend.Services
             updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
+            var originalContent = GetContent(updatedContent.Id);
+            if (updatedContent.Likes.Count > originalContent.Likes.Count)
+            {
+                _notificationHub.SendNotification(originalContent.Email, "Like");
+            }
+
             var content = UpdateModel(updatedContent);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
@@ -220,7 +233,7 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<ContentModel> UpdateContentAsync(ContentModel updatedContent)
+        public async Task<ContentModel> UpdateContentAsync(ContentModel? updatedContent)
         {
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
@@ -229,6 +242,12 @@ namespace Backend.Services
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var content = await UpdateModelAsync(updatedContent);
+
+            var originalContent = await GetContentAsync(updatedContent.Id);
+            if (updatedContent.Likes.Count > originalContent.Likes.Count)
+            {
+                await _notificationHub.SendNotification(originalContent.Email, "Like");
+            }
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);

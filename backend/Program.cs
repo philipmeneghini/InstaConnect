@@ -26,6 +26,8 @@ builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.S3, buil
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.SES, builder.Configuration.GetSection(ApplicationConstants.AmazonSESCredentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(ApplicationConstants.Jwt));
+
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +43,7 @@ builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdVal
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
+builder.Services.AddSingleton<INotificationHub, NotificationHub>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateHandler>();
@@ -61,7 +64,10 @@ builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {
-    build.WithOrigins(ApplicationConstants.Star).AllowAnyMethod().AllowAnyHeader();
+    build.WithOrigins(ApplicationConstants.ReactAppPath)
+         .AllowAnyMethod()
+         .AllowAnyHeader()
+         .AllowCredentials();
 }));
 
 builder.Services.AddAuthorization(options =>
@@ -146,6 +152,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/Notification");
 
 app.MapControllers();
 
