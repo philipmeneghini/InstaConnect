@@ -21,6 +21,7 @@ namespace Util.Constants
         static public readonly string Jwt = nameof(Jwt);
         static public readonly string CorsPolicy = "corspolicy";
         static public readonly string Star = "*";
+        static public readonly string ReactAppPath = "http://localhost:3000";
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
         static public readonly string ContentId = nameof(ContentId);
@@ -158,6 +159,10 @@ namespace Util.Constants
             Backend.Util.Role.Administrator.ToString(),
             Backend.Util.Role.Guest.ToString()
         };
+        #endregion
+
+        #region Notification WebSocket
+        static public readonly string NewMessage = "newMessage";
         #endregion
     }
 }

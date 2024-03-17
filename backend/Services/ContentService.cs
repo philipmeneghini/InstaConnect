@@ -241,13 +241,14 @@ namespace Backend.Services
             updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
-            var content = await UpdateModelAsync(updatedContent);
-
             var originalContent = await GetContentAsync(updatedContent.Id);
             if (updatedContent.Likes.Count > originalContent.Likes.Count)
             {
                 await _notificationHub.SendNotification(originalContent.Email, "Like");
             }
+
+            var content = await UpdateModelAsync(updatedContent);
+            //await _notificationHub.SendNotification("Test", "Like");
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);

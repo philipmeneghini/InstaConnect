@@ -43,11 +43,11 @@ builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdVal
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
-builder.Services.AddSingleton<INotificationHub, NotificationHub>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
+builder.Services.AddScoped<INotificationHub, NotificationHub>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();
 builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
