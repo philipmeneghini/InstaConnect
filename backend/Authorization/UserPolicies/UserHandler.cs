@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Backend.Authorization.UserPolicies;
+using Backend.Models;
 using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
@@ -6,15 +7,15 @@ using Util.Constants;
 namespace Backend.Authorization
 {
 
-    public class ContentCreateUpdateHandler : AuthorizationHandler<ContentCreateUpdateRequirement>
+    public class UserHandler : AuthorizationHandler<UserRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public ContentCreateUpdateHandler(IHttpContextAccessor httpContextAccessor)
+        public UserHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, ContentCreateUpdateRequirement requirement)
+            (AuthorizationHandlerContext context, UserRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -24,7 +25,7 @@ namespace Backend.Authorization
             }
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
             httpRequest.EnableBuffering();
-            var input = httpRequest.ReadFromJsonAsync<ContentModel>().Result;
+            var input = httpRequest.ReadFromJsonAsync<UserModel>().Result;
             var email = input?.Email;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
             if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)

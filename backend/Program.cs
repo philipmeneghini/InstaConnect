@@ -13,6 +13,9 @@ using Backend.Models.Config;
 using Backend.Models.Validation;
 using Backend.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Backend.Authorization.CommentPolicies;
+using Backend.Authorization.ContentPolicies;
+using Backend.Authorization.UserPolicies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +46,9 @@ builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdVal
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
-builder.Services.AddSingleton<IAuthorizationHandler, UserUpdateHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateUpdateHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateUpdateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, UserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
 builder.Services.AddScoped<INotificationHub, NotificationHub>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
@@ -83,17 +86,17 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("UserPolicy", policy =>
     {
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
-        policy.Requirements.Add(new UserUpdateRequirement());
+        policy.Requirements.Add(new UserRequirement());
     });
-    options.AddPolicy("ContentPolicy", policy =>
+    options.AddPolicy("ContentCreatePolicy", policy =>
     {
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
-        policy.Requirements.Add(new ContentCreateUpdateRequirement());
+        policy.Requirements.Add(new ContentCreateRequirement());
     });
-    options.AddPolicy("CommentPolicy", policy =>
+    options.AddPolicy("CommentCreatePolicy", policy =>
     {
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
-        policy.Requirements.Add(new CommentCreateUpdateRequirement());
+        policy.Requirements.Add(new CommentCreateRequirement());
     });
     options.AddPolicy("UserDeletePolicy", policy =>
     {

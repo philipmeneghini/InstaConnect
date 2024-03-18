@@ -4,20 +4,20 @@ using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
-namespace Backend.Authorization
+namespace Backend.Authorization.ContentPolicies
 {
 
-    public class CommentDeleteHandler : AuthorizationHandler<CommentDeleteRequirement>
+    public class ContentDeleteHandler : AuthorizationHandler<ContentDeleteRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ICommentService _commentService;
-        public CommentDeleteHandler(IHttpContextAccessor httpContextAccessor, ICommentService contentService)
+        private readonly IContentService _contentService;
+        public ContentDeleteHandler(IHttpContextAccessor httpContextAccessor, IContentService contentService)
         {
             _httpContextAccessor = httpContextAccessor;
-            _commentService = contentService;
+            _contentService = contentService;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, CommentDeleteRequirement requirement)
+            (AuthorizationHandlerContext context, ContentDeleteRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -31,15 +31,15 @@ namespace Backend.Authorization
             List<string> ids = query.Value.Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             try
             {
-                List<CommentModel> comments = _commentService.GetComments(ids);
-                if (comments.Count == 0)
+                List<ContentModel> contents = _contentService.GetContents(ids);
+                if (contents.Count == 0)
                 {
                     context.Fail();
                     return Task.CompletedTask;
                 }
-                foreach(var comment in comments)
+                foreach (var content in contents)
                 {
-                    if (!comment.Email.Equals(loggedInEmail, StringComparison.OrdinalIgnoreCase))
+                    if (!content.Email.Equals(loggedInEmail, StringComparison.OrdinalIgnoreCase))
                     {
                         context.Fail();
                         return Task.CompletedTask;
