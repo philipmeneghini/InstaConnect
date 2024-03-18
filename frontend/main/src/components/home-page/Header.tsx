@@ -14,9 +14,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
+import NotificationsIcon from '@mui/icons-material/Notifications'
 import { UserContext } from '../context-provider/UserProvider'
 import { NotificationContext } from '../context-provider/NotificationProvider'
 import { WebSocketContext } from '../context-provider/WebSocketProvider'
+import Notifications from './Notifications'
 
 export interface FollowContents {
     email : string
@@ -30,6 +32,7 @@ interface HeaderProps {
 export const Header = ( props: HeaderProps ) => {
 
     const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
+    const [ anchorNotification, setAnchorNoticiation ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
@@ -95,6 +98,14 @@ export const Header = ( props: HeaderProps ) => {
             }, {replace: true})
             setMenuOpen(false)
         }
+    }
+
+    const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorNoticiation(event.currentTarget)
+    }
+
+    const handleCloseNotifications = () => {
+        setAnchorNoticiation(null)
     }
 
     const sideMenu = () => (
@@ -203,11 +214,17 @@ export const Header = ( props: HeaderProps ) => {
                             </IconButton>
                         </Grid>
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
+                            <Tooltip title='Notifications'>
+                                <IconButton onClick={handleOpenNotifications}>
+                                    <Badge color='secondary' badgeContent={notifications.length}>
+                                        <NotificationsIcon sx={{color: '#DEC20B'}}/>
+                                    </Badge>
+                                </IconButton>
+                            </Tooltip>
+                            <Notifications anchor={anchorNotification} handleClose={handleCloseNotifications}/>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
-                                    <Badge color='secondary' badgeContent={notifications?.length}>
-                                        <Avatar alt='Remy Sharp' src={profilePicture}/>
-                                    </Badge>
+                                    <Avatar alt='Remy Sharp' src={profilePicture}/>
                                 </IconButton>
                             </Tooltip>
                             <Menu
@@ -228,11 +245,6 @@ export const Header = ( props: HeaderProps ) => {
                             >
                                 <MenuItem key='Profile' onClick={handleOpenProfilePage}>
                                     <Typography textAlign='center'> Profile </Typography>
-                                </MenuItem>
-                                <MenuItem key='Notifications'>
-                                    <Badge color='secondary' badgeContent={notifications?.length}>
-                                        <Typography textAlign='center'> Notifications </Typography>
-                                    </Badge>
                                 </MenuItem>
                                 <MenuItem key='Account' onClick={handleCloseUserMenu}>
                                     <Typography textAlign='center'> Account </Typography>

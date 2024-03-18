@@ -248,7 +248,6 @@ namespace Backend.Services
             }
 
             var content = await UpdateModelAsync(updatedContent);
-            //await _notificationHub.SendNotification("Test", "Like");
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);

@@ -41,7 +41,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
     }, [token])
 
     const addNotification = (message: string) => {
-        let newNotifications: string[] = notifications
+        let newNotifications: string[] = [...notifications]
         newNotifications.push(message)
         setNotifications(newNotifications)
     }
