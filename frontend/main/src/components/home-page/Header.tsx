@@ -1,4 +1,4 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, Badge } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -16,6 +16,7 @@ import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
 import { UserContext } from '../context-provider/UserProvider'
 import { NotificationContext } from '../context-provider/NotificationProvider'
+import { WebSocketContext } from '../context-provider/WebSocketProvider'
 
 export interface FollowContents {
     email : string
@@ -39,6 +40,7 @@ export const Header = ( props: HeaderProps ) => {
 
     const userContext = useContext(UserContext)
     const notificationContext = useContext(NotificationContext)
+    const { notifications } = useContext(WebSocketContext)
     const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -203,7 +205,9 @@ export const Header = ( props: HeaderProps ) => {
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
-                                    <Avatar alt='Remy Sharp' src={profilePicture}/>
+                                    <Badge color='secondary' badgeContent={notifications?.length}>
+                                        <Avatar alt='Remy Sharp' src={profilePicture}/>
+                                    </Badge>
                                 </IconButton>
                             </Tooltip>
                             <Menu
@@ -224,6 +228,11 @@ export const Header = ( props: HeaderProps ) => {
                             >
                                 <MenuItem key='Profile' onClick={handleOpenProfilePage}>
                                     <Typography textAlign='center'> Profile </Typography>
+                                </MenuItem>
+                                <MenuItem key='Notifications'>
+                                    <Badge color='secondary' badgeContent={notifications?.length}>
+                                        <Typography textAlign='center'> Notifications </Typography>
+                                    </Badge>
                                 </MenuItem>
                                 <MenuItem key='Account' onClick={handleCloseUserMenu}>
                                     <Typography textAlign='center'> Account </Typography>

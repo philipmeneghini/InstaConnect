@@ -10,7 +10,7 @@ import HomePage from './pages/main-page/HomePage'
 import ProfilePage from './pages/main-page/ProfilePage'
 import NotificationProvider from './components/context-provider/NotificationProvider'
 import UserProvider from './components/context-provider/UserProvider'
-import NotificationPage from './components/home-page/NotificationPage'
+import WebSocketProvider from './components/context-provider/WebSocketProvider'
 
 export const _apiClient = new Client(process.env.REACT_APP_API_URL!)
 
@@ -20,15 +20,16 @@ function App() {
       <NotificationProvider>
           <Router>
             <UserProvider>
-              <Routes>
-                <Route path='/' element={<LoginPage/>}/>
-                <Route path='/register' element={<RegisterPage/>}/>
-                <Route path='/setPassword' element={<SetPasswordPage/>}/>
-                <Route path='/resetPassword' element={<ResetPasswordPage/>}/>
-                <Route path='/home' element={<HomePage/>}/>
-                <Route path='/profile' element={<ProfilePage/>}/>
-                <Route path='/notification' element = {<NotificationPage/>}/>
-              </Routes>
+              <WebSocketProvider>
+                <Routes>
+                  <Route path='/' element={<LoginPage/>}/>
+                  <Route path='/register' element={<RegisterPage/>}/>
+                  <Route path='/setPassword' element={<SetPasswordPage/>}/>
+                  <Route path='/resetPassword' element={<ResetPasswordPage/>}/>
+                  <Route path='/home' element={<HomePage/>}/>
+                  <Route path='/profile' element={<ProfilePage/>}/>
+                </Routes>
+              </WebSocketProvider>
             </UserProvider>
           </Router>
       </NotificationProvider>

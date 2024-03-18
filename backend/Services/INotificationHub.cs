@@ -4,6 +4,6 @@
     {
         public Task SendNotification(string user, string type);
 
-        public Task<string> GetConnectionId(string jwtToken);
+        public Task<string> GetConnectionId(string? jwtToken);
     }
 }

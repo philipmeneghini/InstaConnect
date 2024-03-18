@@ -30,8 +30,11 @@ interface UserProviderProps {
   children: React.ReactNode
 }
 
-export const UserContext = createContext<{user: UserModel|undefined, updateToken: (newToken: string|null) => void}>({
+export const UserContext = createContext<{user: UserModel|undefined, 
+                                          token: string|null, 
+                                          updateToken: (newToken: string|null) => void}>({
         user: undefined,
+        token: null,
         updateToken: (newToken: string|null) => {}, 
       })
 
@@ -117,7 +120,7 @@ const UserProvider = (props: UserProviderProps) => {
     }
 
     return (
-        <UserContext.Provider value={{user, updateToken}}>
+        <UserContext.Provider value={{user, token, updateToken}}>
           <Modal open={popup}>
             <Box className={modalBox}>
               <Typography textAlign={'center'}> 

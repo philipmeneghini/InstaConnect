@@ -20,9 +20,13 @@ namespace Backend.Services
             await _hubContext.Clients.Group(email).SendAsync(ApplicationConstants.NewMessage, message);
         }
 
-        public async Task<string> GetConnectionId(string jwtToken)
+        public async Task<string> GetConnectionId(string? jwtToken)
         {
             string connectionId = Context.ConnectionId;
+
+            if (string.IsNullOrWhiteSpace(jwtToken))
+                return string.Empty;
+
             var email = _authService.VerifyToken(jwtToken).Email;
 
             if (!string.IsNullOrWhiteSpace(email))
