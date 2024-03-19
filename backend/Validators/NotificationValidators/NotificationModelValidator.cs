@@ -8,6 +8,11 @@ namespace Backend.Validators.NotificationValidators
     {
         public NotificationModelValidator()
         {
+            RuleSet(ApplicationConstants.Update, () =>
+            {
+                RuleFor(notification => notification.Id).Cascade(CascadeMode.Stop)
+                                        .NotEmpty().WithMessage(ApplicationConstants.IdsEmpty);
+            });
             RuleSet(ApplicationConstants.Create, () =>
             {
                 RuleFor(notification => notification.Reciever).Cascade(CascadeMode.Stop)

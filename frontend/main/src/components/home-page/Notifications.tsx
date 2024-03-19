@@ -29,8 +29,8 @@ const Notifications = (props: NotificationProps) => {
         onClose={props.handleClose}
         >
             {notifications.map(notification => (
-                <MenuItem key={notification}>
-                    <Typography> {notification} </Typography>
+                <MenuItem key={notification.id}>
+                    <Typography> {notification.body} </Typography>
                 </MenuItem>
             ))}
         </Menu>

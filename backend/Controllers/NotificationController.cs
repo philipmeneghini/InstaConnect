@@ -31,6 +31,18 @@ namespace Backend.Controllers
             return await _notificationService.GetNotificationsAsync(email);
         }
 
+        [HttpPut("/Notification")]
+        public async Task<NotificationModel> UpdateNotification([FromBody] NotificationModel? notification)
+        {
+            return await _notificationService.UpdateNotificationAsync(notification);
+        }
+
+        [HttpPut("/Notifications")]
+        public async Task<List<NotificationModel>> UpdateNotifications([FromBody] List<NotificationModel>? notifications)
+        {
+            return await _notificationService.UpdateNotificationsAsync(notifications);
+        }
+
         [Authorize(Policy = "NotificationPolicy")]
         [HttpDelete("/Notification")]
         public async Task<NotificationModel> DeleteNotification([FromQuery] string? id)

@@ -60,10 +60,74 @@ namespace Backend.Services
             return await GetModelsAsync(filter);
         }
 
+        public NotificationModel UpdateNotification(NotificationModel? notification)
+        {
+            if (notification == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
+            var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Update));
+            ThrowExceptions(validationResult);
+
+            var res = UpdateModel(notification);
+            if (!string.IsNullOrWhiteSpace(notification.Reciever))
+                _notificationHub.SendNotification(notification);
+
+            return res;
+        }
+
+        public async Task<NotificationModel> UpdateNotificationAsync(NotificationModel? notification)
+        {
+            if (notification == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
+            var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Update));
+            ThrowExceptions(validationResult);
+
+            var res = await UpdateModelAsync(notification);
+            if (!string.IsNullOrWhiteSpace(notification.Reciever))
+                await _notificationHub.SendNotification(notification);
+
+            return res;
+        }
+
+        public List<NotificationModel> UpdateNotifications(List<NotificationModel>? notifications)
+        {
+            if (notifications == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
+            foreach(var notification in notifications)
+            {
+                var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Update));
+                ThrowExceptions(validationResult);
+            }
+
+            var res = UpdateModels(notifications);
+            foreach(var notification in notifications)
+            {
+                if (!string.IsNullOrWhiteSpace(notification.Reciever))
+                    _notificationHub.SendNotification(notification);
+            }
+
+            return res;
+        }
+
+        public async Task<List<NotificationModel>> UpdateNotificationsAsync(List<NotificationModel>? notifications)
+        {
+            if (notifications == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
+            foreach (var notification in notifications)
+            {
+                var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Update));
+                ThrowExceptions(validationResult);
+            }
+
+            var res = await UpdateModelsAsync(notifications);
+            foreach (var notification in notifications)
+            {
+                if (!string.IsNullOrWhiteSpace(notification.Reciever))
+                    await _notificationHub.SendNotification(notification);
+            }
+
+            return res;
+        }
+
         public NotificationModel CreateNotification(NotificationModel? notification)
         {
             if (notification == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
-            var validationResult = _notificationValidator.Validate(notification);
+            var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
             var res = CreateModel(notification);
@@ -74,7 +138,7 @@ namespace Backend.Services
         public async Task<NotificationModel> CreateNotificationAsync(NotificationModel? notification)
         {
             if (notification == null) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
-            var validationResult = _notificationValidator.Validate(notification);
+            var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Create));
             ThrowExceptions(validationResult);
 
             var res = await CreateModelAsync(notification);
@@ -87,7 +151,7 @@ namespace Backend.Services
             if (notifications == null || notifications.Count == 0) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
             foreach(var notification in notifications)
             {
-                var validationResult = _notificationValidator.Validate(notification);
+                var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
             }
 
@@ -95,12 +159,12 @@ namespace Backend.Services
             _notificationHub.SendNotifications(res);
             return res;
         }
-        public async Task<List<NotificationModel>> CreateNotificationsAsync(List<NotificationModel> notifications)
+        public async Task<List<NotificationModel>> CreateNotificationsAsync(List<NotificationModel>? notifications)
         {
             if (notifications == null || notifications.Count == 0) throw new InstaBadRequestException(ApplicationConstants.NoNotification);
             foreach (var notification in notifications)
             {
-                var validationResult = _notificationValidator.Validate(notification);
+                var validationResult = _notificationValidator.Validate(notification, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
             }
 

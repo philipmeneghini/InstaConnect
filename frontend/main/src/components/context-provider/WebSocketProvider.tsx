@@ -1,30 +1,31 @@
 import { HubConnectionBuilder } from '@microsoft/signalr'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { UserContext } from './UserProvider'
+import { NotificationModel } from '../../api/Client'
+import { _apiClient } from '../../App'
 
 interface WebSocketProviderProps {
     children: React.ReactNode
   }
   
-export const WebSocketContext = createContext<{notifications: string[]}>({
+export const WebSocketContext = createContext<{notifications: NotificationModel[]}>({
         notifications: []
     })
 
 const WebSocketProvider = (props: WebSocketProviderProps) => {
-    const [ notifications, setNotifications ] = useState<string[]>([])
-    const { token } = useContext(UserContext)
+    const [ notifications, setNotifications ] = useState<NotificationModel[]>([])
+    const { user, token } = useContext(UserContext)
 
     useEffect(() => {
         const subscribeToNotifications = async () => {
             try {
                 console.log(token)
                 const conn = new HubConnectionBuilder()
-                                 .withUrl('https://localhost:7208/Notification')
+                                 .withUrl('https://localhost:7208/NotificationHub')
                                  .build()
     
-                await conn.on('newMessage', message => {
-                    addNotification(message)
-                    console.log(message)
+                await conn.on('newMessage', notification => {
+                    addNotification(notification)
                 })
                 await conn.start().then(() => {
                     conn.invoke('GetConnectionId', token).then((identifier) => {
@@ -36,14 +37,22 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
                 console.log('error!')
             }
         }
+        const GetNotifications = async () => {
+            console.log(user?.email)
+            const pastNotifications = await _apiClient.notificationsGET(user?.email)
+            setNotifications(pastNotifications)
+        }
 
-        subscribeToNotifications()
-    }, [token])
+        if (token && user) {
+            GetNotifications()
+            subscribeToNotifications()
+        }
+    }, [user, token])
 
-    const addNotification = (message: string) => {
-        let newNotifications: string[] = [...notifications]
-        newNotifications.push(message)
-        setNotifications(newNotifications)
+    const addNotification = (newNotification: NotificationModel) => {
+        let resultingNotifications: NotificationModel[] = [...notifications]
+        resultingNotifications.push(newNotification)
+        setNotifications(resultingNotifications)
     }
 
     return (

@@ -10,6 +10,12 @@ namespace Backend.Services
         public List<NotificationModel> GetNotifications(string? email);
         public Task<List<NotificationModel>> GetNotificationsAsync(string? email);
 
+        public NotificationModel UpdateNotification(NotificationModel? notification);
+        public Task<NotificationModel> UpdateNotificationAsync(NotificationModel? notification);
+
+        public List<NotificationModel> UpdateNotifications(List<NotificationModel>? notifications);
+        public Task<List<NotificationModel>> UpdateNotificationsAsync(List<NotificationModel>? notifications);
+
         public NotificationModel CreateNotification(NotificationModel? notification);
         public Task<NotificationModel> CreateNotificationAsync(NotificationModel? notification);
 
