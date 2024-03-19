@@ -17,20 +17,20 @@ namespace Backend.Services
     public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
         private readonly IMediaService _mediaService;
-        private readonly INotificationHub _notificationHub;
+        private readonly INotificationService _notificationService;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
         private readonly IValidator<ContentModel> _createUpdateContentValidator;
         private readonly IValidator<ContentEmailValidationModel> _emailContentValidator;
 
         public ContentService(IMediaService mediaService, 
-                              INotificationHub notificationHub,
+                              INotificationService notificationService,
                               IValidator<ContentIdValidationModel> deleteGetContentValidator, 
                               IValidator<ContentEmailValidationModel> emailContentValidator, 
                               IValidator<ContentModel> createUpdateContentValidator, 
                               IOptions<MongoSettings<ContentModel>> settings): base(settings)
         {
             _mediaService = mediaService;
-            _notificationHub = notificationHub;
+            _notificationService = notificationService;
             _deleteGetContentValidator = deleteGetContentValidator;
             _createUpdateContentValidator = createUpdateContentValidator;
             _emailContentValidator = emailContentValidator;
@@ -220,7 +220,12 @@ namespace Backend.Services
             var originalContent = GetContent(updatedContent.Id);
             if (updatedContent.Likes.Count > originalContent.Likes.Count)
             {
-                _notificationHub.SendNotification(originalContent.Email, "Like");
+                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = originalContent.Email,
+                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
+                });
             }
 
             var content = UpdateModel(updatedContent);
@@ -244,7 +249,12 @@ namespace Backend.Services
             var originalContent = await GetContentAsync(updatedContent.Id);
             if (updatedContent.Likes.Count > originalContent.Likes.Count)
             {
-                await _notificationHub.SendNotification(originalContent.Email, "Like");
+                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = originalContent.Email,
+                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
+                });
             }
 
             var content = await UpdateModelAsync(updatedContent);

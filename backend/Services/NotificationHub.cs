@@ -1,4 +1,5 @@
-﻿using Backend.Services.Interfaces;
+﻿using Backend.Models;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Util.Constants;
 
@@ -15,9 +16,17 @@ namespace Backend.Services
             _authService = authService;
         }
 
-        public async Task SendNotification(string email, string message)
+        public async Task SendNotification(NotificationModel notification)
         {
-            await _hubContext.Clients.Group(email).SendAsync(ApplicationConstants.NewMessage, message);
+            await _hubContext.Clients.Group(notification.Reciever).SendAsync(ApplicationConstants.NewMessage, notification);
+        }
+
+        public async Task SendNotifications(List<NotificationModel> notifications)
+        {
+            foreach(var notification in notifications)
+            {
+                await _hubContext.Clients.Group(notification.Reciever).SendAsync(ApplicationConstants.NewMessage, notification);
+            }
         }
 
         public async Task<string> GetConnectionId(string? jwtToken)

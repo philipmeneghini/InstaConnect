@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authorization;
 using Backend.Authorization.CommentPolicies;
 using Backend.Authorization.ContentPolicies;
 using Backend.Authorization.UserPolicies;
+using Backend.Validators.NotificationValidators;
+using Backend.Authorization.NotificationPolicies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ builder.Services.Configure<ConnectionStringModel>(builder.Configuration.GetSecti
 builder.Services.Configure<MongoSettings<UserModel>>(builder.Configuration.GetSection(ApplicationConstants.UserModel));
 builder.Services.Configure<MongoSettings<ContentModel>>(builder.Configuration.GetSection(ApplicationConstants.ContentModel));
 builder.Services.Configure<MongoSettings<CommentModel>>(builder.Configuration.GetSection(ApplicationConstants.CommentModel));
+builder.Services.Configure<MongoSettings<NotificationModel>>(builder.Configuration.GetSection(ApplicationConstants.NotificationModel));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.S3, builder.Configuration.GetSection(ApplicationConstants.AmazonS3Credentials));
 builder.Services.Configure<AmazonCredentialsModel>(ApplicationConstants.SES, builder.Configuration.GetSection(ApplicationConstants.AmazonSESCredentials));
 builder.Services.Configure<HashSettings>(builder.Configuration.GetSection(ApplicationConstants.Hash));
@@ -43,6 +46,7 @@ builder.Services.AddSingleton<IValidator<ContentEmailValidationModel>, ContentEm
 builder.Services.AddSingleton<IValidator<ContentModel>, ContentModelValidator>();
 builder.Services.AddSingleton<IValidator<CommentModel>, CommentModelValidator>();
 builder.Services.AddSingleton<IValidator<CommentIdValidationModel>, CommentIdValidator>();
+builder.Services.AddSingleton<IValidator<NotificationModel>, NotificationModelValidator>();
 builder.Services.AddSingleton<ValidatorCommentHelpers, ValidatorCommentHelpers>();
 builder.Services.AddSingleton<ValidatorUserHelpers, ValidatorUserHelpers>();
 builder.Services.AddSingleton<ValidatorContentHelpers, ValidatorContentHelpers>();
@@ -50,9 +54,11 @@ builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
-builder.Services.AddScoped<INotificationHub, NotificationHub>();
+builder.Services.AddSingleton<IAuthorizationHandler, NotificationsHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, NotificationsHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();
+builder.Services.AddScoped<INotificationHub, NotificationHub>();
 builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
 builder.Services.AddScoped<ISearchService<ContentModel>, ContentService>();
 builder.Services.AddScoped<IRoleService, UserService>();
@@ -62,6 +68,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -113,6 +120,16 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
         policy.Requirements.Add(new CommentDeleteRequirement());
     });
+    options.AddPolicy("NotificationPolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new NotificationRequirement());
+    });
+    options.AddPolicy("NotificationsPolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new NotificationsRequirement());
+    });
 });
 
 builder.Services.AddAuthentication(options =>
@@ -156,7 +173,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHub<NotificationHub>("/Notification");
+app.MapHub<NotificationHub>("/NotificationHub");
 
 app.MapControllers();
 

@@ -10,12 +10,14 @@ namespace Util.Constants
         static public readonly string UserCollectionName = "users";
         static public readonly string ContentCollectionName = "contents";
         static public readonly string CommentCollectionName = "comments";
+        static public readonly string NotificationCollectionName = "notifications";
         static public readonly string ConnectionStrings = "ConnectionString";
         static public readonly string S3BucketName = "instaconnect";
         static public readonly string AmazonS3Credentials = "AmazonCredentials:S3";
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string ContentModel = nameof(ContentModel);
         static public readonly string CommentModel = nameof(CommentModel);
+        static public readonly string NotificationModel = nameof(NotificationModel);
         static public readonly string EmailConfig = "AmazonSES";
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
@@ -25,6 +27,7 @@ namespace Util.Constants
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
         static public readonly string ContentId = nameof(ContentId);
+        static public readonly string Reciever = nameof(Reciever);
         static public readonly string Id = nameof(Id);
         static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
         static public readonly string S3 = nameof(S3);
@@ -59,6 +62,10 @@ namespace Util.Constants
         static public readonly string DateCreatedFilled = "date created field must be left empty";
         static public readonly string CommentIdEmpty = "no comment id passed in";
         static public readonly string NoCommentsFound = "no comments found";
+        static public readonly string NotificationIdEmpty = "no notification id passed in";
+        static public readonly string ReadFalse = "Read field must be marked as false";
+        static public readonly string NotificationBodyEmpty = "Body of notification cannot be empty";
+        static public readonly string NoNotification = "No new notification was passed in";
         static public readonly Dictionary<Type, string> ModelNames = new Dictionary<Type, string>()
         {
             { typeof(UserModel), "User" }
@@ -163,6 +170,7 @@ namespace Util.Constants
 
         #region Notification WebSocket
         static public readonly string NewMessage = "newMessage";
+        static public readonly string LikedPostNotification = "{0} liked post {1}";
         #endregion
     }
 }
