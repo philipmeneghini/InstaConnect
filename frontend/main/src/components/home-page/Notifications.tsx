@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { WebSocketContext } from '../context-provider/WebSocketProvider'
-import { Menu, MenuItem, Typography } from '@mui/material'
+import { Badge, Box, IconButton, Menu, MenuItem, Typography } from '@mui/material'
+import ClearIcon from '@mui/icons-material/Clear'
 import React from 'react'
 
 interface NotificationProps {
@@ -30,7 +31,14 @@ const Notifications = (props: NotificationProps) => {
         >
             {notifications.map(notification => (
                 <MenuItem key={notification.id}>
-                    <Typography> {notification.body} </Typography>
+                    <Badge color='secondary' variant='dot' invisible={notification.read}>
+                        <Box sx={{display: 'flex', justifyContent: 'space-between', width: '40vw'}}>
+                            <Typography sx={{margin: 'auto 0 auto', maxWidth: '30vw', overflow: 'hidden', textOverflow: 'ellipsis'}}> {notification.body} </Typography>
+                            <IconButton>
+                                <ClearIcon/>
+                            </IconButton>
+                        </Box>
+                    </Badge>
                 </MenuItem>
             ))}
         </Menu>

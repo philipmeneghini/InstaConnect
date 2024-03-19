@@ -253,7 +253,7 @@ namespace Backend.Services
                 _notificationService.CreateNotification(new NotificationModel
                 {
                     Reciever = originalContent.Email,
-                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
+                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender)
                 });
             }
 

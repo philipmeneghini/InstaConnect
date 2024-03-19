@@ -107,11 +107,16 @@ const UserProvider = (props: UserProviderProps) => {
     }
 
     const handleContinueSession = async () => {
-      const response = await _apiClient.refreshToken()
-      localStorage.setItem('token', response.token ?? '')
-      setToken(localStorage.getItem('token'))
-      setPopup(false)
-      notificationContext.openNotification(true, 'Successfully refreshed user session')
+      try {
+        const response = await _apiClient.refreshToken()
+        localStorage.setItem('token', response.token ?? '')
+        setToken(localStorage.getItem('token'))
+        setPopup(false)
+        notificationContext.openNotification(true, 'Successfully refreshed user session')
+      }
+      catch(err: any) {
+        notificationContext.openNotification(false, 'Failed to refresh session')
+      }
     }
 
     const updateToken = (newToken: string|null) => {

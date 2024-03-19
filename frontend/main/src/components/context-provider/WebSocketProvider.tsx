@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { UserContext } from './UserProvider'
 import { NotificationModel } from '../../api/Client'
 import { _apiClient } from '../../App'
+import { NotificationContext } from './NotificationProvider'
 
 interface WebSocketProviderProps {
     children: React.ReactNode
@@ -15,17 +16,18 @@ export const WebSocketContext = createContext<{notifications: NotificationModel[
 const WebSocketProvider = (props: WebSocketProviderProps) => {
     const [ notifications, setNotifications ] = useState<NotificationModel[]>([])
     const { user, token } = useContext(UserContext)
+    const { openNotification } = useContext(NotificationContext) 
 
     useEffect(() => {
         const subscribeToNotifications = async () => {
             try {
-                console.log(token)
+                getNotifications()
                 const conn = new HubConnectionBuilder()
                                  .withUrl('https://localhost:7208/NotificationHub')
                                  .build()
     
                 await conn.on('newMessage', notification => {
-                    addNotification(notification)
+                    getNotifications()
                 })
                 await conn.start().then(() => {
                     conn.invoke('GetConnectionId', token).then((identifier) => {
@@ -37,23 +39,20 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
                 console.log('error!')
             }
         }
-        const GetNotifications = async () => {
-            console.log(user?.email)
-            const pastNotifications = await _apiClient.notificationsGET(user?.email)
-            setNotifications(pastNotifications)
+        const getNotifications = async() => {
+            try {
+                const pastNotifications = await _apiClient.notificationsGET(user?.email)
+                setNotifications(pastNotifications)
+            }
+            catch(err: any) {
+                openNotification(false, 'Failed to load notifications! ' + err.message)
+            }
         }
 
         if (token && user) {
-            GetNotifications()
             subscribeToNotifications()
         }
     }, [user, token])
-
-    const addNotification = (newNotification: NotificationModel) => {
-        let resultingNotifications: NotificationModel[] = [...notifications]
-        resultingNotifications.push(newNotification)
-        setNotifications(resultingNotifications)
-    }
 
     return (
         <WebSocketContext.Provider value={{notifications}}>
