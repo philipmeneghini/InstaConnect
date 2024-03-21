@@ -281,7 +281,32 @@ namespace Backend.Services
                 result.Add(content);
             }
 
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContents.FirstOrDefault()?.Id);
+            int ind = 0;
+            foreach (var updatedContent in updatedContents)
+            {
+                if (ind != 0)
+                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContent.Id);
+
+                ind++;
+            }
+
+            var originalContents = GetModels(filter);
             var contents = UpdateModels(result);
+
+            foreach (var originalContent in originalContents)
+            {
+                var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
+                {
+                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
+                    _notificationService.CreateNotification(new NotificationModel
+                    {
+                        Reciever = associatedNewContent.Email,
+                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
+                    });
+                }
+            }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
 
@@ -302,7 +327,32 @@ namespace Backend.Services
                 result.Add(content);
             }
 
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContents.FirstOrDefault()?.Id);
+            int ind = 0;
+            foreach (var updatedContent in updatedContents)
+            {
+                if (ind != 0)
+                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContent.Id);
+
+                ind++;
+            }
+
+            var originalContents = await GetModelsAsync(filter);
             var contents = await UpdateModelsAsync(result);
+
+            foreach (var originalContent in originalContents)
+            {
+                var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
+                {
+                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
+                    await _notificationService.CreateNotificationAsync(new NotificationModel
+                    {
+                        Reciever = associatedNewContent.Email,
+                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
+                    });
+                }
+            }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
 

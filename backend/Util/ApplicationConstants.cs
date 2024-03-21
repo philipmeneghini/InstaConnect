@@ -171,6 +171,7 @@ namespace Util.Constants
         #region Notification WebSocket
         static public readonly string NewMessage = "newMessage";
         static public readonly string LikedPostNotification = "{0} liked your post!";
+        static public readonly string NewFollowerNotification = "{0} started following you!";
         #endregion
     }
 }
