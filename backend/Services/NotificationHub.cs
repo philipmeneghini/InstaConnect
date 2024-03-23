@@ -1,6 +1,5 @@
 ﻿using Backend.Models;
 using Backend.Models.Config;
-using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

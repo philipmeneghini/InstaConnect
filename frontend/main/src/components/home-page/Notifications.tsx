@@ -10,11 +10,15 @@ interface NotificationProps {
 }
 
 const Notifications = (props: NotificationProps) => {
-    const { notifications } = useContext(WebSocketContext)
+    const { notifications, deleteNotification } = useContext(WebSocketContext)
+
+    const handleOpenNotification = () => {
+
+    }
 
     return (
         <Menu
-        sx={{ mt: '45px' }}
+        sx={{ mt: '45px'}}
         id='menu-appbar'
         anchorEl={props.anchor}
         anchorOrigin={{
@@ -30,11 +34,11 @@ const Notifications = (props: NotificationProps) => {
         onClose={props.handleClose}
         >
             {notifications.map(notification => (
-                <MenuItem key={notification.id}>
+                <MenuItem key={notification.id} onClick={handleOpenNotification}>
                     <Badge color='secondary' variant='dot' invisible={notification.read}>
                         <Box sx={{display: 'flex', justifyContent: 'space-between', width: '40vw'}}>
                             <Typography sx={{margin: 'auto 0 auto', maxWidth: '30vw', overflow: 'hidden', textOverflow: 'ellipsis'}}> {notification.body} </Typography>
-                            <IconButton>
+                            <IconButton onClick={() => deleteNotification(notification)}>
                                 <ClearIcon/>
                             </IconButton>
                         </Box>

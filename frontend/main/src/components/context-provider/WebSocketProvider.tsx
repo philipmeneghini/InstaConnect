@@ -9,8 +9,10 @@ interface WebSocketProviderProps {
     children: React.ReactNode
   }
   
-export const WebSocketContext = createContext<{notifications: NotificationModel[]}>({
-        notifications: []
+export const WebSocketContext = createContext<{notifications: NotificationModel[], 
+                                               deleteNotification: (notification: NotificationModel) => void}>({
+        notifications: [],
+        deleteNotification: () => {}
     })
 
 const WebSocketProvider = (props: WebSocketProviderProps) => {
@@ -54,8 +56,24 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
         }
     }, [user, token])
 
+    const deleteNotification = (notification : NotificationModel) => {
+        let newNotifications = notifications
+        try {
+            const ind = newNotifications.indexOf(notification)
+            if (ind !== -1) {
+                _apiClient.notificationDELETE(notification.id)
+                newNotifications.splice(ind) 
+            }
+            setNotifications(newNotifications)
+            openNotification(true, 'Successfully Deleted Notification')
+        }
+        catch(err: any) {
+            openNotification(false, `Error Deleting Notification!: ${err.message}`)
+        }
+    }
+
     return (
-        <WebSocketContext.Provider value={{notifications}}>
+        <WebSocketContext.Provider value={{notifications, deleteNotification}}>
             { props.children }
         </WebSocketContext.Provider>
     )
