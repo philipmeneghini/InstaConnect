@@ -52,7 +52,7 @@ namespace Backend.Controllers
 
         [Authorize(Policy = "NotificationsPolicy")]
         [HttpDelete("/Notifications")]
-        public async Task<List<NotificationModel>> DeleteNotificatiosn([FromQuery] string? email)
+        public async Task<List<NotificationModel>> DeleteNotifications([FromQuery] string? email)
         {
             return await _notificationService.DeleteNotificationsAsync(email);
         }

@@ -1,5 +1,5 @@
 import { HubConnectionBuilder } from '@microsoft/signalr'
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { UserContext } from './UserProvider'
 import { NotificationModel } from '../../api/Client'
 import { _apiClient } from '../../App'
@@ -9,10 +9,12 @@ interface WebSocketProviderProps {
     children: React.ReactNode
   }
   
-export const WebSocketContext = createContext<{notifications: NotificationModel[], 
+export const WebSocketContext = createContext<{notifications: NotificationModel[],
+                                               unReadNotifications: number, 
                                                deleteNotification: (notification: NotificationModel) => void
                                                readNotification: (notification: NotificationModel) => void}>({
         notifications: [],
+        unReadNotifications: 0,
         deleteNotification: () => {},
         readNotification: () => {}
     })
@@ -21,6 +23,15 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
     const [ notifications, setNotifications ] = useState<NotificationModel[]>([])
     const { user, token } = useContext(UserContext)
     const { openNotification } = useContext(NotificationContext) 
+    const unReadNotifications = useMemo(() => {
+        let readCount: number = 0
+        notifications.forEach(n => {
+            if (!n.read) {
+                readCount ++
+            }
+        })
+        return readCount
+    }, [notifications])
 
     useEffect(() => {
         const subscribeToNotifications = async () => {
@@ -60,12 +71,12 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
         }
     }, [user, token])
 
-    const deleteNotification = (notification : NotificationModel) => {
+    const deleteNotification = async (notification : NotificationModel) => {
         let newNotifications = notifications
         try {
             const ind = newNotifications.indexOf(notification)
             if (ind !== -1) {
-                _apiClient.notificationDELETE(notification.id)
+                await _apiClient.notificationDELETE(notification.id)
                 newNotifications.splice(ind, 1) 
             }
             setNotifications(newNotifications)
@@ -76,14 +87,17 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
         }
     }
 
-    const readNotification = (notification : NotificationModel) => {
+    const readNotification = async (notification : NotificationModel) => {
+        if (notification.read) {
+            return
+        }
         let newNotifications = notifications
         try {
             const ind = newNotifications.indexOf(notification)
             let newNotification = notification
             newNotification.read = true
             if (ind !== -1) {
-                _apiClient.notificationPUT(newNotification)
+                await _apiClient.notificationPUT(newNotification)
                 newNotifications[ind] = newNotification 
             }
             setNotifications(newNotifications)
@@ -94,7 +108,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
     }
 
     return (
-        <WebSocketContext.Provider value={{notifications, deleteNotification, readNotification}}>
+        <WebSocketContext.Provider value={{notifications, unReadNotifications, deleteNotification, readNotification}}>
             { props.children }
         </WebSocketContext.Provider>
     )

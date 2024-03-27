@@ -6,7 +6,7 @@ using Util.Constants;
 
 namespace Backend.Authorization.NotificationPolicies
 {
-    public class NotificationHandler : AuthorizationHandler<NotificationsRequirement>
+    public class NotificationHandler : AuthorizationHandler<NotificationRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly INotificationService _notificationService;
@@ -17,7 +17,7 @@ namespace Backend.Authorization.NotificationPolicies
             _notificationService = notificationService;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, NotificationsRequirement requirement)
+            (AuthorizationHandlerContext context, NotificationRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))

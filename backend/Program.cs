@@ -54,7 +54,7 @@ builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, NotificationsHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, NotificationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, NotificationsHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();

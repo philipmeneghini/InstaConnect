@@ -29,13 +29,15 @@ namespace Backend.Services
         public NotificationModel GetNotification(string? id)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new InstaBadRequestException(ApplicationConstants.NotificationIdEmpty);
-            return GetModel(id);
+            var filter = Builders<NotificationModel>.Filter.Eq(ApplicationConstants.Id, id);
+            return GetModel(filter);
         }
 
         public async Task<NotificationModel> GetNotificationAsync(string? id)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new InstaBadRequestException(ApplicationConstants.NotificationIdEmpty);
-            return await GetModelAsync(id);
+            var filter = Builders<NotificationModel>.Filter.Eq(ApplicationConstants.Id, id);
+            return await GetModelAsync(filter);
         }
 
         public List<NotificationModel> GetNotifications(string? email)

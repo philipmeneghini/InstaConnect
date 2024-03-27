@@ -43,7 +43,7 @@ export const Header = ( props: HeaderProps ) => {
 
     const userContext = useContext(UserContext)
     const notificationContext = useContext(NotificationContext)
-    const { notifications } = useContext(WebSocketContext)
+    const { notifications, unReadNotifications } = useContext(WebSocketContext)
     const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -216,7 +216,7 @@ export const Header = ( props: HeaderProps ) => {
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
                             <Tooltip title='Notifications'>
                                 <IconButton onClick={handleOpenNotifications}>
-                                    <Badge color='secondary' badgeContent={notifications.length}>
+                                    <Badge color='secondary' badgeContent={unReadNotifications}>
                                         <NotificationsIcon sx={{color: '#DEC20B'}}/>
                                     </Badge>
                                 </IconButton>
