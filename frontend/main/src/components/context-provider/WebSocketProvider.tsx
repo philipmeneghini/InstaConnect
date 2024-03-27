@@ -10,9 +10,11 @@ interface WebSocketProviderProps {
   }
   
 export const WebSocketContext = createContext<{notifications: NotificationModel[], 
-                                               deleteNotification: (notification: NotificationModel) => void}>({
+                                               deleteNotification: (notification: NotificationModel) => void
+                                               readNotification: (notification: NotificationModel) => void}>({
         notifications: [],
-        deleteNotification: () => {}
+        deleteNotification: () => {},
+        readNotification: () => {}
     })
 
 const WebSocketProvider = (props: WebSocketProviderProps) => {
@@ -47,7 +49,9 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
                 setNotifications(pastNotifications)
             }
             catch(err: any) {
-                openNotification(false, 'Failed to load notifications! ' + err.message)
+                if (err.statusCode !== 404) {
+                    openNotification(false, 'Failed to load notifications! ' + err.message)
+                }
             }
         }
 
@@ -62,7 +66,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
             const ind = newNotifications.indexOf(notification)
             if (ind !== -1) {
                 _apiClient.notificationDELETE(notification.id)
-                newNotifications.splice(ind) 
+                newNotifications.splice(ind, 1) 
             }
             setNotifications(newNotifications)
             openNotification(true, 'Successfully Deleted Notification')
@@ -72,8 +76,25 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
         }
     }
 
+    const readNotification = (notification : NotificationModel) => {
+        let newNotifications = notifications
+        try {
+            const ind = newNotifications.indexOf(notification)
+            let newNotification = notification
+            newNotification.read = true
+            if (ind !== -1) {
+                _apiClient.notificationPUT(newNotification)
+                newNotifications[ind] = newNotification 
+            }
+            setNotifications(newNotifications)
+        }
+        catch(err: any) {
+            openNotification(false, `Error Modifying Notification!: ${err.message}`)
+        }
+    }
+
     return (
-        <WebSocketContext.Provider value={{notifications, deleteNotification}}>
+        <WebSocketContext.Provider value={{notifications, deleteNotification, readNotification}}>
             { props.children }
         </WebSocketContext.Provider>
     )

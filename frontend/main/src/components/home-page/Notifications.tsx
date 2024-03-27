@@ -10,11 +10,7 @@ interface NotificationProps {
 }
 
 const Notifications = (props: NotificationProps) => {
-    const { notifications, deleteNotification } = useContext(WebSocketContext)
-
-    const handleOpenNotification = () => {
-
-    }
+    const { notifications, deleteNotification, readNotification } = useContext(WebSocketContext)
 
     return (
         <Menu
@@ -34,7 +30,7 @@ const Notifications = (props: NotificationProps) => {
         onClose={props.handleClose}
         >
             {notifications.map(notification => (
-                <MenuItem key={notification.id} onClick={handleOpenNotification}>
+                <MenuItem key={notification.id} onClick={() => readNotification(notification)}>
                     <Badge color='secondary' variant='dot' invisible={notification.read}>
                         <Box sx={{display: 'flex', justifyContent: 'space-between', width: '40vw'}}>
                             <Typography sx={{margin: 'auto 0 auto', maxWidth: '30vw', overflow: 'hidden', textOverflow: 'ellipsis'}}> {notification.body} </Typography>
