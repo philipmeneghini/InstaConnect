@@ -4,6 +4,7 @@ import { UserContext } from './UserProvider'
 import { NotificationModel } from '../../api/Client'
 import { _apiClient } from '../../App'
 import { NotificationContext } from './NotificationProvider'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material'
 
 interface WebSocketProviderProps {
     children: React.ReactNode
@@ -11,16 +12,19 @@ interface WebSocketProviderProps {
   
 export const WebSocketContext = createContext<{notifications: NotificationModel[],
                                                unReadNotifications: number, 
+                                               setNotificationOpen: React.Dispatch<React.SetStateAction<NotificationModel | undefined>>
                                                deleteNotification: (notification: NotificationModel) => void
                                                readNotification: (notification: NotificationModel) => void}>({
         notifications: [],
         unReadNotifications: 0,
+        setNotificationOpen: () => {},
         deleteNotification: () => {},
         readNotification: () => {}
     })
 
 const WebSocketProvider = (props: WebSocketProviderProps) => {
     const [ notifications, setNotifications ] = useState<NotificationModel[]>([])
+    const [ notificationOpen, setNotificationOpen ] = useState<NotificationModel>()
     const { user, token } = useContext(UserContext)
     const { openNotification } = useContext(NotificationContext) 
     const unReadNotifications = useMemo(() => {
@@ -72,6 +76,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
     }, [user, token])
 
     const deleteNotification = async (notification : NotificationModel) => {
+        setNotificationOpen(undefined)
         let newNotifications = notifications
         try {
             const ind = newNotifications.indexOf(notification)
@@ -107,9 +112,26 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
         }
     }
 
+    const handleNotificationClose = () => {
+        setNotificationOpen(undefined)
+    }
+
     return (
-        <WebSocketContext.Provider value={{notifications, unReadNotifications, deleteNotification, readNotification}}>
+        <WebSocketContext.Provider value={{notifications, unReadNotifications, setNotificationOpen, deleteNotification, readNotification}}>
             { props.children }
+            <Dialog
+            open={notificationOpen !== undefined}
+            onClose={handleNotificationClose}
+            >
+                <DialogContent>
+                    <DialogContentText>
+                        {notificationOpen?.body}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleNotificationClose}> Close </Button>
+                </DialogActions>
+            </Dialog>
         </WebSocketContext.Provider>
     )
 }    
