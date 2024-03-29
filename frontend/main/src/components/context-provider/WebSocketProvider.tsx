@@ -64,7 +64,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
                 setNotifications(pastNotifications)
             }
             catch(err: any) {
-                if (err.statusCode !== 404) {
+                if (err.status !== 404) {
                     openNotification(false, 'Failed to load notifications! ' + err.message)
                 }
             }
@@ -76,8 +76,7 @@ const WebSocketProvider = (props: WebSocketProviderProps) => {
     }, [user, token])
 
     const deleteNotification = async (notification : NotificationModel) => {
-        setNotificationOpen(undefined)
-        let newNotifications = notifications
+        let newNotifications = [...notifications]
         try {
             const ind = newNotifications.indexOf(notification)
             if (ind !== -1) {
