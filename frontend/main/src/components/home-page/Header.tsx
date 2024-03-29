@@ -16,8 +16,8 @@ import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import { UserContext } from '../context-provider/UserProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 import { NotificationContext } from '../context-provider/NotificationProvider'
-import { WebSocketContext } from '../context-provider/WebSocketProvider'
 import Notifications from './Notifications'
 
 export interface FollowContents {
@@ -42,8 +42,8 @@ export const Header = ( props: HeaderProps ) => {
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
     const userContext = useContext(UserContext)
-    const notificationContext = useContext(NotificationContext)
-    const { notifications, unReadNotifications } = useContext(WebSocketContext)
+    const toastContext = useContext(ToastContext)
+    const { unReadNotifications } = useContext(NotificationContext)
     const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -63,7 +63,7 @@ export const Header = ( props: HeaderProps ) => {
         setAnchorUser(null)
         userContext.updateToken(null)
         navigate(Paths['Login'], { replace: true })
-        notificationContext.openNotification(true, 'Successfully logged out!')
+        toastContext.openToast(true, 'Successfully logged out!')
     }
 
     const handleMenuItemClick = () => {

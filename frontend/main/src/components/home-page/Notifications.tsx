@@ -1,9 +1,28 @@
 import { useContext, useState } from 'react'
-import { WebSocketContext } from '../context-provider/WebSocketProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
 import { Badge, Box, IconButton, Menu, MenuItem, Typography } from '@mui/material'
 import ClearIcon from '@mui/icons-material/Clear'
 import React from 'react'
 import { NotificationModel } from '../../api/Client'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        menuBox: {
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            width: '40vw'
+        },
+        menuText: { 
+            margin: 'auto 0 auto', 
+            maxWidth: '30vw', 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis'
+        },
+        defaultText: {
+            margin: '10px'
+        }
+  }))
 
 interface NotificationProps {
     anchor: HTMLElement|null
@@ -11,8 +30,14 @@ interface NotificationProps {
 }
 
 const Notifications = (props: NotificationProps) => {
-    const { notifications, setNotificationOpen, deleteNotification, readNotification } = useContext(WebSocketContext)
+    const { notifications, setNotificationOpen, deleteNotification, readNotification } = useContext(NotificationContext)
     const [ deleting, setDeleting ] = useState<boolean>(false)
+
+    const {
+      menuBox,
+      menuText,
+      defaultText
+    } = useStyles().classes
 
     const onNotificationOpen = async(notification: NotificationModel) => {
         if (deleting) {
@@ -29,7 +54,6 @@ const Notifications = (props: NotificationProps) => {
     return (
         <Menu
         sx={{ mt: '45px'}}
-        id='menu-appbar'
         anchorEl={props.anchor}
         anchorOrigin={{
             vertical: 'top',
@@ -46,8 +70,8 @@ const Notifications = (props: NotificationProps) => {
             {notifications.length > 0 ? (notifications.map(notification => (
                 <MenuItem key={notification.id} onClick={async () => await onNotificationOpen(notification)}>
                     <Badge color='secondary' variant='dot' invisible={notification.read}>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', width: '40vw'}}>   
-                            <Typography style={{margin: 'auto 0 auto', maxWidth: '30vw', overflow: 'hidden', textOverflow: 'ellipsis'}}> {notification.body} </Typography>
+                        <Box className={menuBox}>   
+                            <Typography className={menuText}> {notification.body} </Typography>
                             <IconButton 
                             onMouseEnter={() => setDeleting(true)} 
                             onMouseLeave={() => setDeleting(false)} 
@@ -58,7 +82,7 @@ const Notifications = (props: NotificationProps) => {
                         </Box>
                     </Badge>
                 </MenuItem>
-            ))) : <Typography sx={{margin: '10px'}}> No New Notifications!</Typography>}
+            ))) : <Typography className={defaultText}> No New Notifications!</Typography>}
         </Menu>
     )
 }

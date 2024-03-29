@@ -14,7 +14,7 @@ import { Paths } from '../../utils/Constants'
 import { useNavigate } from 'react-router-dom'
 import { _apiClient } from '../../App'
 import useProfilePicture from '../../hooks/useProfilePicture'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 interface EditProfileValues {
     profilePicture: File | undefined
@@ -32,7 +32,7 @@ interface EditProfileProps {
 export const EditProfile = ( props: EditProfileProps ) => {
 
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const navigate = useNavigate()
     
@@ -73,13 +73,13 @@ export const EditProfile = ( props: EditProfileProps ) => {
 
     const onSubmit = async (values: EditProfileValues, { setSubmitting, validateForm }: FormikHelpers<EditProfileValues>) => {
         if (!values.birthDate || !values.firstName || !values.lastName) {
-            notificationContext.openNotification(false, 'One or more fields missing!')
+            toastContext.openToast(false, 'One or more fields missing!')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<EditProfileValues>  = await validateForm(values)
         if (errors.birthDate || errors.firstName || errors.lastName || errors.resetPassword || errors.profilePicture) {
-            notificationContext.openNotification(false, 'One Or More Fields Are Invalid!')
+            toastContext.openToast(false, 'One Or More Fields Are Invalid!')
             setSubmitting(false)
             return
         }
@@ -98,22 +98,22 @@ export const EditProfile = ( props: EditProfileProps ) => {
                 if (values.resetPassword) {
                     const emailResponse = await _apiClient.resetPassword(userResponse)
                     if (emailResponse.sent) {
-                        notificationContext.openNotification(true, `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`)
+                        toastContext.openToast(true, `User Updates Made! An Email Has Been Sent To ${userResponse.email} To Reset Your Password`)
                     }
                     else {
-                        notificationContext.openNotification(false, `Email To ${userResponse.email} Failed to Send To Update Your Password`)
+                        toastContext.openToast(false, `Email To ${userResponse.email} Failed to Send To Update Your Password`)
                     }
                 }
             }
             else {
-                notificationContext.openNotification(false, 'No User Is Logged In!')
+                toastContext.openToast(false, 'No User Is Logged In!')
             }
         }
         catch(err: any) {
             if (err instanceof ApiException)
-                notificationContext.openNotification(false, err.response)
+                toastContext.openToast(false, err.response)
             else
-                notificationContext.openNotification(false, 'Internal Server Error')
+                toastContext.openToast(false, 'Internal Server Error')
         }
     }
 

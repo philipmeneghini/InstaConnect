@@ -8,19 +8,19 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { Client } from './api/Client'
 import HomePage from './pages/main-page/HomePage'
 import ProfilePage from './pages/main-page/ProfilePage'
-import NotificationProvider from './components/context-provider/NotificationProvider'
+import ToastProvider from './components/context-provider/ToastProvider'
 import UserProvider from './components/context-provider/UserProvider'
-import WebSocketProvider from './components/context-provider/WebSocketProvider'
+import NotificationProvider from './components/context-provider/NotificationProvider'
 
 export const _apiClient = new Client(process.env.REACT_APP_API_URL!)
 
 function App() {
   return (
     <div className = 'App'>
-      <NotificationProvider>
+      <ToastProvider>
           <Router>
             <UserProvider>
-              <WebSocketProvider>
+              <NotificationProvider>
                 <Routes>
                   <Route path='/' element={<LoginPage/>}/>
                   <Route path='/register' element={<RegisterPage/>}/>
@@ -29,10 +29,10 @@ function App() {
                   <Route path='/home' element={<HomePage/>}/>
                   <Route path='/profile' element={<ProfilePage/>}/>
                 </Routes>
-              </WebSocketProvider>
+              </NotificationProvider>
             </UserProvider>
           </Router>
-      </NotificationProvider>
+      </ToastProvider>
     </div>
   )
 }

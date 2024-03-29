@@ -7,7 +7,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import { ErrorMessage, Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik'
 import * as Yup from 'yup'
 import axios from 'axios'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 import { UserContext } from '../context-provider/UserProvider'
 
 interface ContentPostValues {
@@ -22,7 +22,7 @@ interface CreatePostProps {
 export const CreatePostBox = ( props: CreatePostProps ) => {
 
     const { user } = useContext(UserContext)
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const initialValues: ContentPostValues = {
         multiMediaContent: undefined,
@@ -36,18 +36,18 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
 
     const onSubmit = async (values: ContentPostValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<ContentPostValues>) => {
         if (!values.caption || !values.multiMediaContent) {
-            notificationContext.openNotification(false, 'Caption and/or Photo Content Missing!')
+            toastContext.openToast(false, 'Caption and/or Photo Content Missing!')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<ContentPostValues>  = await validateForm(values)
         if (errors.caption || errors.multiMediaContent) {
-            notificationContext.openNotification(false, 'One Or More Fields Are Invalid!')
+            toastContext.openToast(false, 'One Or More Fields Are Invalid!')
             setSubmitting(false)
             return
         }
         if (!user){
-            notificationContext.openNotification(false, 'You Must Be Logged In!')
+            toastContext.openToast(false, 'You Must Be Logged In!')
         }
         try {
             let newContent : ContentModel = {
@@ -58,19 +58,19 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
             }
             const contentResponse = await _apiClient.contentPOST(newContent)
             if (!contentResponse.uploadMediaUrl || !contentResponse.id) {
-                notificationContext.openNotification(false, 'Error When Creating Post!')
+                toastContext.openToast(false, 'Error When Creating Post!')
                 return
             }
             await axios.put(contentResponse.uploadMediaUrl as string, 
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
-            notificationContext.openNotification(true, 'Post Successfully Created!')
+            toastContext.openToast(true, 'Post Successfully Created!')
             setTimeout(() => 
             { handleSuccessfulClose(resetForm) }, 
             3000)
         }
         catch(err: any) {
-            notificationContext.openNotification(false, `Error: ${err.message}`)
+            toastContext.openToast(false, `Error: ${err.message}`)
         }
     }
 
