@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { NotificationContext } from '../context-provider/NotificationProvider'
 import { Badge, Box, IconButton, Menu, MenuItem, Typography } from '@mui/material'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -32,6 +32,20 @@ interface NotificationProps {
 const Notifications = (props: NotificationProps) => {
     const { notifications, setNotificationOpen, deleteNotification, readNotification } = useContext(NotificationContext)
     const [ deleting, setDeleting ] = useState<boolean>(false)
+    const sortedNotifications = useMemo(() => {
+        return notifications.sort((n1, n2) => { 
+            if (n1.dateCreated) {
+                if (n2.dateCreated){
+                    return new Date(n2.dateCreated).getTime() - new Date(n1.dateCreated).getTime()
+                }
+                else {
+                    return -1
+                }
+            }
+            else {
+                return 1
+            }})
+    }, [notifications])
 
     const {
       menuBox,
@@ -67,7 +81,7 @@ const Notifications = (props: NotificationProps) => {
         open={Boolean(props.anchor)}
         onClose={props.handleClose}
         >
-            {notifications.length > 0 ? (notifications.map(notification => (
+            {notifications.length > 0 ? sortedNotifications.map(notification => (
                 <MenuItem key={notification.id} onClick={async () => await onNotificationOpen(notification)}>
                     <Badge color='secondary' variant='dot' invisible={notification.read}>
                         <Box className={menuBox}>   
@@ -82,7 +96,7 @@ const Notifications = (props: NotificationProps) => {
                         </Box>
                     </Badge>
                 </MenuItem>
-            ))) : <Typography className={defaultText}> No New Notifications!</Typography>}
+            )) : <Typography className={defaultText}> No New Notifications!</Typography>}
         </Menu>
     )
 }

@@ -61,6 +61,7 @@ const NotificationProvider = (props: NotificationProviderProps) => {
         const getNotifications = async() => {
             try {
                 const pastNotifications = await _apiClient.notificationsGET(user?.email)
+                pastNotifications.sort((n1, n2) => { return (n1.dateCreated && n2.dateCreated ? new Date(n1.dateCreated).getTime() - new Date(n2.dateCreated).getTime() : 0)})
                 setNotifications(pastNotifications)
             }
             catch(err: any) {
