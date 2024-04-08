@@ -54,8 +54,8 @@ const NotificationProvider = (props: NotificationProviderProps) => {
                     })
                 })
             }
-            catch{
-                console.log('error!')
+            catch(err: any){
+                openToast(false, 'Failed to connect to notification service! ' + err.message)
             }
         }
         const getNotifications = async() => {
