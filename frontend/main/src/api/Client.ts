@@ -10,7 +10,7 @@
 
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
-import { AuthorizedApiBase } from './AuthorizedApiBase'
+import { AuthorizedApiBase } from './AuthorizedApiBase';
 
 export class Client extends AuthorizedApiBase {
     private instance: AxiosInstance;
@@ -953,15 +953,20 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param email (optional) 
+     * @param ids (optional) 
+     * @param emails (optional) 
      * @return Success
      */
-    contentsGET(email?: string | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
+    contentsGET(ids?: string[] | undefined, emails?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
         let url_ = this.baseUrl + "/Content/Contents?";
-        if (email === null)
-            throw new Error("The parameter 'email' cannot be null.");
-        else if (email !== undefined)
-            url_ += "email=" + encodeURIComponent("" + email) + "&";
+        if (ids === null)
+            throw new Error("The parameter 'ids' cannot be null.");
+        else if (ids !== undefined)
+            ids && ids.forEach(item => { url_ += "ids=" + encodeURIComponent("" + item) + "&"; });
+        if (emails === null)
+            throw new Error("The parameter 'emails' cannot be null.");
+        else if (emails !== undefined)
+            emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {

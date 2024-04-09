@@ -31,7 +31,7 @@ namespace Backend.Authorization
             List<string> ids = query.Value.Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             try
             {
-                List<ContentModel> contents = _contentService.GetContents(ids);
+                List<ContentModel> contents = _contentService.GetContents(ids, null);
                 if (contents.Count == 0)
                 {
                     context.Fail();

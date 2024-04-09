@@ -9,6 +9,7 @@ import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
 import { dateCreatedDescendingUserContents } from '../../utils/Sorters'
 import { UserContext } from '../../components/context-provider/UserProvider'
+import { ESMap } from 'typescript'
 
 const fabStyling = {
     position: 'fixed',
@@ -44,24 +45,22 @@ export const HomePage = () => {
     useEffect(() => {
         const getUsersFollowing = async(user: UserModel | undefined) => {
             if (user?.following) {
-                    let currentUserContents: UserContents[] = []
-                    for (let userFollowing of (user.following)) {
-                        try {
-                            let contentUser: UserContents
-                            let userResponse = await _apiClient.userGET(userFollowing)
-                            let contentResponse = await _apiClient.contentsGET(userFollowing)
-                            for(let i = 0; i < contentResponse.length; i++) {
-                                contentUser = {
-                                    user: userResponse,
-                                    content: contentResponse[i],
-                                }
-                                currentUserContents.push(contentUser)
-                            }
+                let currentUserContents: UserContents[] = []
+                try {
+                    let users = await  _apiClient.usersGET(user.following)
+                    let contents = await _apiClient.contentsGET(undefined, user.following)
+                    let keyedUsers: ESMap<string, UserModel> = new Map<string, UserModel>()
+                    users.forEach(user => {
+                        if (!keyedUsers.get(user.email)) {
+                            keyedUsers.set(user.email, user)
                         }
-                        catch {
-                            continue
+                    })
+                    for (let content of contents) {
+                        let userContent: UserContents = {
+                            user: keyedUsers.get(content.email) as UserModel,
+                            content: content
                         }
-                        currentUserContents.sort(dateCreatedDescendingUserContents)
+                        currentUserContents.push(userContent)
                     }
                     currentUserContents.sort(dateCreatedDescendingUserContents)
                     setContents(currentUserContents)
@@ -69,11 +68,16 @@ export const HomePage = () => {
                         setContentLoadMessage(null)
                     else
                         setContentLoadMessage('No content from users following to show')
+                }
+                catch {
+                    setContentLoadMessage('Error loading content from followers!')
+                }
             }
             else {
                 setContentLoadMessage('You are not currently following anyone')
             }
         }
+
         getUsersFollowing(user)
     }, [user])
 
