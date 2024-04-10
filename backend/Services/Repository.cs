@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Backend.Models;
 using Util.Exceptions;
 using Backend.Models.Config;
+using System.Runtime.CompilerServices;
 
 namespace InstaConnect.Services
 {
@@ -41,17 +42,28 @@ namespace InstaConnect.Services
             return model;
         }
 
-        protected List<T> GetModels(FilterDefinition<T> filter)
+        protected List<T> GetModels(FilterDefinition<T> filter, SortDefinition<T>? sort = null, LazyLoadModel? lazyLoad = null)
         {
-            var users = _collection.Find(filter).ToList();
-            if (users.Count == 0)
+            var users = _collection.Find(filter).Sort(sort);
+            if (lazyLoad != null)
+                users = users.Skip(lazyLoad.Index * lazyLoad.Limit).Limit(lazyLoad.Limit);
+            var usersList = users.ToList();
+            if (usersList.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
-            return users;
+            return usersList;
         }
 
-        protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter)
+        protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter, SortDefinition<T>? sort = null, LazyLoadModel? lazyLoad = null)
         {
-            var users = await _collection.FindAsync(filter);
+            var findOptions = new FindOptions<T, T>();
+            if (sort != null) 
+                findOptions.Sort = sort;
+            if (lazyLoad != null)
+            {
+                findOptions.Limit = lazyLoad.Limit;
+                findOptions.Skip = lazyLoad.Limit * lazyLoad.Index;
+            }
+            var users = await _collection.FindAsync(filter, findOptions);
             var userList = await users.ToListAsync();
             if (userList.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);

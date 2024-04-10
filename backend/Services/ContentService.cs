@@ -11,6 +11,8 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System;
 
 namespace Backend.Services
 {
@@ -61,7 +63,7 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails)
+        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
         {
             if ((emails == null || emails.Count == 0)
                 && (ids == null || ids.Count == 0))
@@ -90,8 +92,10 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
  
-            var contents = await GetModelsAsync(aggregatedFilter);
+            var contents = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
@@ -100,7 +104,7 @@ namespace Backend.Services
             return contents;
         }
 
-        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails)
+        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
         {
             if ((emails == null || emails.Count == 0)
                 && (ids == null || ids.Count == 0))
@@ -129,8 +133,12 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
 
-            var contents = GetModels(aggregatedFilter);
+            var contents = GetModels(aggregatedFilter, sort, lazyLoad);
+            if (index != null && limit != null)
+                contents = contents.OrderByDescending(c => c.DateCreated).Skip((int)index * (int)limit).Take((int)limit).ToList();
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);

@@ -25,9 +25,11 @@ namespace InstaConnect.Controllers
 
         [HttpGet("Contents")]
         public async Task<ActionResult<List<ContentModel>>> GetContents([FromQuery] List<string>? ids, 
-                                                                        [FromQuery] List<string>? emails)
+                                                                        [FromQuery] List<string>? emails,
+                                                                        [FromQuery] int? index,
+                                                                        [FromQuery] int? limit)
         {
-            return await _contentService.GetContentsAsync(ids, emails);
+            return await _contentService.GetContentsAsync(ids, emails, index, limit);
         }
 
         [Authorize(Policy = "ContentPolicy")]
