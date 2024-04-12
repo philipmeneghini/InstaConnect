@@ -7,9 +7,8 @@ import { Box, CircularProgress, Fab, Modal, Paper, Tooltip } from '@mui/material
 import PostContentBox from '../../components/home-page/PostContentBox'
 import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
-import { dateCreatedDescendingUserContents } from '../../utils/Sorters'
 import { UserContext } from '../../components/context-provider/UserProvider'
-import { ESMap } from 'typescript'
+import { useInView } from 'react-intersection-observer'
 
 const fabStyling = {
     position: 'fixed',
@@ -36,49 +35,72 @@ export interface UserContents {
 }
 
 export const HomePage = () => {
+    const [ keyedUsers, setKeyedUsers ] = useState<Map<string, UserModel>>(new Map<string, UserModel>())
     const [ contents, setContents ] = useState<UserContents[]> ([])
     const [ contentLoadMessage, setContentLoadMessage ] = useState<string | null>(null)
     const [ createPostOpen, setCreatePostOpen ] = useState<boolean>(false)
+    const [ index, setIndex ] = useState<number>(0)
+    const [ hasMore, setHasMore ] = useState<boolean>(true)
 
     const { user } = useContext(UserContext)
 
+    const {ref, inView } = useInView()
+
     useEffect(() => {
-        const getUsersFollowing = async(user: UserModel | undefined) => {
-            if (user?.following) {
-                let currentUserContents: UserContents[] = []
+        if (hasMore && inView){
+            setIndex(prev => prev + 1)
+        }
+    }, [hasMore, inView])
+
+    useEffect(() => {
+        const getUsersFollowing = async() => {
+            if (keyedUsers) {
+                let currentUserContents: UserContents[] = [...contents]
                 try {
-                    let users = await  _apiClient.usersGET(user.following)
-                    let contents = await _apiClient.contentsGET(undefined, user.following)
-                    let keyedUsers: ESMap<string, UserModel> = new Map<string, UserModel>()
-                    users.forEach(user => {
-                        if (!keyedUsers.get(user.email)) {
-                            keyedUsers.set(user.email, user)
-                        }
-                    })
-                    for (let content of contents) {
+                    let newContents = await _apiClient.contentsGET(undefined, [...keyedUsers.keys()], index, 4)
+                    for (let content of newContents) {
                         let userContent: UserContents = {
                             user: keyedUsers.get(content.email) as UserModel,
                             content: content
                         }
                         currentUserContents.push(userContent)
                     }
-                    currentUserContents.sort(dateCreatedDescendingUserContents)
                     setContents(currentUserContents)
                     if (currentUserContents.length > 0)
                         setContentLoadMessage(null)
                     else
-                        setContentLoadMessage('No content from users following to show')
+                        setContentLoadMessage('No posts to show from followers!')
                 }
-                catch {
-                    setContentLoadMessage('Error loading content from followers!')
+                catch(err: any) {
+                    if (err.status === 404) {
+                        setHasMore(false)
+                    }
+                    else {
+                        setContentLoadMessage('Error loading content from followers!')
+                    }
                 }
-            }
-            else {
-                setContentLoadMessage('You are not currently following anyone')
             }
         }
 
-        getUsersFollowing(user)
+        getUsersFollowing()
+    }, [keyedUsers, index])
+
+    useEffect(() => {
+        const getFollowing = async() => {
+            if (user && user.following) {
+                let users = await _apiClient.usersGET(user.following)
+                let keyedUsers: Map<string, UserModel> = new Map<string, UserModel>()
+                    users.forEach(user => {
+                        if (!keyedUsers.get(user.email)) {
+                            keyedUsers.set(user.email, user)
+                        }
+                })
+                setKeyedUsers(keyedUsers)
+            }
+            setContents([])
+            setHasMore(true)
+        }
+        getFollowing()
     }, [user])
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
@@ -90,7 +112,12 @@ export const HomePage = () => {
             <Header user={user}/>
             {contents.length !== 0 && contentLoadMessage === null ? 
             <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
-                {contents.map( (userContent) => (
+                {contents.map( (userContent, index) => (
+                    (index === contents.length -1) ?
+                        <Paper ref={ref} key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+                            <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                        </Paper>
+                    :
                     <Paper key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
                         <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                     </Paper>
