@@ -9,25 +9,43 @@ import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
 import { UserContext } from '../../components/context-provider/UserProvider'
 import { useInView } from 'react-intersection-observer'
+import { makeStyles } from 'tss-react/mui'
 
-const fabStyling = {
-    position: 'fixed',
-    bottom: 10,
-    right: 8,
-}
+const useStyles = makeStyles()(
+    () => ({
+        fabStyling: {
+            position: 'fixed',
+            bottom: 10,
+            right: 8,
+        },
+        modalBox: { 
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '40vw',
+            maxHeight: '90vh',
+            bgcolor: 'whitesmoke',
+            border: '1px solid #000',
+            p: '2vh',
+            overflowY: 'auto',
+        },
+        contentsBox: {
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            marginTop: '10vh'
+        },
+        contentsPaper: {
+            margin: '2vh 0', 
+            width: '40vw', 
+            padding: '2% 0 1%'
+        },
+        progressBar: {
+            marginTop: '20vh'
+        }
 
-const postBoxStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '40vw',
-    maxHeight: '90vh',
-    bgcolor: 'whitesmoke',
-    border: '1px solid #000',
-    p: '2vh',
-    overflowY: 'auto',
-}
+  }))
 
 export interface UserContents {
     user: UserModel
@@ -103,6 +121,14 @@ export const HomePage = () => {
         getFollowing()
     }, [user])
 
+    const {
+        fabStyling,
+        modalBox,
+        contentsBox,
+        contentsPaper,
+        progressBar
+    } = useStyles().classes
+
     const handleCreatePost = () => { setCreatePostOpen(true) }
     const handleCreatePostClose = () => { setCreatePostOpen(false) }
 
@@ -111,21 +137,21 @@ export const HomePage = () => {
         <div>
             <Header user={user}/>
             {contents.length !== 0 && contentLoadMessage === null ? 
-            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
+            <Box className={contentsBox}>
                 {contents.map( (userContent, index) => (
                     (index === contents.length -1) ?
-                        <Paper ref={ref} key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+                        <Paper ref={ref} key={userContent?.content?.id} className={contentsPaper} elevation={24}>
                             <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                         </Paper>
                     :
-                    <Paper key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+                    <Paper key={userContent?.content?.id} className={contentsPaper} elevation={24}>
                         <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                     </Paper>
                 ))}
             </Box> :
-            <CircularProgress sx={{marginTop: '20vh'}}/>}
+            <CircularProgress className={progressBar}/>}
             <Tooltip title='Add Post'>
-                <Fab onClick={handleCreatePost} sx={fabStyling} color='primary' aria-label='add'>
+                <Fab onClick={handleCreatePost} className={fabStyling} color='primary' aria-label='add'>
                     <AddIcon />
                 </Fab>
             </Tooltip>
@@ -135,7 +161,7 @@ export const HomePage = () => {
             aria-labelledby='modal-modal-title'
             aria-describedby='modal-modal-description'
             >
-                <Box sx={postBoxStyle}>
+                <Box className={modalBox}>
                     <CreatePostBox handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>
