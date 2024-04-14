@@ -489,15 +489,30 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param contentId (optional) 
+     * @param ids (optional) 
+     * @param contentIds (optional) 
+     * @param index (optional) 
+     * @param limit (optional) 
      * @return Success
      */
-    commentsGET(contentId?: string | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+    commentsGET(ids?: string[] | undefined, contentIds?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
         let url_ = this.baseUrl + "/Comment/Comments?";
-        if (contentId === null)
-            throw new Error("The parameter 'contentId' cannot be null.");
-        else if (contentId !== undefined)
-            url_ += "contentId=" + encodeURIComponent("" + contentId) + "&";
+        if (ids === null)
+            throw new Error("The parameter 'ids' cannot be null.");
+        else if (ids !== undefined)
+            ids && ids.forEach(item => { url_ += "ids=" + encodeURIComponent("" + item) + "&"; });
+        if (contentIds === null)
+            throw new Error("The parameter 'contentIds' cannot be null.");
+        else if (contentIds !== undefined)
+            contentIds && contentIds.forEach(item => { url_ += "contentIds=" + encodeURIComponent("" + item) + "&"; });
+        if (index === null)
+            throw new Error("The parameter 'index' cannot be null.");
+        else if (index !== undefined)
+            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (limit === null)
+            throw new Error("The parameter 'limit' cannot be null.");
+        else if (limit !== undefined)
+            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {

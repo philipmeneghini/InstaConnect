@@ -112,7 +112,7 @@ namespace Backend.Services
                 throw new InstaBadRequestException(ApplicationConstants.EmailIdEmpty);
             }
 
-            FilterDefinition<ContentModel>[] filters = new FilterDefinition<ContentModel>[] { };
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>() { };
             if (emails != null && emails.Count != 0)
             {
                 foreach (var email in emails)
@@ -121,14 +121,14 @@ namespace Backend.Services
                     var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
                     ThrowExceptions(validationResult);
 
-                    filters.Append(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
                 }
             }
             else if (ids != null && ids.Count != 0)
             {
                 foreach (var id in ids)
                 {
-                    filters.Append(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
                 }
             }
 

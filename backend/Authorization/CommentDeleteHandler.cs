@@ -31,7 +31,7 @@ namespace Backend.Authorization
             List<string> ids = query.Value.Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             try
             {
-                List<CommentModel> comments = _commentService.GetComments(ids);
+                List<CommentModel> comments = _commentService.GetComments(ids, null);
                 if (comments.Count == 0)
                 {
                     context.Fail();

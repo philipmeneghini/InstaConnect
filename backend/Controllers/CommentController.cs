@@ -24,9 +24,12 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("Comments")]
-        public async Task<ActionResult<List<CommentModel>>> GetContents([FromQuery] string? contentId)
+        public async Task<ActionResult<List<CommentModel>>> GetComments([FromQuery] List<string>? ids, 
+                                                                        [FromQuery] List<string>? contentIds, 
+                                                                        [FromQuery] int? index = null, 
+                                                                        [FromQuery] int? limit = null)
         {
-            return await _commentService.GetCommentsAsync(contentId);
+            return await _commentService.GetCommentsAsync(ids, contentIds, index, limit);
         }
 
         [Authorize(Policy = "CommentPolicy")]
