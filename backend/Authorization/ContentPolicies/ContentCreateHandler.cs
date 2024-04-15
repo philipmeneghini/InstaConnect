@@ -3,18 +3,18 @@ using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
-namespace Backend.Authorization
+namespace Backend.Authorization.ContentPolicies
 {
 
-    public class UserUpdateHandler : AuthorizationHandler<UserUpdateRequirement>
+    public class ContentCreateHandler : AuthorizationHandler<ContentCreateRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserUpdateHandler(IHttpContextAccessor httpContextAccessor)
+        public ContentCreateHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, UserUpdateRequirement requirement)
+            (AuthorizationHandlerContext context, ContentCreateRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -24,11 +24,11 @@ namespace Backend.Authorization
             }
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
             httpRequest.EnableBuffering();
-            var input = httpRequest.ReadFromJsonAsync<UserModel>().Result;
+            var input = httpRequest.ReadFromJsonAsync<ContentModel>().Result;
             var email = input?.Email;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase) 
-                || string.IsNullOrEmpty(email) 
+            if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                || string.IsNullOrEmpty(email)
                 || string.IsNullOrEmpty(loggedInEmail))
             {
                 context.Fail();

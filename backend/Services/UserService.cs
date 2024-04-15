@@ -18,13 +18,19 @@ namespace Backend.Services
 {
     public class UserService : Repository<UserModel>, IUserService, IRoleService, ISearchService<UserModel>
     {
-        private IMediaService _mediaService;
-        private IValidator<UserEmailValidationModel> _deleteGetUserValidator;
-        private IValidator<UserModel> _createUpdateUserValidator;
+        private readonly IMediaService _mediaService;
+        private readonly INotificationService _notificationService;
+        private readonly IValidator<UserEmailValidationModel> _deleteGetUserValidator;
+        private readonly IValidator<UserModel> _createUpdateUserValidator;
 
-        public UserService(IMediaService mediaService, IValidator<UserEmailValidationModel> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator, IOptions<MongoSettings<UserModel>> settings): base(settings)
+        public UserService(IMediaService mediaService, 
+                           INotificationService notificationService, 
+                           IValidator<UserEmailValidationModel> deleteGetUserValidator, 
+                           IValidator<UserModel> createUpdateUserValidator, 
+                           IOptions<MongoSettings<UserModel>> settings): base(settings)
         {
             _mediaService = mediaService;
+            _notificationService = notificationService;
             _deleteGetUserValidator = deleteGetUserValidator;
             _createUpdateUserValidator = createUpdateUserValidator;
         }
@@ -291,7 +297,17 @@ namespace Backend.Services
 
             RemoveUrls(ref updatedUser);
             updatedUser.Role = null;
+            var originalUser = GetModel(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = UpdateModel(updatedUser);
+            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            {
+                var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = user.Email,
+                    Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                }) ;
+            }
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
@@ -319,7 +335,17 @@ namespace Backend.Services
 
             RemoveUrls(ref updatedUser);
             updatedUser.Role = null;
+            var originalUser = await GetModelAsync(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = await UpdateModelAsync(updatedUser);
+            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            {
+                var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                await _notificationService.CreateNotificationAsync(new NotificationModel
+                {
+                    Reciever = user.Email,
+                    Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                });
+            }
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
@@ -353,7 +379,31 @@ namespace Backend.Services
             }
 
             RemoveUrls(ref result);
+
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUsers.FirstOrDefault()?.Email);
+            int ind = 0;
+            foreach(var updatedUser in updatedUsers)
+            {
+                if (ind != 0)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email);
+
+                ind++;
+            }
+            var originalUsers = GetModels(filter);
             var users = UpdateModels(result);
+            foreach(var originalUser in originalUsers)
+            {
+                var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewUser?.Followers?.Count > originalUser?.Followers?.Count)
+                {
+                    var newFollower = associatedNewUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                    _notificationService.CreateNotification(new NotificationModel
+                    {
+                        Reciever = associatedNewUser.Email,
+                        Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                    });
+                }
+            }
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
@@ -378,7 +428,33 @@ namespace Backend.Services
             }
 
             RemoveUrls(ref result);
+
+
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUsers.FirstOrDefault()?.Email);
+            int ind = 0;
+            foreach (var updatedUser in updatedUsers)
+            {
+                if (ind != 0)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email);
+
+                ind++;
+            }
+            var originalUsers = await GetModelsAsync(filter);
             var users = await UpdateModelsAsync(result);
+
+            foreach (var originalUser in originalUsers)
+            {
+                var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewUser?.Followers?.Count > originalUser?.Followers?.Count)
+                {
+                    var newFollower = associatedNewUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                    await _notificationService.CreateNotificationAsync(new NotificationModel
+                    {
+                        Reciever = associatedNewUser.Email,
+                        Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                    });
+                }
+            }
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));

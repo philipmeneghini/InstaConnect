@@ -1,9 +1,0 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace Backend.Authorization
-{
-    public class UserUpdateRequirement : IAuthorizationRequirement
-    {
-        public UserUpdateRequirement() { }
-    }
-}

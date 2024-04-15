@@ -10,7 +10,7 @@ import { _apiClient } from '../../App'
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 import { UserContext } from '../context-provider/UserProvider'
 
 const useStyles = makeStyles<{ hover: boolean }>()(
@@ -74,7 +74,7 @@ const Comment = (props: CommentProps) => {
     const [ deleted, setDeleted ] = useState<boolean>(false)
     
     const { user } = useContext(UserContext)
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     useEffect(() => {
         if(!user?.email) {
@@ -128,7 +128,7 @@ const Comment = (props: CommentProps) => {
             }
         }
         catch (err: any) {
-            notificationContext.openNotification(false, 'Error changing like status : ' + err.message)
+            toastContext.openToast(false, 'Error changing like status : ' + err.message)
         }
     }
 
@@ -160,11 +160,11 @@ const Comment = (props: CommentProps) => {
     const handleDelete = async () => {
         try {
             await _apiClient.commentDELETE(props?.comment?.id)
-            notificationContext.openNotification(true, 'Successfully Deleted Comment!')
+            toastContext.openToast(true, 'Successfully Deleted Comment!')
             setDeleted(true)
         }
         catch (err: any){
-            notificationContext.openNotification(false, 'Error Deleting Comment : ' + err.message)
+            toastContext.openToast(false, 'Error Deleting Comment : ' + err.message)
             setDeleted(false)
         }
     }
@@ -180,11 +180,11 @@ const Comment = (props: CommentProps) => {
             newComment.dateUpdated = undefined
             newComment.body = commentBody
             await _apiClient.commentPUT(newComment)
-            notificationContext.openNotification(true, 'Successfully Changed Comment!')
+            toastContext.openToast(true, 'Successfully Changed Comment!')
             setEditMode(false)
         }
         catch (err: any) {
-            notificationContext.openNotification(false, 'Error Editing Comment : ' + err.message)
+            toastContext.openToast(false, 'Error Editing Comment : ' + err.message)
             setCommentBody(props?.comment?.body ?? '')
         }
     }

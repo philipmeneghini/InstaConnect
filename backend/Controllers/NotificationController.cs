@@ -1,0 +1,60 @@
+﻿using Backend.Models;
+using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Backend.Controllers
+{
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class NotificationController : ControllerBase
+    {
+        private readonly INotificationService _notificationService;
+
+        public NotificationController(INotificationService notificationService)
+        {
+            _notificationService = notificationService;
+        }
+
+        [Authorize(Policy = "NotificationPolicy")]
+        [HttpGet("/Notification")]
+        public async Task<NotificationModel> GetNotification([FromQuery] string? id)
+        {
+            return await _notificationService.GetNotificationAsync(id);
+        }
+
+        [Authorize(Policy = "NotificationsPolicy")]
+        [HttpGet("/Notifications")]
+        public async Task<List<NotificationModel>> GetNotifications([FromQuery] string? email)
+        {
+            return await _notificationService.GetNotificationsAsync(email);
+        }
+
+        [HttpPut("/Notification")]
+        public async Task<NotificationModel> UpdateNotification([FromBody] NotificationModel? notification)
+        {
+            return await _notificationService.UpdateNotificationAsync(notification);
+        }
+
+        [HttpPut("/Notifications")]
+        public async Task<List<NotificationModel>> UpdateNotifications([FromBody] List<NotificationModel>? notifications)
+        {
+            return await _notificationService.UpdateNotificationsAsync(notifications);
+        }
+
+        [Authorize(Policy = "NotificationPolicy")]
+        [HttpDelete("/Notification")]
+        public async Task<NotificationModel> DeleteNotification([FromQuery] string? id)
+        {
+            return await _notificationService.DeleteNotificationAsync(id);
+        }
+
+        [Authorize(Policy = "NotificationsPolicy")]
+        [HttpDelete("/Notifications")]
+        public async Task<List<NotificationModel>> DeleteNotifications([FromQuery] string? email)
+        {
+            return await _notificationService.DeleteNotificationsAsync(email);
+        }
+    }
+}

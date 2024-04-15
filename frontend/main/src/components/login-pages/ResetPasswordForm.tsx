@@ -6,14 +6,14 @@ import { _apiClient } from '../../App'
 import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { ApiException } from '../../api/Client'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 export interface ResetPasswordFormValues {
     email: string
 }
 
 export const ResetPasswordForm = () => {
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const initialValues : ResetPasswordFormValues = {
         email: ''
@@ -21,13 +21,13 @@ export const ResetPasswordForm = () => {
 
     const onSubmit = async (values: ResetPasswordFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<ResetPasswordFormValues>): Promise<void> => {
         if (!values.email) {
-            notificationContext.openNotification(false, 'Email Field Missing')
+            toastContext.openToast(false, 'Email Field Missing')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<ResetPasswordFormValues>  = await validateForm(values)
         if (errors.email) {
-            notificationContext.openNotification(false, 'Email is Invalid')
+            toastContext.openToast(false, 'Email is Invalid')
             setSubmitting(false)
             return
         }
@@ -37,18 +37,18 @@ export const ResetPasswordForm = () => {
             const userResponse = await _apiClient.userGET(values.email)
             const emailResponse = await _apiClient.resetPassword(userResponse)
             if (emailResponse.sent) {
-                notificationContext.openNotification(true, `An Email Has Been Sent To ${userResponse.email}`)
+                toastContext.openToast(true, `An Email Has Been Sent To ${userResponse.email}`)
                 resetForm()
             }
             else {
-                notificationContext.openNotification(false, `Email To ${userResponse.email} Failed to Send`)
+                toastContext.openToast(false, `Email To ${userResponse.email} Failed to Send`)
             }
         }
         catch(err: any){
             if (err instanceof ApiException)
-                notificationContext.openNotification(false, err.response)
+                toastContext.openToast(false, err.response)
             else
-                notificationContext.openNotification(false, 'Internal Server Error')
+                toastContext.openToast(false, 'Internal Server Error')
         }
         setSubmitting(false)
         localStorage.setItem('token', '')

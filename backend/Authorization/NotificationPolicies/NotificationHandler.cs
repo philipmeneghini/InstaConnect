@@ -1,19 +1,23 @@
 ﻿using Backend.Models;
+using Backend.Services;
 using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
-namespace Backend.Authorization
+namespace Backend.Authorization.NotificationPolicies
 {
-    public class CommentCreateUpdateHandler : AuthorizationHandler<CommentCreateUpdateRequirement>
+    public class NotificationHandler : AuthorizationHandler<NotificationRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public CommentCreateUpdateHandler(IHttpContextAccessor httpContextAccessor)
+        private readonly INotificationService _notificationService;
+
+        public NotificationHandler(IHttpContextAccessor httpContextAccessor, INotificationService notificationService)
         {
             _httpContextAccessor = httpContextAccessor;
+            _notificationService = notificationService;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, CommentCreateUpdateRequirement requirement)
+            (AuthorizationHandlerContext context, NotificationRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -23,12 +27,14 @@ namespace Backend.Authorization
             }
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
             httpRequest.EnableBuffering();
-            var input = httpRequest.ReadFromJsonAsync<CommentModel>().Result;
-            var email = input?.Email;
+            var id = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Id, StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
+            NotificationModel notification = _notificationService.GetNotification(id);
+            var email = notification.Reciever;
+
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
             if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(email)
-                || string.IsNullOrEmpty(loggedInEmail))
+            || string.IsNullOrEmpty(email)
+            || string.IsNullOrEmpty(loggedInEmail))
             {
                 context.Fail();
                 return Task.CompletedTask;
@@ -38,3 +44,5 @@ namespace Backend.Authorization
         }
     }
 }
+
+

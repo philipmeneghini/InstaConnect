@@ -9,7 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import DatePickerField from './DatePickerField'
 import { ApiException } from '../../api/Client'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 export interface RegisterFormValues {
     firstName: string
@@ -19,7 +19,7 @@ export interface RegisterFormValues {
 }
 
 export const RegisterForm = () => {
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const maxDate = dayjs().subtract(18, 'year').format('MM/DD/YYYY')
     const minDate = dayjs().subtract(120, 'year').format('MM/DD/YYYY')
@@ -33,13 +33,13 @@ export const RegisterForm = () => {
 
     const onSubmit = async (values: RegisterFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<RegisterFormValues>): Promise<void> => {
         if (!values.firstName || !values.lastName || !values.email || !values.birthDate) {
-            notificationContext.openNotification(false, 'Registration Failed! One Or More Fields Missing')
+            toastContext.openToast(false, 'Registration Failed! One Or More Fields Missing')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<RegisterFormValues>  = await validateForm(values)
         if (errors.firstName || errors.lastName || errors.email || errors.birthDate) {
-            notificationContext.openNotification(false, 'Registration Failed! One Or More Fields Are Invalid')
+            toastContext.openToast(false, 'Registration Failed! One Or More Fields Are Invalid')
             setSubmitting(false)
             return
         }
@@ -49,18 +49,18 @@ export const RegisterForm = () => {
             const userResponse = await _apiClient.userPOST({firstName: values.firstName, lastName: values.lastName, email: values.email, birthDate: values.birthDate ?? ''})
             const emailResponse = await _apiClient.registration(userResponse)
             if (emailResponse.sent) {
-                notificationContext.openNotification(true, `Registration Success! An Email Has Been Sent To ${userResponse.email}`)
+                toastContext.openToast(true, `Registration Success! An Email Has Been Sent To ${userResponse.email}`)
                 resetForm()
             }
             else {
-                notificationContext.openNotification(false, `Email To ${userResponse.email} Failed to Send`)
+                toastContext.openToast(false, `Email To ${userResponse.email} Failed to Send`)
             }
         }
         catch(err: any){
             if (err instanceof ApiException)
-                notificationContext.openNotification(false, err.response)
+                toastContext.openToast(false, err.response)
             else
-                notificationContext.openNotification(false, 'Internal Server Error')
+                toastContext.openToast(false, 'Internal Server Error')
         }
         setSubmitting(false)
         localStorage.setItem('token', '')

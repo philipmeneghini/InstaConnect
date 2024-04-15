@@ -9,14 +9,14 @@ import { Paths } from '../../utils/Constants'
 import { ApiException, LoginResponse } from '../../api/Client'
 import { useNavigate } from 'react-router-dom'
 import LoginFooter from '../../components/login-pages/LoginFooter'
-import { NotificationContext } from '../../components/context-provider/NotificationProvider'
+import { ToastContext } from '../../components/context-provider/ToastProvider'
 import { UserContext } from '../../components/context-provider/UserProvider'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [showPassword, setShowPassword] = useState(false)
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
     const userContext = useContext(UserContext)
 
     const navigate = useNavigate()
@@ -32,22 +32,22 @@ export const LoginPage = () => {
 
     const handleClickLogin = async() => {
       if (!email || !password) {
-        notificationContext.openNotification(false, 'An email or password has not been entered yet')
+        toastContext.openToast(false, 'An email or password has not been entered yet')
         return
       }
       try {
         const response: LoginResponse = await _apiClient.login({ email, password })
-        notificationContext.openNotification(true, 'User Has Successfully Logged In!')
+        toastContext.openToast(true, 'User Has Successfully Logged In!')
         setTimeout(() => 
         { handleSuccessfulLogin(response.token as string) }, 
         3000)
       }
       catch(err: any) {
         if (err instanceof ApiException) {
-          notificationContext.openNotification(false, err.response)
+          toastContext.openToast(false, err.response)
         }
         else {
-          notificationContext.openNotification(false, 'Internal Server Error')
+          toastContext.openToast(false, 'Internal Server Error')
         }
       }
     }
