@@ -17,7 +17,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import Comment from './Comment'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -55,7 +55,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
     const [ deleting, setDeleting ] = useState<boolean>(false)
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const isContentLiked = useMemo((): boolean | undefined => {
         const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
@@ -119,7 +119,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch(err: any) {
-            notificationContext.openNotification(false, err.message)
+            toastContext.openToast(false, err.message)
         }
     }
 
@@ -140,7 +140,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setNewComment('')
         }
         catch(err: any) {
-            notificationContext.openNotification(false, err.message)
+            toastContext.openToast(false, err.message)
         }
     }
 
@@ -180,10 +180,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const handleDeleteModal = async () => {
         try {
            await _apiClient.contentDELETE(props?.userContent?.content?.id)
-            notificationContext.openNotification(true, 'Successfully deleted post!')
+            toastContext.openToast(true, 'Successfully deleted post!')
         }
         catch(err: any) {
-            notificationContext.openNotification(false, err.message)
+            toastContext.openToast(false, err.message)
         }
         setDeleting(false)
         setTimeout(() => 
@@ -219,13 +219,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
         console.log(newContent)
         try {
             await _apiClient.contentPUT(newContent)
-            notificationContext.openNotification(true, 'Post Successfully Updated!')
+            toastContext.openToast(true, 'Post Successfully Updated!')
             setTimeout(() => 
             { setContent(newContent) }, 
             3000)
         }
         catch {
-            notificationContext.openNotification(false, 'Post Failed to Update!')
+            toastContext.openToast(false, 'Post Failed to Update!')
         }
         setEditMode(false)
     }

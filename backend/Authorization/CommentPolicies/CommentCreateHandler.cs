@@ -1,19 +1,19 @@
-﻿using Backend.Util;
+﻿using Backend.Models;
+using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
-namespace Backend.Authorization
+namespace Backend.Authorization.CommentPolicies
 {
-
-    public class UserDeleteHandler : AuthorizationHandler<UserDeleteRequirement>
+    public class CommentCreateHandler : AuthorizationHandler<CommentCreateRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserDeleteHandler(IHttpContextAccessor httpContextAccessor)
+        public CommentCreateHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, UserDeleteRequirement requirement)
+            (AuthorizationHandlerContext context, CommentCreateRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -22,20 +22,16 @@ namespace Backend.Authorization
                 return Task.CompletedTask;
             }
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            var query = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase));
+            httpRequest.EnableBuffering();
+            var input = httpRequest.ReadFromJsonAsync<CommentModel>().Result;
+            var email = input?.Email;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            if (query.Value.Count == 0)
+            if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                || string.IsNullOrEmpty(email)
+                || string.IsNullOrEmpty(loggedInEmail))
             {
                 context.Fail();
                 return Task.CompletedTask;
-            }
-            foreach (var value in query.Value)
-            {
-                if (value != loggedInEmail)
-                {
-                    context.Fail();
-                    return Task.CompletedTask;
-                }
             }
             context.Succeed(requirement);
             return Task.CompletedTask;

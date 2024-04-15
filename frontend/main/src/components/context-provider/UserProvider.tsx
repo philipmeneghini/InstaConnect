@@ -4,7 +4,7 @@ import { _apiClient } from '../../App'
 import { Box, Button, Modal, Typography } from '@mui/material'
 import { useNavigate } from 'react-router'
 import { Paths } from '../../utils/Constants'
-import { NotificationContext } from './NotificationProvider'
+import { ToastContext } from './ToastProvider'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(
@@ -30,8 +30,11 @@ interface UserProviderProps {
   children: React.ReactNode
 }
 
-export const UserContext = createContext<{user: UserModel|undefined, updateToken: (newToken: string|null) => void}>({
+export const UserContext = createContext<{user: UserModel|undefined, 
+                                          token: string|null, 
+                                          updateToken: (newToken: string|null) => void}>({
         user: undefined,
+        token: null,
         updateToken: (newToken: string|null) => {}, 
       })
 
@@ -42,7 +45,7 @@ const UserProvider = (props: UserProviderProps) => {
     const [ jwt, setJwt ] = useState<JwtModel>()
     const [ popup, setPopup ] = useState<boolean>(false)
 
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -77,7 +80,7 @@ const UserProvider = (props: UserProviderProps) => {
             localStorage.removeItem('token')
             setPopup(false)
             navigate(Paths['Login'], { replace: true })
-            notificationContext.openNotification(false, 'Logged out due to inactivity')
+            toastContext.openToast(false, 'Logged out due to inactivity')
             setToken(null)
           }
         }, 30000)
@@ -86,7 +89,7 @@ const UserProvider = (props: UserProviderProps) => {
           clearInterval(interval)
         }
       }
-    }, [ jwt, navigate, notificationContext ])
+    }, [ jwt, navigate, toastContext ])
 
     const { classes } = useStyles()
 
@@ -100,15 +103,20 @@ const UserProvider = (props: UserProviderProps) => {
       setToken(null)
       setPopup(false)
       navigate(Paths['Login'], { replace: true })
-      notificationContext.openNotification(true, 'Successfully logged out')
+      toastContext.openToast(true, 'Successfully logged out')
     }
 
     const handleContinueSession = async () => {
-      const response = await _apiClient.refreshToken()
-      localStorage.setItem('token', response.token ?? '')
-      setToken(localStorage.getItem('token'))
-      setPopup(false)
-      notificationContext.openNotification(true, 'Successfully refreshed user session')
+      try {
+        const response = await _apiClient.refreshToken()
+        localStorage.setItem('token', response.token ?? '')
+        setToken(localStorage.getItem('token'))
+        setPopup(false)
+        toastContext.openToast(true, 'Successfully refreshed user session')
+      }
+      catch(err: any) {
+        toastContext.openToast(false, 'Failed to refresh session')
+      }
     }
 
     const updateToken = (newToken: string|null) => {
@@ -117,7 +125,7 @@ const UserProvider = (props: UserProviderProps) => {
     }
 
     return (
-        <UserContext.Provider value={{user, updateToken}}>
+        <UserContext.Provider value={{user, token, updateToken}}>
           <Modal open={popup}>
             <Box className={modalBox}>
               <Typography textAlign={'center'}> 

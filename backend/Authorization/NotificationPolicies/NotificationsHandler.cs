@@ -1,20 +1,18 @@
-﻿using Backend.Models;
-using Backend.Util;
+﻿using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
-namespace Backend.Authorization
+namespace Backend.Authorization.NotificationPolicies
 {
-
-    public class ContentCreateUpdateHandler : AuthorizationHandler<ContentCreateUpdateRequirement>
+    public class NotificationsHandler : AuthorizationHandler<NotificationsRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public ContentCreateUpdateHandler(IHttpContextAccessor httpContextAccessor)
+        public NotificationsHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
-            (AuthorizationHandlerContext context, ContentCreateUpdateRequirement requirement)
+            (AuthorizationHandlerContext context, NotificationsRequirement requirement)
         {
             var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
@@ -24,18 +22,21 @@ namespace Backend.Authorization
             }
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
             httpRequest.EnableBuffering();
-            var input = httpRequest.ReadFromJsonAsync<ContentModel>().Result;
-            var email = input?.Email;
+            var emails = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase)).Value;
             string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+            foreach (var email in emails)
+            {
+                if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                 || string.IsNullOrEmpty(email)
                 || string.IsNullOrEmpty(loggedInEmail))
-            {
-                context.Fail();
-                return Task.CompletedTask;
+                {
+                    context.Fail();
+                    return Task.CompletedTask;
+                }
             }
             context.Succeed(requirement);
             return Task.CompletedTask;
         }
     }
 }
+

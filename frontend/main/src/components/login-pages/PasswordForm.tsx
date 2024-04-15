@@ -7,7 +7,7 @@ import { Paths } from '../../utils/Constants'
 import LoginHeader from './LoginHeader'
 import { useNavigate } from 'react-router-dom'
 import { ApiException, LoginResponse } from '../../api/Client'
-import { NotificationContext } from '../context-provider/NotificationProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 export interface PasswordFormValues {
     password: string
@@ -19,7 +19,7 @@ interface PasswordProps {
 }
 
 export const PasswordForm = (prop: PasswordProps) => {
-    const notificationContext = useContext(NotificationContext)
+    const toastContext = useContext(ToastContext)
 
     const navigate = useNavigate()
 
@@ -30,13 +30,13 @@ export const PasswordForm = (prop: PasswordProps) => {
 
     const onSubmit = async(values: PasswordFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<PasswordFormValues>): Promise<void> => {
         if (!values.password || !values.confirmPassword) {
-            notificationContext.openNotification(false, 'Password Submission Failed! One Or More Fields Missing')
+            toastContext.openToast(false, 'Password Submission Failed! One Or More Fields Missing')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<PasswordFormValues>  = await validateForm(values)
         if (errors.password || errors.confirmPassword) {
-            notificationContext.openNotification(false, 'Password Submission Failed! One Or More Fields Are Invalid')
+            toastContext.openToast(false, 'Password Submission Failed! One Or More Fields Are Invalid')
             setSubmitting(false)
             return
         }
@@ -44,7 +44,7 @@ export const PasswordForm = (prop: PasswordProps) => {
             const jwtResponse: LoginResponse = await _apiClient.login({ email: process.env.REACT_APP_GUEST_EMAIL!, password: process.env.REACT_APP_GUEST_PASSWORD! })
             localStorage.setItem('token', jwtResponse.token ?? '')
             await _apiClient.register({ email: prop.email, password: values.confirmPassword})
-            notificationContext.openNotification(true, 'Password Submission Success!')
+            toastContext.openToast(true, 'Password Submission Success!')
             resetForm()
             setTimeout(() => 
             { navigate(Paths['Login'], { replace: true })}, 
@@ -52,9 +52,9 @@ export const PasswordForm = (prop: PasswordProps) => {
         }
         catch(err: any){
             if (err instanceof ApiException)
-                notificationContext.openNotification(false, 'Password Submission Failed! ' + err.response)
+                toastContext.openToast(false, 'Password Submission Failed! ' + err.response)
             else
-                notificationContext.openNotification(false, 'Password Submission Failed! Internal Server Error')
+                toastContext.openToast(false, 'Password Submission Failed! Internal Server Error')
         }
         setSubmitting(false)
         localStorage.setItem('token', '')
