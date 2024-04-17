@@ -53,7 +53,7 @@ export const ProfilePage = () => {
                         profile = user
                     }
                     setProfile(profile)
-                    const contents = await _apiClient.contentsGET(profile?.email)
+                    const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
                     const orderedContents = contents.sort(dateCreatedDescendingContents)
                     setContents(orderedContents)
                 }
@@ -77,7 +77,7 @@ export const ProfilePage = () => {
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = async () => { 
         if (profile) {
-            const contents = await _apiClient.contentsGET(profile?.email)
+            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
             setContents(contents)
         }
         setContent(null)
@@ -114,7 +114,7 @@ export const ProfilePage = () => {
     const handleCreatePost = () => { setCreatePostOpen(true) }
     const handleCreatePostClose = async () => {
         if (profile) {
-            const contents = await _apiClient.contentsGET(profile?.email)
+            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
             setContents(contents)
         }
         setCreatePostOpen(false) 

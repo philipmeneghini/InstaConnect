@@ -8,6 +8,8 @@ using InstaConnect.Services;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using Backend.Models.Validation;
+using System.Collections.Generic;
+using System;
 
 namespace Backend.Services
 {
@@ -56,55 +58,78 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<CommentModel>> GetCommentsAsync(string? contentId)
+        public async Task<List<CommentModel>> GetCommentsAsync(List<string>? ids, List<string>? contentIds, int? index = null, int? limit = null)
         {
-            if (string.IsNullOrEmpty(contentId)) throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
-            var validationModel = new ContentIdValidationModel(contentId);
-            var validationResult = _contentIdValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
-
-            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId);
-            var comments = await GetModelsAsync(filter);
-
-            if (comments.Count == 0)
-                throw new InstaNotFoundException(ApplicationConstants.NoCommentsFound);
-
-            return comments;
-        }
-
-        public List<CommentModel> GetComments(string? contentId)
-        {
-            if (string.IsNullOrEmpty(contentId)) throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
-            var validationModel = new ContentIdValidationModel(contentId);
-            var validationResult = _contentIdValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
-
-            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId);
-            var comments = GetModels(filter);
-
-            if (comments.Count == 0)
-                throw new InstaNotFoundException(ApplicationConstants.NoCommentsFound);
-
-            return comments;
-        }
-
-        public List<CommentModel> GetComments(List<string>? ids)
-        {
-            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
-            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, ids.FirstOrDefault());
-            bool firstId = true;
-            foreach (var id in ids)
+            if ((ids == null || ids.Count == 0)
+              && (contentIds == null || contentIds.Count == 0))
             {
-                var validationResult = _getDeleteCommentValidator.Validate(new CommentIdValidationModel(id), Options => Options.IncludeRuleSets(ApplicationConstants.Delete));
-                ThrowExceptions(validationResult);
-
-                if (firstId)
-                    filter |= Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
-                firstId = false;
+                throw new InstaBadRequestException(ApplicationConstants.ContentCommentIdsEmpty);
             }
 
-            var comments = GetModels(filter);
+            List<FilterDefinition<CommentModel>> filters = new List<FilterDefinition<CommentModel>>() { };
+            if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    if (!string.IsNullOrWhiteSpace(id))
+                        filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+            else if (contentIds != null && contentIds.Count != 0)
+            {
+                foreach (var contentId in contentIds)
+                {
+                    if (string.IsNullOrWhiteSpace(contentId)) throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
+                    var validationModel = new ContentIdValidationModel(contentId);
+                    var validationResult = _contentIdValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
 
+                    filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId));
+                }
+            }
+
+            var aggregatedFilter = Builders<CommentModel>.Filter.Or(filters);
+            var sort = Builders<CommentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+            var comments = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
+            return comments;
+        }
+
+        public List<CommentModel> GetComments(List<string>? ids, List<string>? contentIds, int? index = null, int? limit = null)
+        {
+            if ((ids == null || ids.Count == 0)
+               && (contentIds == null || contentIds.Count == 0))
+            {
+                throw new InstaBadRequestException(ApplicationConstants.ContentCommentIdsEmpty);
+            }
+
+            List<FilterDefinition<CommentModel>> filters = new List<FilterDefinition<CommentModel>>() { };
+            if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    if (!string.IsNullOrWhiteSpace(id))
+                        filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+            else if (contentIds != null && contentIds.Count != 0)
+            {
+                foreach (var contentId in contentIds)
+                {
+                    if (string.IsNullOrWhiteSpace(contentId)) throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
+                    var validationModel = new ContentIdValidationModel(contentId);
+                    var validationResult = _contentIdValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
+
+                    filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId));
+                }
+            }
+
+            var aggregatedFilter = Builders<CommentModel>.Filter.Or(filters);
+            var sort = Builders<CommentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+
+            var comments = GetModels(aggregatedFilter, sort, lazyLoad);
             return comments;
         }
 

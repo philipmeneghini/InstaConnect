@@ -70,7 +70,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
             try {
-                const response = await _apiClient.commentsGET(content.id)
+                const response = await _apiClient.commentsGET(undefined, [ content.id as string ])
                 setComments(response)
             }
             catch {

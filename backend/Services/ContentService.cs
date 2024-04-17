@@ -11,6 +11,8 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System;
 
 namespace Backend.Services
 {
@@ -68,56 +70,82 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<ContentModel>> GetContentsAsync(string? email)
+        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
         {
-            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationModel = new ContentEmailValidationModel(email);
-            var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
-
-            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
-            var contents = await GetModelsAsync(filter);
-
-            if (contents.Count == 0)
-                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
-
-            return contents;
-        }
-
-        public List<ContentModel> GetContents(string? email)
-        {
-            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationModel = new ContentEmailValidationModel(email);
-            var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
-
-            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
-            var contents = GetModels(filter);
-
-            if (contents.Count == 0)
-                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
-
-            return contents;
-        }
-
-        public List<ContentModel> GetContents(List<string> ids)
-        {
-            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
-            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, ids.FirstOrDefault());
-            bool firstId = true;
-            foreach (var id in ids)
+            if ((emails == null || emails.Count == 0)
+                && (ids == null || ids.Count == 0))
             {
-                var validationResult = _deleteGetContentValidator.Validate(new ContentIdValidationModel(id), Options => Options.IncludeRuleSets(ApplicationConstants.Delete));
-                ThrowExceptions(validationResult);
-
-                if (firstId)
-                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
-                firstId = false;
+                throw new InstaBadRequestException(ApplicationConstants.EmailIdEmpty);
             }
 
-            var contents = GetModels(filter);
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>() { };
+            if (emails != null && emails.Count != 0)
+            {
+                foreach (var email in emails)
+                {
+                    var validationModel = new ContentEmailValidationModel(email);
+                    var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
+
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
+            }
+            if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+
+            var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+ 
+            var contents = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
+
+            if (contents.Count == 0)
+                throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
+            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            return contents;
+        }
+
+        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
+        {
+            if ((emails == null || emails.Count == 0)
+                && (ids == null || ids.Count == 0))
+            {
+                throw new InstaBadRequestException(ApplicationConstants.EmailIdEmpty);
+            }
+
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>() { };
+            if (emails != null && emails.Count != 0)
+            {
+                foreach (var email in emails)
+                {
+                    var validationModel = new ContentEmailValidationModel(email);
+                    var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
+
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
+            }
+            else if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+
+            var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+
+            var contents = GetModels(aggregatedFilter, sort, lazyLoad);
+            if (index != null && limit != null)
+                contents = contents.OrderByDescending(c => c.DateCreated).Skip((int)index * (int)limit).Take((int)limit).ToList();
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);

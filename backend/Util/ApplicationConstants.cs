@@ -51,9 +51,11 @@ namespace Util.Constants
         static public readonly string CommentEmpty = "no comment passed in";
         static public readonly string IdsEmpty = "no ids passed in";
         static public readonly string EmailEmpty = "no email passed in";
+        static public readonly string EmailIdEmpty = "no email or id passed in";
         static public readonly string MediaTypeEmpty = "cannot leave mediaType empty";
         static public readonly string MediaTypeNotValid = "media type is not valid";
         static public readonly string ContentIdEmpty = "no content id passed in";
+        static public readonly string ContentCommentIdsEmpty = "no content or comment id is passed in";
         static public readonly string ContentIdNotHexadecimal = "content id is not a hexadecimal";
         static public readonly string NoUsersFound = "no users found";
         static public readonly string NoContentFound = "no content found";
