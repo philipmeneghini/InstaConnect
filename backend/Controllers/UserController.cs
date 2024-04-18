@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace InstaConnect.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UserController : ControllerBase
@@ -43,6 +43,7 @@ namespace InstaConnect.Controllers
             return await _userService.CreateUsersAsync(newUsers);
         }
 
+        [Authorize(Policy = "UserUpdatePolicy")]
         [HttpPut("User")]
         public async Task<ActionResult<UserModel>> PutUser([FromBody] UserModel? newUser)
         {

@@ -18,6 +18,7 @@ using Backend.Authorization.ContentPolicies;
 using Backend.Authorization.UserPolicies;
 using Backend.Validators.NotificationValidators;
 using Backend.Authorization.NotificationPolicies;
+using Backend.Util;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IUserHelper, UserHelper>();
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -54,6 +56,7 @@ builder.Services.AddSingleton<IAuthorizationHandler, ContentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, UserUpdateHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, NotificationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, NotificationsHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
@@ -94,6 +97,11 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
         policy.Requirements.Add(new UserRequirement());
+    });
+    options.AddPolicy("UserUpdatePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new UserUpdateRequirement());
     });
     options.AddPolicy("ContentCreatePolicy", policy =>
     {
