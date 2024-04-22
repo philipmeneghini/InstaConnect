@@ -1,39 +1,45 @@
-﻿using Backend.Authorization.UserPolicies;
+﻿using Backend.Authorization.Helpers;
+using Backend.Authorization.UserPolicies;
 using Backend.Models;
 using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
-using Util.Constants;
 
 namespace Backend.Authorization
 {
 
     public class UserHandler : AuthorizationHandler<UserRequirement>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserHandler(IHttpContextAccessor httpContextAccessor)
+        private readonly IAuthorizationHelper<UserModel> _authorizationHelper;
+        public UserHandler(IAuthorizationHelper<UserModel> httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _authorizationHelper = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, UserRequirement requirement)
         {
-            var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
+            var claim = _authorizationHelper.RetrieveRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            httpRequest.EnableBuffering();
-            var input = httpRequest.ReadFromJsonAsync<UserModel>().Result;
-            var email = input?.Email;
-            string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(email)
-                || string.IsNullOrEmpty(loggedInEmail))
+            List<UserModel> users;
+            if (!_authorizationHelper.TryGetBody(out users))
             {
                 context.Fail();
                 return Task.CompletedTask;
+            }
+            foreach(var user in users)
+            {
+                var email = user.Email;
+                string loggedInEmail = _authorizationHelper.RetrieveLoggedInEmail() ?? string.Empty;
+                if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                    || string.IsNullOrEmpty(email)
+                    || string.IsNullOrEmpty(loggedInEmail))
+                {
+                    context.Fail();
+                    return Task.CompletedTask;
+                }
             }
             context.Succeed(requirement);
             return Task.CompletedTask;

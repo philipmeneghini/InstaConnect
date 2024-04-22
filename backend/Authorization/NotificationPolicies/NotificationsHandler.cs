@@ -7,6 +7,7 @@ namespace Backend.Authorization.NotificationPolicies
     public class NotificationsHandler : AuthorizationHandler<NotificationsRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         public NotificationsHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;

@@ -1,4 +1,6 @@
-﻿using Backend.Util;
+﻿using Backend.Authorization.Helpers;
+using Backend.Models;
+using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
@@ -7,29 +9,33 @@ namespace Backend.Authorization.UserPolicies
 
     public class UserDeleteHandler : AuthorizationHandler<UserDeleteRequirement>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserDeleteHandler(IHttpContextAccessor httpContextAccessor)
+
+        private readonly IAuthorizationHelper<UserModel> _authorizationHelper;
+
+        public UserDeleteHandler(IAuthorizationHelper<UserModel> authorizationHelper)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _authorizationHelper = authorizationHelper;
         }
+
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, UserDeleteRequirement requirement)
         {
-            var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
+            var claim = _authorizationHelper.RetrieveRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            var query = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase));
-            string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            if (query.Value.Count == 0)
+
+            List<string> query;
+            if(!_authorizationHelper.TryGetQueries(ApplicationConstants.Email, out query))
             {
                 context.Fail();
                 return Task.CompletedTask;
             }
-            foreach (var value in query.Value)
+            string loggedInEmail = _authorizationHelper.RetrieveLoggedInEmail() ?? string.Empty;
+            
+            foreach (var value in query)
             {
                 if (value != loggedInEmail)
                 {

@@ -19,6 +19,7 @@ using Backend.Authorization.UserPolicies;
 using Backend.Validators.NotificationValidators;
 using Backend.Authorization.NotificationPolicies;
 using Backend.Util;
+using Backend.Authorization.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddTransient<IAuthorizationHelper<UserModel>, AuthorizationHelper<UserModel>>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {

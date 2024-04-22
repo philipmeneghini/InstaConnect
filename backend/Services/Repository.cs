@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Backend.Models;
 using Util.Exceptions;
 using Backend.Models.Config;
-using System.Runtime.CompilerServices;
 
 namespace InstaConnect.Services
 {
