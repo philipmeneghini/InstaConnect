@@ -42,6 +42,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IUserHelper, UserHelper>();
+builder.Services.AddSingleton<IContentHelper, ContentHelper>();
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -75,7 +76,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddTransient<IAuthorizationHelper<UserModel>, AuthorizationHelper<UserModel>>();
+builder.Services.AddTransient<IAuthorizationHelper, AuthorizationHelper>();
 
 builder.Services.AddCors(p => p.AddPolicy(ApplicationConstants.CorsPolicy, build =>
 {

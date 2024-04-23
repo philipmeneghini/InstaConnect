@@ -4,7 +4,7 @@ using Util.Constants;
 
 namespace Backend.Authorization.Helpers
 {
-    public class AuthorizationHelper<T> : IAuthorizationHelper<T> where T : IInstaModel
+    public class AuthorizationHelper : IAuthorizationHelper
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -13,12 +13,12 @@ namespace Backend.Authorization.Helpers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public Claim? RetrieveRole()
+        public Claim? GetRole()
         {
             return _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
         }
 
-        public string? RetrieveLoggedInEmail()
+        public string? GetLoggedInEmail()
         {
             return _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
         }
@@ -39,7 +39,7 @@ namespace Backend.Authorization.Helpers
             return query.Count > 0;
         }
 
-        public bool TryGetBody(out List<T> body)
+        public bool TryGetBody<T>(out List<T> body) where T : IInstaModel
         {
             body = new List<T>();
             HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;

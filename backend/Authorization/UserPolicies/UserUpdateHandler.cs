@@ -10,11 +10,11 @@ namespace Backend.Authorization
 
     public class UserUpdateHandler : AuthorizationHandler<UserUpdateRequirement>
     {
-        private readonly IAuthorizationHelper<UserModel> _authorizationHelper;
+        private readonly IAuthorizationHelper _authorizationHelper;
         private readonly IUserService _userService;
         private readonly IUserHelper _userHelper;
 
-        public UserUpdateHandler(IAuthorizationHelper<UserModel> authorizationHelper, 
+        public UserUpdateHandler(IAuthorizationHelper authorizationHelper, 
                                  IUserService userService, 
                                  IUserHelper userHelper)
         {
@@ -26,7 +26,7 @@ namespace Backend.Authorization
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, UserUpdateRequirement requirement)
         {
-            var claim = _authorizationHelper.RetrieveRole();
+            var claim = _authorizationHelper.GetRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
@@ -39,7 +39,7 @@ namespace Backend.Authorization
                 context.Fail();
                 return Task.CompletedTask;
             }
-            string loggedInEmail = _authorizationHelper.RetrieveLoggedInEmail() ?? string.Empty;
+            string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             foreach (var input in body) 
             {
                 var email = input?.Email;

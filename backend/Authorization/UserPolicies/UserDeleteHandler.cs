@@ -10,9 +10,9 @@ namespace Backend.Authorization.UserPolicies
     public class UserDeleteHandler : AuthorizationHandler<UserDeleteRequirement>
     {
 
-        private readonly IAuthorizationHelper<UserModel> _authorizationHelper;
+        private readonly IAuthorizationHelper _authorizationHelper;
 
-        public UserDeleteHandler(IAuthorizationHelper<UserModel> authorizationHelper)
+        public UserDeleteHandler(IAuthorizationHelper authorizationHelper)
         {
             _authorizationHelper = authorizationHelper;
         }
@@ -20,7 +20,7 @@ namespace Backend.Authorization.UserPolicies
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, UserDeleteRequirement requirement)
         {
-            var claim = _authorizationHelper.RetrieveRole();
+            var claim = _authorizationHelper.GetRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
@@ -33,7 +33,7 @@ namespace Backend.Authorization.UserPolicies
                 context.Fail();
                 return Task.CompletedTask;
             }
-            string loggedInEmail = _authorizationHelper.RetrieveLoggedInEmail() ?? string.Empty;
+            string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             
             foreach (var value in query)
             {

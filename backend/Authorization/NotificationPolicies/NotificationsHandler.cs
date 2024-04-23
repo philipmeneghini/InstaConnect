@@ -1,4 +1,5 @@
-﻿using Backend.Util;
+﻿using Backend.Authorization.Helpers;
+using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
 using Util.Constants;
 
@@ -6,25 +7,25 @@ namespace Backend.Authorization.NotificationPolicies
 {
     public class NotificationsHandler : AuthorizationHandler<NotificationsRequirement>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAuthorizationHelper _authorizationHelper;
 
-        public NotificationsHandler(IHttpContextAccessor httpContextAccessor)
+        public NotificationsHandler(IAuthorizationHelper authorizationHelper)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _authorizationHelper = authorizationHelper;
         }
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, NotificationsRequirement requirement)
         {
-            var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
+            var claim = _authorizationHelper.GetRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            httpRequest.EnableBuffering();
-            var emails = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase)).Value;
-            string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
+
+            List<string> emails;
+            _authorizationHelper.TryGetQueries(ApplicationConstants.Email, out emails);
+            string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             foreach (var email in emails)
             {
                 if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)

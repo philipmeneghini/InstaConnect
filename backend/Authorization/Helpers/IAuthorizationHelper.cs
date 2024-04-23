@@ -3,13 +3,13 @@ using System.Security.Claims;
 
 namespace Backend.Authorization.Helpers
 {
-    public interface IAuthorizationHelper<T> where T : IInstaModel
+    public interface IAuthorizationHelper
     {
-        public Claim? RetrieveRole();
+        public Claim? GetRole();
 
-        public string? RetrieveLoggedInEmail();
+        public string? GetLoggedInEmail();
 
-        public bool TryGetBody(out List<T> body);
+        public bool TryGetBody<T>(out List<T> body) where T : IInstaModel;
 
         public bool TryGetQueries(string queryName, out List<string> query);
     }

@@ -9,15 +9,15 @@ namespace Backend.Authorization
 
     public class UserHandler : AuthorizationHandler<UserRequirement>
     {
-        private readonly IAuthorizationHelper<UserModel> _authorizationHelper;
-        public UserHandler(IAuthorizationHelper<UserModel> httpContextAccessor)
+        private readonly IAuthorizationHelper _authorizationHelper;
+        public UserHandler(IAuthorizationHelper httpContextAccessor)
         {
             _authorizationHelper = httpContextAccessor;
         }
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, UserRequirement requirement)
         {
-            var claim = _authorizationHelper.RetrieveRole();
+            var claim = _authorizationHelper.GetRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
@@ -32,7 +32,7 @@ namespace Backend.Authorization
             foreach(var user in users)
             {
                 var email = user.Email;
-                string loggedInEmail = _authorizationHelper.RetrieveLoggedInEmail() ?? string.Empty;
+                string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
                 if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                     || string.IsNullOrEmpty(email)
                     || string.IsNullOrEmpty(loggedInEmail))
