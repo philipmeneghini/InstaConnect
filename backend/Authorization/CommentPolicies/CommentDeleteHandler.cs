@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Backend.Authorization.Helpers;
+using Backend.Models;
 using Backend.Services.Interfaces;
 using Backend.Util;
 using Microsoft.AspNetCore.Authorization;
@@ -9,26 +10,27 @@ namespace Backend.Authorization.CommentPolicies
 
     public class CommentDeleteHandler : AuthorizationHandler<CommentDeleteRequirement>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAuthorizationHelper _authorizationHelper;
         private readonly ICommentService _commentService;
-        public CommentDeleteHandler(IHttpContextAccessor httpContextAccessor, ICommentService contentService)
+        public CommentDeleteHandler(IAuthorizationHelper authorizationHelper, 
+                                    ICommentService contentService)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _authorizationHelper = authorizationHelper;
             _commentService = contentService;
         }
         protected override Task HandleRequirementAsync
             (AuthorizationHandlerContext context, CommentDeleteRequirement requirement)
         {
-            var claim = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Role, StringComparison.OrdinalIgnoreCase));
+            var claim = _authorizationHelper.GetRole();
             if (claim != null && claim.Value.Equals(Role.Administrator.ToString()))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            var query = httpRequest.Query.FirstOrDefault(q => q.Key.Equals(ApplicationConstants.Id, StringComparison.OrdinalIgnoreCase));
-            string loggedInEmail = _httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(c => c.Type.Equals(ApplicationConstants.Email, StringComparison.OrdinalIgnoreCase))!.Value;
-            List<string> ids = query.Value.Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
+
+            List<string> ids;
+            _authorizationHelper.TryGetQueries(ApplicationConstants.Id, out ids);
+            string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             try
             {
                 List<CommentModel> comments = _commentService.GetComments(ids, null);

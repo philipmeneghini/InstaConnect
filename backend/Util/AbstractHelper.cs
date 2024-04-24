@@ -2,7 +2,7 @@
 
 namespace Backend.Util
 {
-    public abstract class Helper<T> where T : IInstaModel
+    public abstract class AbstractHelper<T> where T : IInstaModel
     {
         protected bool OnlyOneDifference(string? difference, HashSet<string>? list1, HashSet<string>? list2)
         {

@@ -43,6 +43,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IUserHelper, UserHelper>();
 builder.Services.AddSingleton<IContentHelper, ContentHelper>();
+builder.Services.AddSingleton<ICommentHelper, CommentHelper>();
 builder.Services.AddSingleton<IValidator<UserEmailValidationModel>, UserEmailValidator>();
 builder.Services.AddSingleton<IValidator<UserModel>, UserModelValidator>();
 builder.Services.AddSingleton<IValidator<ContentIdValidationModel>, ContentIdValidator>();
@@ -59,10 +60,12 @@ builder.Services.AddSingleton<IAuthorizationHandler, CommentCreateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, UserUpdateHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ContentUpdateHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, NotificationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, NotificationsHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ContentDeleteHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentDeleteHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CommentUpdateHandler>();
 builder.Services.AddScoped<INotificationHub, NotificationHub>();
 builder.Services.AddScoped<ISearchService<UserModel>, UserService>();
 builder.Services.AddScoped<ISearchService<ContentModel>, ContentService>();
@@ -105,6 +108,16 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
         policy.Requirements.Add(new UserUpdateRequirement());
+    });
+    options.AddPolicy("ContentUpdatePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new ContentUpdateRequirement());
+    });
+    options.AddPolicy("CommentUpdatePolicy", policy =>
+    {
+        policy.RequireClaim(ApplicationConstants.Role, ApplicationConstants.AdminUserRoleList);
+        policy.Requirements.Add(new CommentUpdateRequirement());
     });
     options.AddPolicy("ContentCreatePolicy", policy =>
     {
