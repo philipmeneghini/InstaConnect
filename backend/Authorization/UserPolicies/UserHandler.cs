@@ -23,12 +23,10 @@ namespace Backend.Authorization
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-            List<UserModel> users;
-            if (!_authorizationHelper.TryGetBody(out users))
-            {
-                context.Fail();
-                return Task.CompletedTask;
-            }
+
+            var res = Task.Run(() => _authorizationHelper.TryGetBodyAsync<UserModel>());
+            res.Wait();
+            List<UserModel> users = res.Result;
             foreach(var user in users)
             {
                 var email = user.Email;

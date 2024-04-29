@@ -23,8 +23,9 @@ namespace Backend.Authorization.CommentPolicies
                 return Task.CompletedTask;
             }
 
-            List<CommentModel> inputs;
-            _authorizationHelper.TryGetBody(out inputs);
+            var body = Task.Run(() => _authorizationHelper.TryGetBodyAsync<CommentModel>());
+            body.Wait();
+            var inputs = body.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             foreach (var input in inputs)
             {

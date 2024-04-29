@@ -33,12 +33,9 @@ namespace Backend.Authorization
                 return Task.CompletedTask;
             }
 
-            List<UserModel> body;
-            if (!_authorizationHelper.TryGetBody(out body))
-            {
-                context.Fail();
-                return Task.CompletedTask;
-            }
+            var res = Task.Run(() => _authorizationHelper.TryGetBodyAsync<UserModel>());
+            res.Wait();
+            var body = res.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             foreach (var input in body) 
             {

@@ -32,14 +32,15 @@ namespace Backend.Authorization.CommentPolicies
                 return Task.CompletedTask;
             }
 
-            List<CommentModel> inputs;
-            _authorizationHelper.TryGetBody(out inputs);
+            var inputs = Task.Run(() => _authorizationHelper.TryGetBodyAsync<CommentModel>());
+            inputs.Wait();
+            List<CommentModel> body = inputs.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
-            List<CommentModel> comments = _commentService.GetComments(inputs.Where(i => i != null && i.Email != null && i.Email != loggedInEmail)
+            List<CommentModel> comments = _commentService.GetComments(body.Where(i => i != null && i.Email != null && i.Email != loggedInEmail)
                                                                             .Select(b => b.Id).ToList() as List<string>, null);
             foreach (var comment in comments)
             {
-                CommentModel? input = inputs.FirstOrDefault(b => b.Id.Equals(comment.Id, StringComparison.OrdinalIgnoreCase));
+                CommentModel? input = body.FirstOrDefault(b => b.Id.Equals(comment.Id, StringComparison.OrdinalIgnoreCase));
                 if (comment == null || input == null || !_commentHelper.CompareLikes(loggedInEmail, input, comment))
                 {
                     context.Fail();

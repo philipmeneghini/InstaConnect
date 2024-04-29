@@ -30,14 +30,14 @@ namespace Backend.Authorization.ContentPolicies
                 return Task.CompletedTask;
             }
 
-            List<ContentModel> body;
-            _authorizationHelper.TryGetBody(out body);
+            var body = Task.Run(() => _authorizationHelper.TryGetBodyAsync<ContentModel>());
+            body.Wait();
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
-            List<ContentModel> contents = _contentService.GetContents(body.Where(b => b != null && b.Email != null && b.Email != loggedInEmail)
+            List<ContentModel> contents = _contentService.GetContents(body.Result.Where(b => b != null && b.Email != null && b.Email != loggedInEmail)
                                                                           .Select(b => b.Id).ToList() as List<string>, null);
             foreach (var content in contents)
             {
-                ContentModel? input = body.FirstOrDefault(b => b.Id.Equals(content.Id, StringComparison.OrdinalIgnoreCase));
+                ContentModel? input = body.Result.FirstOrDefault(b => b.Id.Equals(content.Id, StringComparison.OrdinalIgnoreCase));
                 if (content == null || input == null || !_contentHelper.CompareLikes(loggedInEmail, input, content))
                 {
                     context.Fail();

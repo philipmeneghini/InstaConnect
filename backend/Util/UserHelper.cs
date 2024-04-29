@@ -2,7 +2,7 @@
 
 namespace Backend.Util
 {
-    public class UserHelper : Helper<UserModel>, IUserHelper
+    public class UserHelper : AbstractHelper<UserModel>, IUserHelper
     {
         public bool CompareFollowers(string loggedInUser, UserModel a, UserModel b)
         {

@@ -55,5 +55,32 @@ namespace Backend.Authorization.Helpers
             httpRequest.Body.Position = 0;
             return body.Count > 0;
         }
+
+        public async Task<List<T>> TryGetBodyAsync<T>() where T : IInstaModel
+        {
+            var body = new List<T>();
+            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
+            httpRequest.EnableBuffering();
+            try
+            {
+                var inputs = await httpRequest.ReadFromJsonAsync<List<T>>();
+                if (inputs != null)
+                    body.AddRange(inputs);
+            }
+            catch { }
+
+            httpRequest.Body.Position = 0;
+
+            try
+            {
+                var input = await httpRequest.ReadFromJsonAsync<T>();
+                if (input != null)
+                    body.Add(input);
+            }
+            catch { }
+
+            httpRequest.Body.Position = 0;
+            return body;
+        }
     }
 }

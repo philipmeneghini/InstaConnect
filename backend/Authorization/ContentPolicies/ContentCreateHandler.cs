@@ -24,8 +24,9 @@ namespace Backend.Authorization.ContentPolicies
                 return Task.CompletedTask;
             }
 
-            List<ContentModel> body;
-            _authorizationHelper.TryGetBody(out body);
+            var inputs = Task.Run(() => _authorizationHelper.TryGetBodyAsync<ContentModel>());
+            inputs.Wait();
+            var body = inputs.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
             foreach (var input in body)
             {
