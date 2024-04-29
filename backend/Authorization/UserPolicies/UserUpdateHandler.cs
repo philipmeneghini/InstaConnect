@@ -37,14 +37,19 @@ namespace Backend.Authorization
             res.Wait();
             var body = res.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
-            foreach (var input in body) 
+            List<string> emails  = body.Where(b => b != null && b.Email != null && b.Email != loggedInEmail)
+                                    .Select(b => b.Email).ToList() as List<string>;
+
+            List<UserModel> users = emails.Count > 0 ? _userService.GetUsers(emails) : new List<UserModel>();
+
+            foreach (var user in users) 
             {
-                var email = input?.Email;
+                var input = body.FirstOrDefault(b => b.Id.Equals(user.Id, StringComparison.OrdinalIgnoreCase));
+                var email = user.Email;
                 if (!loggedInEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                     || string.IsNullOrEmpty(email)
                     || string.IsNullOrEmpty(loggedInEmail))
                 {
-                    UserModel user = _userService.GetUser(email);
 
                     if (input == null || !_userHelper.CompareFollowers(loggedInEmail, input, user))
                     {

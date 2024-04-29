@@ -36,8 +36,9 @@ namespace Backend.Authorization.CommentPolicies
             inputs.Wait();
             List<CommentModel> body = inputs.Result;
             string loggedInEmail = _authorizationHelper.GetLoggedInEmail() ?? string.Empty;
-            List<CommentModel> comments = _commentService.GetComments(body.Where(i => i != null && i.Email != null && i.Email != loggedInEmail)
-                                                                            .Select(b => b.Id).ToList() as List<string>, null);
+            List<string> ids = body.Where(i => i != null && i.Email != null && i.Email != loggedInEmail)
+                                                                            .Select(b => b.Id).ToList() as List<string>;
+            List<CommentModel> comments = ids.Count > 0 ? _commentService.GetComments(ids, null) : new List<CommentModel>();
             foreach (var comment in comments)
             {
                 CommentModel? input = body.FirstOrDefault(b => b.Id.Equals(comment.Id, StringComparison.OrdinalIgnoreCase));
