@@ -104,6 +104,9 @@ export const EditProfile = ( props: EditProfileProps ) => {
                         toastContext.openToast(false, `Email To ${userResponse.email} Failed to Send To Update Your Password`)
                     }
                 }
+                else {
+                    toastContext.openToast(true, 'User Updates Made!')
+                }
             }
             else {
                 toastContext.openToast(false, 'No User Is Logged In!')

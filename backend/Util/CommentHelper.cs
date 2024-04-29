@@ -9,7 +9,6 @@ namespace Backend.Util
             if ((a.Id == null || b.Id == a.Id)
                  && (a.Email == null || b.Email == a.Email)
                  && (a.Body == null || b.Body == b.Body)
-                 && (a.Likes == null || GetDifference(b.Likes, a.Likes).Count == 0)
                  && (a.Likes == null || OnlyOneDifference(loggedInUser, a.Likes, b.Likes)))
             {
                 return true;

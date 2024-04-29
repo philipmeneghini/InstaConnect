@@ -1,5 +1,4 @@
-﻿using Amazon.SimpleEmail.Model;
-using Backend.Authorization.Helpers;
+﻿using Backend.Authorization.Helpers;
 using Backend.Models;
 using Backend.Services.Interfaces;
 using Backend.Util;
