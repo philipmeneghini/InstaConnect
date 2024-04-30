@@ -11,11 +11,11 @@ namespace Backend.Validators.UserValidators
             RuleSet(ApplicationConstants.Create, () =>
             {
                 RuleFor(user => user.Email).Cascade(CascadeMode.Stop)
-                                        .NotEmpty().WithMessage(ApplicationConstants.EmailEmpty)
-                                        .EmailAddress().WithMessage(ApplicationConstants.EmailValid);
+                                           .NotEmpty().WithMessage(ApplicationConstants.EmailEmpty)
+                                           .EmailAddress().WithMessage(ApplicationConstants.EmailValid);
                 RuleFor(user => user.FirstName).Cascade(CascadeMode.Stop)
-                                                .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
-                                                .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
+                                               .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
+                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
                 RuleFor(user => user.LastName).Cascade(CascadeMode.Stop)
                                               .NotEmpty().WithMessage(ApplicationConstants.LastNameEmpty)
                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.LastNameValid);
@@ -27,8 +27,8 @@ namespace Backend.Validators.UserValidators
             RuleSet(ApplicationConstants.Update, () =>
             {
                 RuleFor(user => user.FirstName).Cascade(CascadeMode.Stop)
-                                           .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
-                                           .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
+                                               .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
+                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
                 RuleFor(user => user.LastName).Cascade(CascadeMode.Stop)
                                               .NotEmpty().WithMessage(ApplicationConstants.LastNameEmpty)
                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.LastNameValid);
@@ -43,8 +43,8 @@ namespace Backend.Validators.UserValidators
             RuleSet(ApplicationConstants.EmailService, () =>
             {
                 RuleFor(user => user.FirstName).Cascade(CascadeMode.Stop)
-                                           .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
-                                           .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
+                                               .NotEmpty().WithMessage(ApplicationConstants.FirstNameEmpty)
+                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.FirstNameValid);
                 RuleFor(user => user.LastName).Cascade(CascadeMode.Stop)
                                               .NotEmpty().WithMessage(ApplicationConstants.LastNameEmpty)
                                               .Must(validator.IsValidName).WithMessage(ApplicationConstants.LastNameValid);

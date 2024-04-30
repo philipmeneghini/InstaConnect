@@ -420,7 +420,7 @@ namespace Backend.Services
             List<UserModel> result = new List<UserModel>();
             foreach (var user in updatedUsers)
             {
-                var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update));
+                var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update) );
                 ThrowExceptions(validationResult);
 
                 user.Role = null;

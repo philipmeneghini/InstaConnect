@@ -43,12 +43,14 @@ namespace InstaConnect.Controllers
             return await _userService.CreateUsersAsync(newUsers);
         }
 
+        [Authorize(Policy = "UserUpdatePolicy")]
         [HttpPut("User")]
         public async Task<ActionResult<UserModel>> PutUser([FromBody] UserModel? newUser)
         {
             return await _userService.UpdateUserAsync(newUser);
         }
 
+        [Authorize(Policy = "UserUpdatePolicy")]
         [HttpPut("Users")]
         public async Task<ActionResult<List<UserModel>>> PutUsers([FromBody] List<UserModel>? newUsers)
         {

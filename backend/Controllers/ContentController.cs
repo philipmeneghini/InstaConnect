@@ -46,12 +46,14 @@ namespace InstaConnect.Controllers
             return await _contentService.CreateContentsAsync(newContents);
         }
 
+        [Authorize(Policy = "ContentUpdatePolicy")]
         [HttpPut("Content")]
         public async Task<ActionResult<ContentModel>> PutContent([FromBody]ContentModel? newContent)
         {
             return await _contentService.UpdateContentAsync(newContent);
         }
 
+        [Authorize(Policy = "ContentUpdatePolicy")]
         [HttpPut("Contents")]
         public async Task<ActionResult<List<ContentModel>>> PutContents([FromBody] List<ContentModel>? newContents)
         {

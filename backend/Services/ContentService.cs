@@ -11,8 +11,6 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System;
 
 namespace Backend.Services
 {

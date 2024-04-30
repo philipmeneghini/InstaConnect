@@ -46,12 +46,14 @@ namespace InstaConnect.Controllers
             return await _commentService.CreateCommentsAsync(newComments);
         }
 
+        [Authorize(Policy = "CommentUpdatePolicy")]
         [HttpPut("Comment")]
         public async Task<ActionResult<CommentModel>> PutComment([FromBody]CommentModel? newComment)
         {
             return await _commentService.UpdateCommentAsync(newComment);
         }
 
+        [Authorize(Policy = "CommentUpdatePolicy")]
         [HttpPut("Comments")]
         public async Task<ActionResult<List<CommentModel>>> PutComments([FromBody] List<CommentModel>? newComments)
         {
