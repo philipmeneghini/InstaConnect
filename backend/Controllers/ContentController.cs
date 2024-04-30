@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace InstaConnect.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class ContentController : ControllerBase
@@ -16,59 +17,59 @@ namespace InstaConnect.Controllers
             _contentService = contentService;
         }
 
-        [Authorize]
         [HttpGet("Content")]
-        public async Task<ActionResult<ContentModel>> GetContent(string? id)
+        public async Task<ActionResult<ContentModel>> GetContent([FromQuery] string? id)
         {
             return await _contentService.GetContentAsync(id);
         }
 
-        [Authorize]
         [HttpGet("Contents")]
-        public async Task<ActionResult<List<ContentModel>>> GetContents(string? email)
+        public async Task<ActionResult<List<ContentModel>>> GetContents([FromQuery] List<string>? ids, 
+                                                                        [FromQuery] List<string>? emails,
+                                                                        [FromQuery] int? index,
+                                                                        [FromQuery] int? limit)
         {
-            return await _contentService.GetContentsAsync(email);
+            return await _contentService.GetContentsAsync(ids, emails, index, limit);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ContentPolicy")]
         [HttpPost("Content")]
         public async Task<ActionResult<ContentModel>> PostContent([FromBody] ContentModel? newContent)
         {
             return await _contentService.CreateContentAsync(newContent);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ContentPolicy")]
         [HttpPost("Contents")]
         public async Task<ActionResult<List<ContentModel>>> PostContents([FromBody] List<ContentModel>? newContents)
         {
             return await _contentService.CreateContentsAsync(newContents);
         }
 
-
-        [Authorize]
+        [Authorize(Policy = "ContentUpdatePolicy")]
         [HttpPut("Content")]
         public async Task<ActionResult<ContentModel>> PutContent([FromBody]ContentModel? newContent)
         {
             return await _contentService.UpdateContentAsync(newContent);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ContentUpdatePolicy")]
         [HttpPut("Contents")]
         public async Task<ActionResult<List<ContentModel>>> PutContents([FromBody] List<ContentModel>? newContents)
         {
             return await _contentService.UpdateContentsAsync(newContents);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ContentDeletePolicy")]
         [HttpDelete("Content")]
-        public async Task<ActionResult<ContentModel>> DeleteContent(string? id)
+        public async Task<ActionResult<ContentModel>> DeleteContent([FromQuery]string? id)
         {
             return await _contentService.DeleteContentAsync(id);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ContentDeletePolicy")]
         [HttpDelete("Contents")]
-        public async Task<ActionResult<List<ContentModel>>> DeleteContents([FromBody] List<string>? ids)
+        public async Task<ActionResult<List<ContentModel>>> DeleteContents([FromQuery] List<string>? ids)
         {
             return await _contentService.DeleteContentsAsync(ids);
         }

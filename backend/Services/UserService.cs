@@ -11,18 +11,26 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using Backend.Util;
+using System.Data;
 
 namespace Backend.Services
 {
-    public class UserService : Repository<UserModel>, IUserService, ISearchService<UserModel>
+    public class UserService : Repository<UserModel>, IUserService, IRoleService, ISearchService<UserModel>
     {
-        private IMediaService _mediaService;
-        private IValidator<UserEmailValidationModel> _deleteGetUserValidator;
-        private IValidator<UserModel> _createUpdateUserValidator;
+        private readonly IMediaService _mediaService;
+        private readonly INotificationService _notificationService;
+        private readonly IValidator<UserEmailValidationModel> _deleteGetUserValidator;
+        private readonly IValidator<UserModel> _createUpdateUserValidator;
 
-        public UserService(IMediaService mediaService, IValidator<UserEmailValidationModel> deleteGetUserValidator, IValidator<UserModel> createUpdateUserValidator, IOptions<MongoSettings<UserModel>> settings): base(settings)
+        public UserService(IMediaService mediaService, 
+                           INotificationService notificationService, 
+                           IValidator<UserEmailValidationModel> deleteGetUserValidator, 
+                           IValidator<UserModel> createUpdateUserValidator, 
+                           IOptions<MongoSettings<UserModel>> settings): base(settings)
         {
             _mediaService = mediaService;
+            _notificationService = notificationService;
             _deleteGetUserValidator = deleteGetUserValidator;
             _createUpdateUserValidator = createUpdateUserValidator;
         }
@@ -182,6 +190,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref newUser);
+            newUser.Role = Role.RegularUser;
             var user = CreateModel(newUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -209,6 +218,7 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref newUser);
+            newUser.Role = Role.RegularUser;
             var user = await CreateModelAsync(newUser);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
@@ -238,6 +248,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
 
+                newUser.Role = Role.RegularUser;
                 result.Add(newUser);
             }
 
@@ -262,6 +273,7 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(newUser, options => options.IncludeRuleSets(ApplicationConstants.Create));
                 ThrowExceptions(validationResult);
 
+                newUser.Role = Role.RegularUser;
                 result.Add(newUser);
             }
 
@@ -284,7 +296,18 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref updatedUser);
+            updatedUser.Role = null;
+            var originalUser = GetModel(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = UpdateModel(updatedUser);
+            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            {
+                var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = user.Email,
+                    Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                }) ;
+            }
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
@@ -311,7 +334,18 @@ namespace Backend.Services
             ThrowExceptions(validationResult);
 
             RemoveUrls(ref updatedUser);
+            updatedUser.Role = null;
+            var originalUser = await GetModelAsync(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = await UpdateModelAsync(updatedUser);
+            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            {
+                var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                await _notificationService.CreateNotificationAsync(new NotificationModel
+                {
+                    Reciever = user.Email,
+                    Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                });
+            }
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
@@ -340,11 +374,36 @@ namespace Backend.Services
                 var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update));
                 ThrowExceptions(validationResult);
 
+                user.Role = null;
                 result.Add(user);
             }
 
             RemoveUrls(ref result);
+
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUsers.FirstOrDefault()?.Email);
+            int ind = 0;
+            foreach(var updatedUser in updatedUsers)
+            {
+                if (ind != 0)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email);
+
+                ind++;
+            }
+            var originalUsers = GetModels(filter);
             var users = UpdateModels(result);
+            foreach(var originalUser in originalUsers)
+            {
+                var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewUser?.Followers?.Count > originalUser?.Followers?.Count)
+                {
+                    var newFollower = associatedNewUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                    _notificationService.CreateNotification(new NotificationModel
+                    {
+                        Reciever = associatedNewUser.Email,
+                        Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                    });
+                }
+            }
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
@@ -361,14 +420,41 @@ namespace Backend.Services
             List<UserModel> result = new List<UserModel>();
             foreach (var user in updatedUsers)
             {
-                var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update));
+                var validationResult = _createUpdateUserValidator.Validate(user, options => options.IncludeRuleSets(ApplicationConstants.Update) );
                 ThrowExceptions(validationResult);
 
+                user.Role = null;
                 result.Add(user);
             }
 
             RemoveUrls(ref result);
+
+
+            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUsers.FirstOrDefault()?.Email);
+            int ind = 0;
+            foreach (var updatedUser in updatedUsers)
+            {
+                if (ind != 0)
+                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email);
+
+                ind++;
+            }
+            var originalUsers = await GetModelsAsync(filter);
             var users = await UpdateModelsAsync(result);
+
+            foreach (var originalUser in originalUsers)
+            {
+                var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewUser?.Followers?.Count > originalUser?.Followers?.Count)
+                {
+                    var newFollower = associatedNewUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
+                    await _notificationService.CreateNotificationAsync(new NotificationModel
+                    {
+                        Reciever = associatedNewUser.Email,
+                        Body = string.Format(ApplicationConstants.NewFollowerNotification, newFollower)
+                    });
+                }
+            }
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
@@ -497,6 +583,74 @@ namespace Backend.Services
             users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
 
             return users;
+        }
+
+        public UserModel AssignRole(RoleModel? role)
+        {
+            if (role == null) 
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            UserModel user = GetUser(role.Email);
+            user.Role = role.Role;
+            RemoveUrls(ref user);
+            UserModel resultingUser = UpdateUser(user);
+
+            return resultingUser;
+        }
+
+        public async Task<UserModel> AssignRoleAsync(RoleModel? role)
+        {
+            if (role == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            UserModel user = await GetUserAsync(role.Email);
+            user.Role = role.Role;
+            RemoveUrls(ref user);
+            UserModel resultingUser = await UpdateUserAsync(user);
+
+            return resultingUser;
+        }
+
+        public List<UserModel> AssignRoles(List<RoleModel>? roles)
+        {
+            if (roles == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            List<string> emails = new List<string>();
+            roles.ForEach(r => emails.Add(r.Email));
+            List<UserModel> users = GetUsers(emails);
+            foreach(var user in users)
+            {
+                var associatedRoleModel = roles.FirstOrDefault(r => r.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase));
+                Role? role = associatedRoleModel == null ? null : associatedRoleModel.Role;
+                user.Role = role;
+            }
+            RemoveUrls(ref users);
+
+            List<UserModel> resultingUsers = UpdateUsers(users);
+
+            return resultingUsers;
+        }
+
+        public async Task<List<UserModel>> AssignRolesAsync(List<RoleModel>? roles)
+        {
+            if (roles == null)
+                throw new InstaBadRequestException(ApplicationConstants.NoRolesPassedIn);
+
+            List<string> emails = new List<string>();
+            roles.ForEach(r => emails.Add(r.Email));
+            List<UserModel> users = await GetUsersAsync(emails);
+            foreach (var user in users)
+            {
+                var associatedRoleModel = roles.FirstOrDefault(r => r.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase));
+                Role? role = associatedRoleModel == null ? null : associatedRoleModel.Role;
+                user.Role = role;
+            }
+            RemoveUrls(ref users);
+
+            List<UserModel> resultingUsers = await UpdateUsersAsync(users);
+
+            return resultingUsers;
         }
 
         private void RemoveUrls(ref UserModel user)

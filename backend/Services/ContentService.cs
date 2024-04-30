@@ -10,7 +10,6 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using System.Text.RegularExpressions;
 
 namespace Backend.Services
@@ -18,13 +17,20 @@ namespace Backend.Services
     public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
         private readonly IMediaService _mediaService;
+        private readonly INotificationService _notificationService;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
         private readonly IValidator<ContentModel> _createUpdateContentValidator;
         private readonly IValidator<ContentEmailValidationModel> _emailContentValidator;
 
-        public ContentService(IMediaService mediaService, IValidator<ContentIdValidationModel> deleteGetContentValidator, IValidator<ContentEmailValidationModel> emailContentValidator, IValidator<ContentModel> createUpdateContentValidator, IOptions<MongoSettings<ContentModel>> settings): base(settings)
+        public ContentService(IMediaService mediaService, 
+                              INotificationService notificationService,
+                              IValidator<ContentIdValidationModel> deleteGetContentValidator, 
+                              IValidator<ContentEmailValidationModel> emailContentValidator, 
+                              IValidator<ContentModel> createUpdateContentValidator, 
+                              IOptions<MongoSettings<ContentModel>> settings): base(settings)
         {
             _mediaService = mediaService;
+            _notificationService = notificationService;
             _deleteGetContentValidator = deleteGetContentValidator;
             _createUpdateContentValidator = createUpdateContentValidator;
             _emailContentValidator = emailContentValidator;
@@ -62,15 +68,39 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<ContentModel>> GetContentsAsync(string? email)
+        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
         {
-            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationModel = new ContentEmailValidationModel(email);
-            var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
+            if ((emails == null || emails.Count == 0)
+                && (ids == null || ids.Count == 0))
+            {
+                throw new InstaBadRequestException(ApplicationConstants.EmailIdEmpty);
+            }
 
-            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
-            var contents = await GetModelsAsync(filter);
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>() { };
+            if (emails != null && emails.Count != 0)
+            {
+                foreach (var email in emails)
+                {
+                    var validationModel = new ContentEmailValidationModel(email);
+                    var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
+
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
+            }
+            if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+
+            var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+ 
+            var contents = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
@@ -79,15 +109,41 @@ namespace Backend.Services
             return contents;
         }
 
-        public List<ContentModel> GetContents(string? email)
+        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
         {
-            if (string.IsNullOrEmpty(email)) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            var validationModel = new ContentEmailValidationModel(email);
-            var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-            ThrowExceptions(validationResult);
+            if ((emails == null || emails.Count == 0)
+                && (ids == null || ids.Count == 0))
+            {
+                throw new InstaBadRequestException(ApplicationConstants.EmailIdEmpty);
+            }
 
-            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
-            var contents = GetModels(filter);
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>() { };
+            if (emails != null && emails.Count != 0)
+            {
+                foreach (var email in emails)
+                {
+                    var validationModel = new ContentEmailValidationModel(email);
+                    var validationResult = _emailContentValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
+
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
+            }
+            else if (ids != null && ids.Count != 0)
+            {
+                foreach (var id in ids)
+                {
+                    filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id));
+                }
+            }
+
+            var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+
+            var contents = GetModels(aggregatedFilter, sort, lazyLoad);
+            if (index != null && limit != null)
+                contents = contents.OrderByDescending(c => c.DateCreated).Skip((int)index * (int)limit).Take((int)limit).ToList();
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
@@ -187,6 +243,17 @@ namespace Backend.Services
             updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
 
+            var originalContent = GetContent(updatedContent.Id);
+            if (updatedContent.Likes.Count > originalContent.Likes.Count)
+            {
+                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = originalContent.Email,
+                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
+                });
+            }
+
             var content = UpdateModel(updatedContent);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
@@ -197,13 +264,24 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<ContentModel> UpdateContentAsync(ContentModel updatedContent)
+        public async Task<ContentModel> UpdateContentAsync(ContentModel? updatedContent)
         {
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
             var validationResult = _createUpdateContentValidator.Validate(updatedContent, options => options.IncludeRuleSets(ApplicationConstants.Update));
             ThrowExceptions(validationResult);
             updatedContent.MediaUrl = null;
             updatedContent.DateUpdated = DateTime.UtcNow;
+
+            var originalContent = await GetContentAsync(updatedContent.Id);
+            if (updatedContent.Likes.Count > originalContent.Likes.Count)
+            {
+                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
+                _notificationService.CreateNotification(new NotificationModel
+                {
+                    Reciever = originalContent.Email,
+                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender)
+                });
+            }
 
             var content = await UpdateModelAsync(updatedContent);
 
@@ -229,7 +307,32 @@ namespace Backend.Services
                 result.Add(content);
             }
 
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContents.FirstOrDefault()?.Id);
+            int ind = 0;
+            foreach (var updatedContent in updatedContents)
+            {
+                if (ind != 0)
+                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContent.Id);
+
+                ind++;
+            }
+
+            var originalContents = GetModels(filter);
             var contents = UpdateModels(result);
+
+            foreach (var originalContent in originalContents)
+            {
+                var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
+                {
+                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
+                    _notificationService.CreateNotification(new NotificationModel
+                    {
+                        Reciever = associatedNewContent.Email,
+                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
+                    });
+                }
+            }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
 
@@ -250,7 +353,32 @@ namespace Backend.Services
                 result.Add(content);
             }
 
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContents.FirstOrDefault()?.Id);
+            int ind = 0;
+            foreach (var updatedContent in updatedContents)
+            {
+                if (ind != 0)
+                    filter |= Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, updatedContent.Id);
+
+                ind++;
+            }
+
+            var originalContents = await GetModelsAsync(filter);
             var contents = await UpdateModelsAsync(result);
+
+            foreach (var originalContent in originalContents)
+            {
+                var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
+                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
+                {
+                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
+                    await _notificationService.CreateNotificationAsync(new NotificationModel
+                    {
+                        Reciever = associatedNewContent.Email,
+                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
+                    });
+                }
+            }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
 

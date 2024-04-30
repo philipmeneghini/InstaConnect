@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
@@ -7,27 +7,45 @@ import { Box, CircularProgress, Fab, Modal, Paper, Tooltip } from '@mui/material
 import PostContentBox from '../../components/home-page/PostContentBox'
 import AddIcon from '@mui/icons-material/Add'
 import CreatePostBox from '../../components/home-page/CreatePostBox'
-import useUser from '../../hooks/useUser'
-import { dateCreatedDescendingUserContents } from '../../utils/Sorters'
+import { UserContext } from '../../components/context-provider/UserProvider'
+import { useInView } from 'react-intersection-observer'
+import { makeStyles } from 'tss-react/mui'
 
-const fabStyling = {
-    position: 'fixed',
-    bottom: 10,
-    right: 8,
-}
+const useStyles = makeStyles()(
+    () => ({
+        fabStyling: {
+            position: 'fixed',
+            bottom: 10,
+            right: 8,
+        },
+        modalBox: { 
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '40vw',
+            maxHeight: '90vh',
+            bgcolor: 'whitesmoke',
+            border: '1px solid #000',
+            p: '2vh',
+            overflowY: 'auto',
+        },
+        contentsBox: {
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            marginTop: '10vh'
+        },
+        contentsPaper: {
+            margin: '2vh 0', 
+            width: '40vw', 
+            padding: '2% 0 1%'
+        },
+        progressBar: {
+            marginTop: '20vh'
+        }
 
-const postBoxStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '40vw',
-    maxHeight: '90vh',
-    bgcolor: 'whitesmoke',
-    border: '1px solid #000',
-    p: '2vh',
-    overflowY: 'auto',
-}
+  }))
 
 export interface UserContents {
     user: UserModel
@@ -35,46 +53,81 @@ export interface UserContents {
 }
 
 export const HomePage = () => {
-    const [ user ] = useUser()
+    const [ keyedUsers, setKeyedUsers ] = useState<Map<string, UserModel>>(new Map<string, UserModel>())
     const [ contents, setContents ] = useState<UserContents[]> ([])
     const [ contentLoadMessage, setContentLoadMessage ] = useState<string | null>(null)
     const [ createPostOpen, setCreatePostOpen ] = useState<boolean>(false)
+    const [ index, setIndex ] = useState<number>(0)
+    const [ hasMore, setHasMore ] = useState<boolean>(true)
+
+    const { user } = useContext(UserContext)
+
+    const {ref, inView } = useInView()
 
     useEffect(() => {
-        const getUsersFollowing = async(user: UserModel | undefined) => {
-            if (user?.following) {
-                    let currentUserContents: UserContents[] = []
-                    for (let userFollowing of (user.following)) {
-                        try {
-                            let contentUser: UserContents
-                            let userResponse = await _apiClient.userGET(userFollowing)
-                            let contentResponse = await _apiClient.contentsGET(userFollowing)
-                            for(let i = 0; i < contentResponse.length; i++) {
-                                contentUser = {
-                                    user: userResponse,
-                                    content: contentResponse[i],
-                                }
-                                currentUserContents.push(contentUser)
-                            }
+        if (hasMore && inView){
+            setIndex(prev => prev + 1)
+        }
+    }, [hasMore, inView])
+
+    useEffect(() => {
+        const getUsersFollowing = async() => {
+            if (keyedUsers) {
+                let currentUserContents: UserContents[] = [...contents]
+                try {
+                    let newContents = await _apiClient.contentsGET(undefined, [...keyedUsers.keys()], index, 4)
+                    for (let content of newContents) {
+                        let userContent: UserContents = {
+                            user: keyedUsers.get(content.email) as UserModel,
+                            content: content
                         }
-                        catch {
-                            continue
-                        }
-                        currentUserContents.sort(dateCreatedDescendingUserContents)
+                        currentUserContents.push(userContent)
                     }
-                    currentUserContents.sort(dateCreatedDescendingUserContents)
                     setContents(currentUserContents)
                     if (currentUserContents.length > 0)
                         setContentLoadMessage(null)
                     else
-                        setContentLoadMessage('No content from users following to show')
-            }
-            else {
-                setContentLoadMessage('You are not currently following anyone')
+                        setContentLoadMessage('No posts to show from followers!')
+                }
+                catch(err: any) {
+                    if (err.status === 404) {
+                        setHasMore(false)
+                    }
+                    else {
+                        setContentLoadMessage('Error loading content from followers!')
+                    }
+                }
             }
         }
-        getUsersFollowing(user)
+
+        getUsersFollowing()
+    }, [keyedUsers, index])
+
+    useEffect(() => {
+        const getFollowing = async() => {
+            if (user && user.following) {
+                let users = await _apiClient.usersGET(user.following)
+                let keyedUsers: Map<string, UserModel> = new Map<string, UserModel>()
+                    users.forEach(user => {
+                        if (!keyedUsers.get(user.email)) {
+                            keyedUsers.set(user.email, user)
+                        }
+                })
+                setKeyedUsers(keyedUsers)
+            }
+            setContents([])
+            setHasMore(true)
+        }
+        getFollowing()
     }, [user])
+
+    const {
+        fabStyling,
+        modalBox,
+        contentsBox,
+        contentsPaper,
+        progressBar
+    } = useStyles().classes
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
     const handleCreatePostClose = () => { setCreatePostOpen(false) }
@@ -84,16 +137,21 @@ export const HomePage = () => {
         <div>
             <Header user={user}/>
             {contents.length !== 0 && contentLoadMessage === null ? 
-            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10vh'}}>
-                {contents.map( (userContent) => (
-                    <Paper key={userContent?.content?.id} elevation={24} sx={{margin: '2vh 0', width: '40vw', padding: '2% 0 1%'}}>
+            <Box className={contentsBox}>
+                {contents.map( (userContent, index) => (
+                    (index === contents.length -1) ?
+                        <Paper ref={ref} key={userContent?.content?.id} className={contentsPaper} elevation={24}>
+                            <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                        </Paper>
+                    :
+                    <Paper key={userContent?.content?.id} className={contentsPaper} elevation={24}>
                         <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
                     </Paper>
                 ))}
             </Box> :
-            <CircularProgress sx={{marginTop: '20vh'}}/>}
+            <CircularProgress className={progressBar}/>}
             <Tooltip title='Add Post'>
-                <Fab onClick={handleCreatePost} sx={fabStyling} color='primary' aria-label='add'>
+                <Fab onClick={handleCreatePost} className={fabStyling} color='primary' aria-label='add'>
                     <AddIcon />
                 </Fab>
             </Tooltip>
@@ -103,7 +161,7 @@ export const HomePage = () => {
             aria-labelledby='modal-modal-title'
             aria-describedby='modal-modal-description'
             >
-                <Box sx={postBoxStyle}>
+                <Box className={modalBox}>
                     <CreatePostBox handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>

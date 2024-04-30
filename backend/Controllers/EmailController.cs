@@ -16,14 +16,14 @@ namespace Backend.Controllers
             _emailService = emailService;
         }
 
-        [Authorize]
+        [Authorize(Policy = "AdminGuestPolicy")]
         [HttpPost("Registration")]
         public async Task<EmailResponse> SendRegistrationEmail([FromBody] UserModel user)
         {
             return await _emailService.SendRegistrationEmailAsync(user);
         }
 
-        [Authorize]
+        [Authorize(Policy = "UserPolicy")]
         [HttpPost("ResetPassword")]
         public async Task<EmailResponse> SendResetPasswordEmail([FromBody] UserModel user)
         {

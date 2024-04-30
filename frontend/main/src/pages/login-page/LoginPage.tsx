@@ -1,25 +1,23 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link, OutlinedInput, TextField, Typography} from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
 import { _apiClient } from '../../App'
-import SubmissionAlert from '../../components/login-pages/SubmissionAlert'
 import LoginHeader from '../../components/login-pages/LoginHeader'
 import { Paths } from '../../utils/Constants'
-import { FormProperties } from '../../utils/FormProperties'
 import { ApiException, LoginResponse } from '../../api/Client'
 import { useNavigate } from 'react-router-dom'
+import LoginFooter from '../../components/login-pages/LoginFooter'
+import { ToastContext } from '../../components/context-provider/ToastProvider'
+import { UserContext } from '../../components/context-provider/UserProvider'
 
 export const LoginPage = () => {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    const [showPassword, setShowPassword] = useState(false);
-    const [login, setLogin] = useState<FormProperties>({
-      isOpen: false,
-      isSuccess: false,
-      message: ''
-    })
+    const [showPassword, setShowPassword] = useState(false)
+    const toastContext = useContext(ToastContext)
+    const userContext = useContext(UserContext)
 
     const navigate = useNavigate()
 
@@ -28,43 +26,28 @@ export const LoginPage = () => {
     }
 
     const handleSuccessfulLogin = ( jwt: string ) => {
-      localStorage.setItem('token', jwt)
+      userContext.updateToken(jwt)
       navigate(Paths['Home'], { replace: true })
     }
 
     const handleClickLogin = async() => {
       if (!email || !password) {
-        setLogin({
-          isOpen: true,
-          isSuccess: false,
-          message: 'An email or password has not been entered yet'
-        })
+        toastContext.openToast(false, 'An email or password has not been entered yet')
         return
       }
       try {
         const response: LoginResponse = await _apiClient.login({ email, password })
-        setLogin({
-          isOpen: true,
-          isSuccess: true,
-          message: 'User Has Successfully Logged In!'
-        })
+        toastContext.openToast(true, 'User Has Successfully Logged In!')
         setTimeout(() => 
         { handleSuccessfulLogin(response.token as string) }, 
         3000)
       }
       catch(err: any) {
-        let loginProperties: FormProperties = {
-          isOpen: true,
-          isSuccess: false,
-          message: ''
-        }
         if (err instanceof ApiException) {
-          loginProperties.message = err.response
-          setLogin(loginProperties)
+          toastContext.openToast(false, err.response)
         }
         else {
-          loginProperties.message = 'Internal Server Error'
-          setLogin(loginProperties)
+          toastContext.openToast(false, 'Internal Server Error')
         }
       }
     }
@@ -137,9 +120,9 @@ export const LoginPage = () => {
             <Grid item xs={4.75}>
               <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
             </Grid>
-            <SubmissionAlert value={login} setValue={setLogin} />
           </Grid>
         </Grid>
+        <LoginFooter/>
       </>)
 }
 

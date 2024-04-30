@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -24,7 +25,6 @@ namespace Backend.Controllers
             return await _authService.Login(login);
         }
 
-        [Authorize]
         [HttpPost("Register")]
         public async Task<UserModel> Register([FromBody] LoginBody request)
         {
@@ -33,9 +33,15 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet("VerifyToken")]
-        public JwtModel VerifyToken(string token)
+        public JwtModel VerifyToken([FromQuery] string token)
         {
             return _authService.VerifyToken(token);
+        }
+
+        [HttpGet("RefreshToken")]
+        public async Task<LoginResponse> RefreshToken([FromHeader(Name ="Authorization")] string? token)
+        {
+            return await _authService.RefreshToken(token);
         }
     }
 }

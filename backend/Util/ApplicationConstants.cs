@@ -10,20 +10,24 @@ namespace Util.Constants
         static public readonly string UserCollectionName = "users";
         static public readonly string ContentCollectionName = "contents";
         static public readonly string CommentCollectionName = "comments";
+        static public readonly string NotificationCollectionName = "notifications";
         static public readonly string ConnectionStrings = "ConnectionString";
         static public readonly string S3BucketName = "instaconnect";
         static public readonly string AmazonS3Credentials = "AmazonCredentials:S3";
         static public readonly string UserModel = nameof(UserModel);
         static public readonly string ContentModel = nameof(ContentModel);
         static public readonly string CommentModel = nameof(CommentModel);
+        static public readonly string NotificationModel = nameof(NotificationModel);
         static public readonly string EmailConfig = "AmazonSES";
         static public readonly string Hash = nameof(Hash);
         static public readonly string Jwt = nameof(Jwt);
         static public readonly string CorsPolicy = "corspolicy";
         static public readonly string Star = "*";
+        static public readonly string ReactAppPath = "http://localhost:3000";
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
         static public readonly string ContentId = nameof(ContentId);
+        static public readonly string Reciever = nameof(Reciever);
         static public readonly string Id = nameof(Id);
         static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
         static public readonly string S3 = nameof(S3);
@@ -47,9 +51,11 @@ namespace Util.Constants
         static public readonly string CommentEmpty = "no comment passed in";
         static public readonly string IdsEmpty = "no ids passed in";
         static public readonly string EmailEmpty = "no email passed in";
+        static public readonly string EmailIdEmpty = "no email or id passed in";
         static public readonly string MediaTypeEmpty = "cannot leave mediaType empty";
         static public readonly string MediaTypeNotValid = "media type is not valid";
         static public readonly string ContentIdEmpty = "no content id passed in";
+        static public readonly string ContentCommentIdsEmpty = "no content or comment id is passed in";
         static public readonly string ContentIdNotHexadecimal = "content id is not a hexadecimal";
         static public readonly string NoUsersFound = "no users found";
         static public readonly string NoContentFound = "no content found";
@@ -58,6 +64,10 @@ namespace Util.Constants
         static public readonly string DateCreatedFilled = "date created field must be left empty";
         static public readonly string CommentIdEmpty = "no comment id passed in";
         static public readonly string NoCommentsFound = "no comments found";
+        static public readonly string NotificationIdEmpty = "no notification id passed in";
+        static public readonly string ReadFalse = "Read field must be marked as false";
+        static public readonly string NotificationBodyEmpty = "Body of notification cannot be empty";
+        static public readonly string NoNotification = "No new notification was passed in";
         static public readonly Dictionary<Type, string> ModelNames = new Dictionary<Type, string>()
         {
             { typeof(UserModel), "User" }
@@ -73,6 +83,7 @@ namespace Util.Constants
         static public readonly string AwsDestinationNotFound = "no AWS Destination for file upload found";
         static public readonly string InternalServerError = "Internal Server Error: ";
         static public readonly string NoSearchParam = "No search parameters passed in!";
+        static public readonly string NoRolesPassedIn = "No role or user has been passed in!";
         #endregion
 
         #region CRUD Operations
@@ -118,6 +129,7 @@ namespace Util.Constants
 
         #region Authentication
         static public readonly string DateOfBirth = nameof(DateOfBirth);
+        static public readonly string Exp = "exp";
         static public readonly string Name = nameof(Name);
         static public readonly string MisingEmailOrPassword = "missing email or password";
         static public readonly string InvalidPassword = "invalid password";
@@ -138,6 +150,30 @@ namespace Util.Constants
         #region RegEx
         static public readonly string I = "i";
         static public readonly string BlankString = " ";
+        #endregion
+
+        #region Roles
+        static public readonly string Role = nameof(Role);
+        static public readonly string[] AdminRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString() 
+        };
+        static public readonly string[] AdminUserRoleList = new string[] 
+        { 
+            Backend.Util.Role.Administrator.ToString(), 
+            Backend.Util.Role.RegularUser.ToString() 
+        };
+        static public readonly string[] AdminGuestRoleList = new string[]
+        {
+            Backend.Util.Role.Administrator.ToString(),
+            Backend.Util.Role.Guest.ToString()
+        };
+        #endregion
+
+        #region Notification WebSocket
+        static public readonly string NewMessage = "newMessage";
+        static public readonly string LikedPostNotification = "{0} liked your post!";
+        static public readonly string NewFollowerNotification = "{0} started following you!";
         #endregion
     }
 }

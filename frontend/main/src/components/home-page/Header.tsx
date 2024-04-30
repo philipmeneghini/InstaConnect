@@ -1,8 +1,8 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar } from '@mui/material'
+import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, Badge } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import MenuIcon from '@mui/icons-material/Menu'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
@@ -14,6 +14,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
+import NotificationsIcon from '@mui/icons-material/Notifications'
+import { UserContext } from '../context-provider/UserProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
+import { NotificationContext } from '../context-provider/NotificationProvider'
+import Notifications from './Notifications'
 
 export interface FollowContents {
     email : string
@@ -27,6 +32,7 @@ interface HeaderProps {
 export const Header = ( props: HeaderProps ) => {
 
     const [ anchorUser, setAnchorUser ] = useState<HTMLElement | null>(null)
+    const [ anchorNotification, setAnchorNoticiation ] = useState<HTMLElement | null>(null)
     const [ menuOpen, setMenuOpen ] = useState<boolean>(false)
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
@@ -35,6 +41,9 @@ export const Header = ( props: HeaderProps ) => {
     const [ following ] = useFollowers(props?.user?.following, followingOpen)
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
+    const userContext = useContext(UserContext)
+    const toastContext = useContext(ToastContext)
+    const { unReadNotifications } = useContext(NotificationContext)
     const navigate = useNavigate()
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -52,8 +61,9 @@ export const Header = ( props: HeaderProps ) => {
 
     const handleLogout = () => {
         setAnchorUser(null)
-        localStorage.removeItem('token')
+        userContext.updateToken(null)
         navigate(Paths['Login'], { replace: true })
+        toastContext.openToast(true, 'Successfully logged out!')
     }
 
     const handleMenuItemClick = () => {
@@ -88,6 +98,14 @@ export const Header = ( props: HeaderProps ) => {
             }, {replace: true})
             setMenuOpen(false)
         }
+    }
+
+    const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorNoticiation(event.currentTarget)
+    }
+
+    const handleCloseNotifications = () => {
+        setAnchorNoticiation(null)
     }
 
     const sideMenu = () => (
@@ -196,6 +214,14 @@ export const Header = ( props: HeaderProps ) => {
                             </IconButton>
                         </Grid>
                         <Grid item xs={5} sx={{ flexGrow: 0, display: 'flex', justifyContent: 'end'}}>
+                            <Tooltip title='Notifications'>
+                                <IconButton onClick={handleOpenNotifications}>
+                                    <Badge color='secondary' badgeContent={unReadNotifications}>
+                                        <NotificationsIcon sx={{color: '#DEC20B'}}/>
+                                    </Badge>
+                                </IconButton>
+                            </Tooltip>
+                            <Notifications anchor={anchorNotification} handleClose={handleCloseNotifications}/>
                             <Tooltip title='Open Settings'>
                                 <IconButton onClick={handleOpenUserMenu}>
                                     <Avatar alt='Remy Sharp' src={profilePicture}/>

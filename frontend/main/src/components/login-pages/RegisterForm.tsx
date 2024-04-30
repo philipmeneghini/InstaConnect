@@ -1,16 +1,15 @@
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import { Field, Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, Grid, Paper, TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
-import { FormProperties } from '../../utils/FormProperties'
-import SubmissionAlert from './SubmissionAlert'
 import { _apiClient} from '../../App'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import DatePickerField from './DatePickerField'
 import { ApiException } from '../../api/Client'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 export interface RegisterFormValues {
     firstName: string
@@ -20,11 +19,7 @@ export interface RegisterFormValues {
 }
 
 export const RegisterForm = () => {
-    const [register, setRegister] = useState<FormProperties>({
-        isOpen: false,
-        isSuccess: false,
-        message: ''
-      })
+    const toastContext = useContext(ToastContext)
 
     const maxDate = dayjs().subtract(18, 'year').format('MM/DD/YYYY')
     const minDate = dayjs().subtract(120, 'year').format('MM/DD/YYYY')
@@ -38,21 +33,13 @@ export const RegisterForm = () => {
 
     const onSubmit = async (values: RegisterFormValues, { setSubmitting, resetForm, validateForm }: FormikHelpers<RegisterFormValues>): Promise<void> => {
         if (!values.firstName || !values.lastName || !values.email || !values.birthDate) {
-            setRegister({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Registration Failed! One Or More Fields Missing'
-            })
+            toastContext.openToast(false, 'Registration Failed! One Or More Fields Missing')
             setSubmitting(false)
             return
         }
         const errors: FormikErrors<RegisterFormValues>  = await validateForm(values)
         if (errors.firstName || errors.lastName || errors.email || errors.birthDate) {
-            setRegister({
-                isOpen: true,
-                isSuccess: false,
-                message: 'Registration Failed! One Or More Fields Are Invalid'
-            })
+            toastContext.openToast(false, 'Registration Failed! One Or More Fields Are Invalid')
             setSubmitting(false)
             return
         }
@@ -62,32 +49,18 @@ export const RegisterForm = () => {
             const userResponse = await _apiClient.userPOST({firstName: values.firstName, lastName: values.lastName, email: values.email, birthDate: values.birthDate ?? ''})
             const emailResponse = await _apiClient.registration(userResponse)
             if (emailResponse.sent) {
-                setRegister({
-                    isOpen: true,
-                    isSuccess: true,
-                    message: `Registration Success! An Email Has Been Sent To ${userResponse.email}`
-                })
+                toastContext.openToast(true, `Registration Success! An Email Has Been Sent To ${userResponse.email}`)
                 resetForm()
             }
             else {
-                setRegister({
-                    isOpen: true,
-                    isSuccess: false,
-                    message: `Email To ${userResponse.email} Failed to Send`
-                })
+                toastContext.openToast(false, `Email To ${userResponse.email} Failed to Send`)
             }
         }
         catch(err: any){
-            let failedRegistrationResult: FormProperties = {
-                isOpen: true,
-                isSuccess: false,
-                message: ''
-            }
             if (err instanceof ApiException)
-                failedRegistrationResult.message = err.response
+                toastContext.openToast(false, err.response)
             else
-                failedRegistrationResult.message = 'Internal Server Error'
-            setRegister(failedRegistrationResult)
+                toastContext.openToast(false, 'Internal Server Error')
         }
         setSubmitting(false)
         localStorage.setItem('token', '')
@@ -161,7 +134,6 @@ export const RegisterForm = () => {
                 }
                 </Formik>
             </Paper>
-            <SubmissionAlert value={register} setValue={setRegister} />
         </Grid>
     )
 }

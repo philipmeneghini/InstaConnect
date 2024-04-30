@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel, UserModel } from '../../api/Client'
 import React from 'react'
@@ -15,9 +15,9 @@ import { Paths } from '../../utils/Constants'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
-import SubmissionAlert from '../login-pages/SubmissionAlert'
-import { FormProperties } from '../../utils/FormProperties'
 import EditOffIcon from '@mui/icons-material/EditOff'
+import Comment from './Comment'
+import { ToastContext } from '../context-provider/ToastProvider'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -55,16 +55,22 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
     const [ newComment, setNewComment ] = useState<string>()
     const [ deleting, setDeleting ] = useState<boolean>(false)
-    const [ alert, setAlert ] = useState<FormProperties>({
-        isOpen: false,
-        isSuccess: true,
-        message: ''
-    })
+    const toastContext = useContext(ToastContext)
+
+    const isContentLiked = useMemo((): boolean | undefined => {
+        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
+        if (index > -1) {
+            return true
+        }
+        else {
+            return false
+        }
+    }, [props, content])
 
     useEffect(() => {
         const getComments = async (content: ContentModel) => {
             try {
-                const response = await _apiClient.commentsGET(content.id)
+                const response = await _apiClient.commentsGET(undefined, [ content.id as string ])
                 setComments(response)
             }
             catch {
@@ -113,11 +119,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setContent(newContent)
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
+            toastContext.openToast(false, err.message)
         }
     }
 
@@ -138,21 +140,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             setNewComment('')
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
-        }
-    }
-
-    const isContentLiked = (): boolean | undefined => {
-        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
-        if (index > -1) {
-            return true
-        }
-        else {
-            return false
+            toastContext.openToast(false, err.message)
         }
     }
 
@@ -192,18 +180,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const handleDeleteModal = async () => {
         try {
            await _apiClient.contentDELETE(props?.userContent?.content?.id)
-            setAlert({
-                isOpen: true,
-                isSuccess: true,
-                message: 'Successfully deleted post!'
-            })
+            toastContext.openToast(true, 'Successfully deleted post!')
         }
         catch(err: any) {
-            setAlert({
-                isOpen: true,
-                isSuccess: false,
-                message: err.message
-            })
+            toastContext.openToast(false, err.message)
         }
         setDeleting(false)
         setTimeout(() => 
@@ -239,21 +219,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
         console.log(newContent)
         try {
             await _apiClient.contentPUT(newContent)
-            setAlert({
-                isSuccess: true,
-                isOpen: true,
-                message: 'Post Successfully Updated!'
-            })
+            toastContext.openToast(true, 'Post Successfully Updated!')
             setTimeout(() => 
             { setContent(newContent) }, 
             3000)
         }
         catch {
-            setAlert({
-                isSuccess: false,
-                isOpen: true,
-                message: 'Post Failed to Update!'
-            })
+            toastContext.openToast(false, 'Post Failed to Update!')
         }
         setEditMode(false)
     }
@@ -292,7 +264,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                 />
                 <Box sx={interactionToolbarStyle}>
                     <Box sx={{paddingRight: '5vw', display: 'flex', justifyContent: 'center'}}>
-                        <Checkbox onClick={handleLike} checked={isContentLiked()} sx={{paddingTop: '0',display: 'inline'}} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
+                        <Checkbox onClick={handleLike} checked={isContentLiked} sx={{paddingTop: '0',display: 'inline'}} icon={<FavoriteBorder />} checkedIcon={<Favorite />} />
                         <Typography paddingLeft={'0.5vw'}> {content?.likes?.length ?? 0} likes</Typography>
                     </Box>
                     <Box sx={{paddingLeft: '5vw', display: 'flex', justifyContent: 'center'}}>
@@ -321,9 +293,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                             <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
                             <TabPanel value='comments'>
                                 {comments.map( (comment) => (
-                                <Typography key={comment?.id} sx={{display: 'flex', justifyContent: 'left', marginLeft: '1vw'}}>
-                                    <strong>{comment?.email}: </strong> {comment?.body}
-                                </Typography>
+                                    <Comment key={comment?.id} comment={comment}/>
                                 ))}
                                 <TextField
                                 sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
@@ -399,7 +369,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <DeleteConfirmation handleCancel={handleCancelModal} handleDelete={handleDeleteModal}/>
                     </Box>
                 </Modal>
-                <SubmissionAlert value={alert} setValue={setAlert}/>
             </>)
 }
 

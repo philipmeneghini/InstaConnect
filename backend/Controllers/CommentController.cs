@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace InstaConnect.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class CommentController : ControllerBase
@@ -16,59 +17,59 @@ namespace InstaConnect.Controllers
             _commentService = commentService;
         }
 
-        [Authorize]
         [HttpGet("Comment")]
-        public async Task<ActionResult<CommentModel>> GetComment(string? id)
+        public async Task<ActionResult<CommentModel>> GetComment([FromQuery] string? id)
         {
             return await _commentService.GetCommentAsync(id);
         }
 
-        [Authorize]
         [HttpGet("Comments")]
-        public async Task<ActionResult<List<CommentModel>>> GetContents(string? contentId)
+        public async Task<ActionResult<List<CommentModel>>> GetComments([FromQuery] List<string>? ids, 
+                                                                        [FromQuery] List<string>? contentIds, 
+                                                                        [FromQuery] int? index = null, 
+                                                                        [FromQuery] int? limit = null)
         {
-            return await _commentService.GetCommentsAsync(contentId);
+            return await _commentService.GetCommentsAsync(ids, contentIds, index, limit);
         }
 
-        [Authorize]
+        [Authorize(Policy = "CommentCreatePolicy")]
         [HttpPost("Comment")]
         public async Task<ActionResult<CommentModel>> PostComment([FromBody] CommentModel? newComment)
         {
             return await _commentService.CreateCommentAsync(newComment);
         }
 
-        [Authorize]
+        [Authorize(Policy = "CommentCreatePolicy")]
         [HttpPost("Comments")]
         public async Task<ActionResult<List<CommentModel>>> PostComments([FromBody] List<CommentModel>? newComments)
         {
             return await _commentService.CreateCommentsAsync(newComments);
         }
 
-
-        [Authorize]
+        [Authorize(Policy = "CommentUpdatePolicy")]
         [HttpPut("Comment")]
         public async Task<ActionResult<CommentModel>> PutComment([FromBody]CommentModel? newComment)
         {
             return await _commentService.UpdateCommentAsync(newComment);
         }
 
-        [Authorize]
+        [Authorize(Policy = "CommentUpdatePolicy")]
         [HttpPut("Comments")]
         public async Task<ActionResult<List<CommentModel>>> PutComments([FromBody] List<CommentModel>? newComments)
         {
             return await _commentService.UpdateCommentsAsync(newComments);
         }
 
-        [Authorize]
+        [Authorize(Policy = "CommentDeletePolicy")]
         [HttpDelete("Comment")]
-        public async Task<ActionResult<CommentModel>> DeleteComment(string? id)
+        public async Task<ActionResult<CommentModel>> DeleteComment([FromQuery] string? id)
         {
             return await _commentService.DeleteCommentAsync(id);
         }
 
-        [Authorize]
+        [Authorize(Policy = "CommentDeletePolicy")]
         [HttpDelete("Comments")]
-        public async Task<ActionResult<List<CommentModel>>> DeleteComments([FromBody] List<string>? ids)
+        public async Task<ActionResult<List<CommentModel>>> DeleteComments([FromQuery] List<string>? ids)
         {
             return await _commentService.DeleteCommentsAsync(ids);
         }
