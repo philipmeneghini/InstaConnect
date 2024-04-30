@@ -39,23 +39,6 @@ namespace Backend.Authorization.Helpers
             return query.Count > 0;
         }
 
-        public bool TryGetBody<T>(out List<T> body) where T : IInstaModel
-        {
-            body = new List<T>();
-            HttpRequest httpRequest = _httpContextAccessor.HttpContext!.Request;
-            httpRequest.EnableBuffering();
-            var inputs = httpRequest.ReadFromJsonAsync<List<T>>();
-            if (inputs.IsCompletedSuccessfully && inputs.Result != null)
-                body.AddRange(inputs.Result);
-
-            var input = httpRequest.ReadFromJsonAsync<T>();
-            if (input.IsCompletedSuccessfully && input.Result != null)
-                body.Add(input.Result);
-
-            httpRequest.Body.Position = 0;
-            return body.Count > 0;
-        }
-
         public async Task<List<T>> TryGetBodyAsync<T>() where T : IInstaModel
         {
             var body = new List<T>();

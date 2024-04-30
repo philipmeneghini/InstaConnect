@@ -9,8 +9,6 @@ namespace Backend.Authorization.Helpers
 
         public string? GetLoggedInEmail();
 
-        public bool TryGetBody<T>(out List<T> body) where T : IInstaModel;
-
         public Task<List<T>> TryGetBodyAsync<T>() where T : IInstaModel;
 
         public bool TryGetQueries(string queryName, out List<string> query);
