@@ -75,7 +75,8 @@ namespace Backend.Services
                         filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id));
                 }
             }
-            else if (contentIds != null && contentIds.Count != 0)
+
+            if (contentIds != null && contentIds.Count != 0)
             {
                 foreach (var contentId in contentIds)
                 {
@@ -112,7 +113,8 @@ namespace Backend.Services
                         filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id));
                 }
             }
-            else if (contentIds != null && contentIds.Count != 0)
+            
+            if (contentIds != null && contentIds.Count != 0)
             {
                 foreach (var contentId in contentIds)
                 {

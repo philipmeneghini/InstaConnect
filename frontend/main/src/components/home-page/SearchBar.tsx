@@ -257,7 +257,7 @@ const SearchBar = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <PostContentBox userContent={{user: contentUser as UserModel, content: contentOpen as ContentModel} as UserContents} user={user as UserModel} handleClose={handleContentClose}/>
+                    <PostContentBox userContent={{user: contentUser as UserModel, content: contentOpen as ContentModel} as UserContents} handleClose={handleContentClose}/>
                 </Box>
             </Modal>
         </>

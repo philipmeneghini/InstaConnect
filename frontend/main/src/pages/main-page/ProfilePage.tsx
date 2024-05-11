@@ -209,7 +209,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} user={user} handleClose={handleClose}/>
+                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} handleClose={handleClose}/>
                 </Box>
             </Modal>
             <Modal

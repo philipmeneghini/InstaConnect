@@ -141,11 +141,11 @@ export const HomePage = () => {
                 {contents.map( (userContent, index) => (
                     (index === contents.length -1) ?
                         <Paper ref={ref} key={userContent?.content?.id} className={contentsPaper} elevation={24}>
-                            <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                            <PostContentBox key={userContent?.content?.id} userContent={userContent}/>
                         </Paper>
                     :
                     <Paper key={userContent?.content?.id} className={contentsPaper} elevation={24}>
-                        <PostContentBox key={userContent?.content?.id} userContent={userContent} user={user}/>
+                        <PostContentBox key={userContent?.content?.id} userContent={userContent}/>
                     </Paper>
                 ))}
             </Box> :
