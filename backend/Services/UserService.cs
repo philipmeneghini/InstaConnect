@@ -13,6 +13,8 @@ using Backend.Models.Validation;
 using System.Text.RegularExpressions;
 using Backend.Util;
 using System.Data;
+using System.Collections.Generic;
+using System;
 
 namespace Backend.Services
 {
@@ -131,24 +133,27 @@ namespace Backend.Services
             return users;
         }
 
-        public async Task<List<UserModel>> GetUsersAsync(List<string>? emails)
+        public async Task<List<UserModel>> GetUsersAsync(List<string>? emails, int? index = null, int? limit = null)
         {
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            List<string> results = new List<string>();
-            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
-            bool firstEmail = true;
-            foreach (var email in emails)
+            List<FilterDefinition<UserModel>> filters = new List<FilterDefinition<UserModel>>() { };
+            if (emails != null && emails.Count != 0)
             {
-                var validationModel = new UserEmailValidationModel(email);
-                var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-                ThrowExceptions(validationResult);
+                foreach (var email in emails)
+                {
+                    var validationModel = new UserEmailValidationModel(email);
+                    var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
 
-                if (!firstEmail)
-                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
-                firstEmail = false;
+                    filters.Add(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
             }
 
-            var users = await GetModelsAsync(filter);
+            var aggregatedFilter = Builders<UserModel>.Filter.Or(filters);
+            var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+
+            var users = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
 
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
@@ -157,24 +162,26 @@ namespace Backend.Services
             return users;
         }
 
-        public List<UserModel> GetUsers(List<string>? emails)
+        public List<UserModel> GetUsers(List<string>? emails, int? index = null, int? limit = null)
         {
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
-            List<string> results = new List<string>();
-            var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, emails.FirstOrDefault());
-            bool firstEmail = true;
-            foreach (var email in emails)
+            List<FilterDefinition<UserModel>> filters = new List<FilterDefinition<UserModel>>() { };
+            if (emails != null && emails.Count != 0)
             {
-                var validationModel = new UserEmailValidationModel(email);
-                var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
-                ThrowExceptions(validationResult);
+                foreach (var email in emails)
+                {
+                    var validationModel = new UserEmailValidationModel(email);
+                    var validationResult = _deleteGetUserValidator.Validate(validationModel, options => options.IncludeRuleSets(ApplicationConstants.Get));
+                    ThrowExceptions(validationResult);
 
-                if (!firstEmail)
-                    filter |= Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
-                firstEmail = false;
+                    filters.Add(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email));
+                }
             }
 
-            var users = GetModels(filter);
+            var aggregatedFilter = Builders<UserModel>.Filter.Or(filters);
+            var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
+            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+            var users = GetModels(aggregatedFilter, sort, lazyLoad);
 
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));

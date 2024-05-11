@@ -2144,14 +2144,24 @@ export class Client extends AuthorizedApiBase {
 
     /**
      * @param emails (optional) 
+     * @param index (optional) 
+     * @param limit (optional) 
      * @return Success
      */
-    usersGET(emails?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+    usersGET(emails?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
         let url_ = this.baseUrl + "/User/Users?";
         if (emails === null)
             throw new Error("The parameter 'emails' cannot be null.");
         else if (emails !== undefined)
             emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
+        if (index === null)
+            throw new Error("The parameter 'index' cannot be null.");
+        else if (index !== undefined)
+            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (limit === null)
+            throw new Error("The parameter 'limit' cannot be null.");
+        else if (limit !== undefined)
+            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {
