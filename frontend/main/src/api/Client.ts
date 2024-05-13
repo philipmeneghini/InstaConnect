@@ -491,11 +491,11 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param ids (optional) 
      * @param contentIds (optional) 
-     * @param index (optional) 
+     * @param lastDate (optional) 
      * @param limit (optional) 
      * @return Success
      */
-    commentsGET(ids?: string[] | undefined, contentIds?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+    commentsGET(ids?: string[] | undefined, contentIds?: string[] | undefined, lastDate?: Date | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
         let url_ = this.baseUrl + "/Comment/Comments?";
         if (ids === null)
             throw new Error("The parameter 'ids' cannot be null.");
@@ -505,10 +505,10 @@ export class Client extends AuthorizedApiBase {
             throw new Error("The parameter 'contentIds' cannot be null.");
         else if (contentIds !== undefined)
             contentIds && contentIds.forEach(item => { url_ += "contentIds=" + encodeURIComponent("" + item) + "&"; });
-        if (index === null)
-            throw new Error("The parameter 'index' cannot be null.");
-        else if (index !== undefined)
-            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (lastDate === null)
+            throw new Error("The parameter 'lastDate' cannot be null.");
+        else if (lastDate !== undefined)
+            url_ += "lastDate=" + encodeURIComponent(lastDate ? "" + lastDate.toString() : "") + "&";
         if (limit === null)
             throw new Error("The parameter 'limit' cannot be null.");
         else if (limit !== undefined)
@@ -970,11 +970,11 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param ids (optional) 
      * @param emails (optional) 
-     * @param index (optional) 
+     * @param lastDate (optional) 
      * @param limit (optional) 
      * @return Success
      */
-    contentsGET(ids?: string[] | undefined, emails?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
+    contentsGET(ids?: string[] | undefined, emails?: string[] | undefined, lastDate?: Date | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
         let url_ = this.baseUrl + "/Content/Contents?";
         if (ids === null)
             throw new Error("The parameter 'ids' cannot be null.");
@@ -984,10 +984,10 @@ export class Client extends AuthorizedApiBase {
             throw new Error("The parameter 'emails' cannot be null.");
         else if (emails !== undefined)
             emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
-        if (index === null)
-            throw new Error("The parameter 'index' cannot be null.");
-        else if (index !== undefined)
-            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (lastDate === null)
+            throw new Error("The parameter 'lastDate' cannot be null.");
+        else if (lastDate !== undefined)
+            url_ += "lastDate=" + encodeURIComponent(lastDate ? "" + lastDate.toString() : "") + "&";
         if (limit === null)
             throw new Error("The parameter 'limit' cannot be null.");
         else if (limit !== undefined)
@@ -2144,24 +2144,14 @@ export class Client extends AuthorizedApiBase {
 
     /**
      * @param emails (optional) 
-     * @param index (optional) 
-     * @param limit (optional) 
      * @return Success
      */
-    usersGET(emails?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
+    usersGET(emails?: string[] | undefined, cancelToken?: CancelToken | undefined): Promise<UserModel[]> {
         let url_ = this.baseUrl + "/User/Users?";
         if (emails === null)
             throw new Error("The parameter 'emails' cannot be null.");
         else if (emails !== undefined)
             emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
-        if (index === null)
-            throw new Error("The parameter 'index' cannot be null.");
-        else if (index !== undefined)
-            url_ += "index=" + encodeURIComponent("" + index) + "&";
-        if (limit === null)
-            throw new Error("The parameter 'limit' cannot be null.");
-        else if (limit !== undefined)
-            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {

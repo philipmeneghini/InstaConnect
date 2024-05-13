@@ -13,8 +13,6 @@ using Backend.Models.Validation;
 using System.Text.RegularExpressions;
 using Backend.Util;
 using System.Data;
-using System.Collections.Generic;
-using System;
 
 namespace Backend.Services
 {
@@ -133,7 +131,7 @@ namespace Backend.Services
             return users;
         }
 
-        public async Task<List<UserModel>> GetUsersAsync(List<string>? emails, int? index = null, int? limit = null)
+        public async Task<List<UserModel>> GetUsersAsync(List<string>? emails)
         {
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             List<FilterDefinition<UserModel>> filters = new List<FilterDefinition<UserModel>>() { };
@@ -151,9 +149,8 @@ namespace Backend.Services
 
             var aggregatedFilter = Builders<UserModel>.Filter.Or(filters);
             var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
 
-            var users = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
+            var users = await GetModelsAsync(aggregatedFilter, sort);
 
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
@@ -162,7 +159,7 @@ namespace Backend.Services
             return users;
         }
 
-        public List<UserModel> GetUsers(List<string>? emails, int? index = null, int? limit = null)
+        public List<UserModel> GetUsers(List<string>? emails)
         {
             if (emails == null || emails.Count == 0) throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
             List<FilterDefinition<UserModel>> filters = new List<FilterDefinition<UserModel>>() { };
@@ -180,8 +177,7 @@ namespace Backend.Services
 
             var aggregatedFilter = Builders<UserModel>.Filter.Or(filters);
             var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
-            var users = GetModels(aggregatedFilter, sort, lazyLoad);
+            var users = GetModels(aggregatedFilter, sort);
 
             users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
             users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));

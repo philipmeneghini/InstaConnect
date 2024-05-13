@@ -10,8 +10,8 @@ namespace Backend.Services.Interfaces
         public List<UserModel> GetUsers(string? firstName, string? lastName, string? birthDate);
         public Task<List<UserModel>> GetUsersAsync(string? firstName, string? lastName, string? birthDate);
 
-        public List<UserModel> GetUsers(List<string>? emails, int? index = null, int? limit = null);
-        public Task<List<UserModel>> GetUsersAsync(List<string>? emails, int? index = null, int? limit = null);
+        public List<UserModel> GetUsers(List<string>? emails);
+        public Task<List<UserModel>> GetUsersAsync(List<string>? emails);
 
         public UserModel CreateUser(UserModel? newUser);
         public Task<UserModel> CreateUserAsync(UserModel? newUser);

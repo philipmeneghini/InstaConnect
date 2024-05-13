@@ -57,7 +57,7 @@ export const HomePage = () => {
     const [ contents, setContents ] = useState<UserContents[]> ([])
     const [ contentLoadMessage, setContentLoadMessage ] = useState<string | null>(null)
     const [ createPostOpen, setCreatePostOpen ] = useState<boolean>(false)
-    const [ index, setIndex ] = useState<number>(0)
+    const [ lastDate, setLastDate ] = useState<Date>()
     const [ hasMore, setHasMore ] = useState<boolean>(true)
 
     const { user } = useContext(UserContext)
@@ -66,7 +66,7 @@ export const HomePage = () => {
 
     useEffect(() => {
         if (hasMore && inView){
-            setIndex(prev => prev + 1)
+            setLastDate(contents[contents.length -1].content.dateCreated)
         }
     }, [hasMore, inView])
 
@@ -75,7 +75,7 @@ export const HomePage = () => {
             if (keyedUsers) {
                 let currentUserContents: UserContents[] = [...contents]
                 try {
-                    let newContents = await _apiClient.contentsGET(undefined, [...keyedUsers.keys()], index, 4)
+                    let newContents = await _apiClient.contentsGET(undefined, [...keyedUsers.keys()], lastDate, 4)
                     for (let content of newContents) {
                         let userContent: UserContents = {
                             user: keyedUsers.get(content.email) as UserModel,
@@ -101,7 +101,7 @@ export const HomePage = () => {
         }
 
         getUsersFollowing()
-    }, [keyedUsers, index])
+    }, [keyedUsers, lastDate])
 
     useEffect(() => {
         const getFollowing = async() => {

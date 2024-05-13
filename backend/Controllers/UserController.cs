@@ -24,11 +24,9 @@ namespace InstaConnect.Controllers
         }
 
         [HttpGet("Users")]
-        public async Task<ActionResult<List<UserModel>>> GetUsers([FromQuery] List<string>? emails,
-                                                                  [FromQuery] int? index,
-                                                                  [FromQuery] int? limit)
+        public async Task<ActionResult<List<UserModel>>> GetUsers([FromQuery] List<string>? emails)
         {
-            return await _userService.GetUsersAsync(emails, index, limit);
+            return await _userService.GetUsersAsync(emails);
         }
 
         [Authorize(Policy = "AdminPolicy")]

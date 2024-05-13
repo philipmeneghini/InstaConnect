@@ -26,10 +26,10 @@ namespace InstaConnect.Controllers
         [HttpGet("Comments")]
         public async Task<ActionResult<List<CommentModel>>> GetComments([FromQuery] List<string>? ids, 
                                                                         [FromQuery] List<string>? contentIds, 
-                                                                        [FromQuery] int? index = null, 
+                                                                        [FromQuery] DateTime? lastDate = null, 
                                                                         [FromQuery] int? limit = null)
         {
-            return await _commentService.GetCommentsAsync(ids, contentIds, index, limit);
+            return await _commentService.GetCommentsAsync(ids, contentIds, lastDate, limit);
         }
 
         [Authorize(Policy = "CommentCreatePolicy")]

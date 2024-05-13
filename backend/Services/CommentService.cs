@@ -8,26 +8,21 @@ using InstaConnect.Services;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using Backend.Models.Validation;
-using System.Collections.Generic;
-using System;
 
 namespace Backend.Services
 {
     public class CommentService : Repository<CommentModel>, ICommentService
     {
         private readonly IValidator<ContentIdValidationModel> _contentIdValidator;
-        private readonly IValidator<UserEmailValidationModel> _commentEmailValidator;
         private readonly IValidator<CommentModel> _createUpdateCommentValidator;
         private readonly IValidator<CommentIdValidationModel> _getDeleteCommentValidator;
 
         public CommentService(IValidator<ContentIdValidationModel> contentIdValidator, 
-                              IValidator<UserEmailValidationModel> commentEmailValidator, 
                               IValidator<CommentModel> createUpdateCommentValidator, 
                               IValidator<CommentIdValidationModel> getDeleteCommentValidator, 
                               IOptions<MongoSettings<CommentModel>> settings): base(settings)
         {
             _contentIdValidator = contentIdValidator;
-            _commentEmailValidator = commentEmailValidator;
             _createUpdateCommentValidator = createUpdateCommentValidator;
             _getDeleteCommentValidator = getDeleteCommentValidator;
         }
@@ -58,7 +53,7 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<CommentModel>> GetCommentsAsync(List<string>? ids, List<string>? contentIds, int? index = null, int? limit = null)
+        public async Task<List<CommentModel>> GetCommentsAsync(List<string>? ids, List<string>? contentIds, DateTime? lastDate = null, int? limit = null)
         {
             if ((ids == null || ids.Count == 0)
               && (contentIds == null || contentIds.Count == 0))
@@ -90,16 +85,20 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<CommentModel>.Filter.Or(filters);
+            if (lastDate != null)
+            {
+                var dateFilter = Builders<CommentModel>.Filter.Lt(ApplicationConstants.DateCreated, lastDate);
+                aggregatedFilter = Builders<CommentModel>.Filter.And(new FilterDefinition<CommentModel>[] { dateFilter, aggregatedFilter });
+            }
             var sort = Builders<CommentModel>.Sort.Descending(c => c.DateCreated);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
-            var comments = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
+            var comments = await GetModelsAsync(aggregatedFilter, sort, limit);
             return comments;
         }
 
-        public List<CommentModel> GetComments(List<string>? ids, List<string>? contentIds, int? index = null, int? limit = null)
+        public List<CommentModel> GetComments(List<string>? ids, List<string>? contentIds, DateTime? lastDate = null, int? limit = null)
         {
             if ((ids == null || ids.Count == 0)
-               && (contentIds == null || contentIds.Count == 0))
+                && (contentIds == null || contentIds.Count == 0))
             {
                 throw new InstaBadRequestException(ApplicationConstants.ContentCommentIdsEmpty);
             }
@@ -113,7 +112,7 @@ namespace Backend.Services
                         filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id));
                 }
             }
-            
+
             if (contentIds != null && contentIds.Count != 0)
             {
                 foreach (var contentId in contentIds)
@@ -128,10 +127,13 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<CommentModel>.Filter.Or(filters);
+            if (lastDate != null)
+            {
+                var dateFilter = Builders<CommentModel>.Filter.Lt(ApplicationConstants.DateCreated, lastDate);
+                aggregatedFilter = Builders<CommentModel>.Filter.And(new FilterDefinition<CommentModel>[] { dateFilter, aggregatedFilter });
+            }
             var sort = Builders<CommentModel>.Sort.Descending(c => c.DateCreated);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
-
-            var comments = GetModels(aggregatedFilter, sort, lazyLoad);
+            var comments = GetModels(aggregatedFilter, sort, limit);
             return comments;
         }
 

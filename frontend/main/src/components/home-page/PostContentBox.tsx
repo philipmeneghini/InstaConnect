@@ -66,7 +66,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
         else {
             return false
         }
-    }, [props, content])
+    }, [props, user, content])
 
     useEffect(() => {
         const getUserLikes = async (emails: string[] | undefined) => {
@@ -121,6 +121,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const addComments = (comments: CommentModel[]) => {
         setComments(prev => prev.concat(comments))
+    }
+
+    const addUserComment = (comment: CommentModel) => {
+        setComments(prev => [ comment ].concat(prev))
     }
 
     const handleDropdown = () => { 
@@ -267,9 +271,9 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                     <Tab label="Likes" value='likes' />
                                 </TabList>
                             </Box>
-                            <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
+                            
                             <TabPanel value='comments'>
-                                <Comments contentId={content.id} comments={comments} addComments={addComments}/>
+                                <Comments contentId={content.id} comments={comments} addComments={addComments} addUserComment={addUserComment}/>
                             </TabPanel>
                             <TabPanel value='likes'>
                                 <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
@@ -283,7 +287,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                     ))}
                                 </List>
                             </TabPanel>
-                            </Box>
                          </TabContext>
                          <Grid container>
                             <Grid item xs={3}>

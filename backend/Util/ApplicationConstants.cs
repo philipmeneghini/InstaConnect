@@ -27,6 +27,7 @@ namespace Util.Constants
         static public readonly string JwtKey = "Jwt:Key";
         static public readonly string Email = nameof(Email);
         static public readonly string ContentId = nameof(ContentId);
+        static public readonly string DateCreated = nameof(DateCreated);
         static public readonly string Reciever = nameof(Reciever);
         static public readonly string Id = nameof(Id);
         static public readonly string AmazonSESCredentials = "AmazonCredentials:SES";
