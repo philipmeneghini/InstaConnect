@@ -1,8 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
-import { CommentModel, ContentModel, UserModel } from '../../api/Client'
+import { CommentModel, ContentModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Checkbox, Grid, IconButton, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, Grid, IconButton, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -18,6 +18,7 @@ import EditOffIcon from '@mui/icons-material/EditOff'
 import Comments from './Comments'
 import { ToastContext } from '../context-provider/ToastProvider'
 import { UserContext } from '../context-provider/UserProvider'
+import Likes from './Likes'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -47,7 +48,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const [ editMode, setEditMode ] = useState<boolean>(false)
     const [ comments, setComments ] = useState<CommentModel[]>([])
-    const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
+    //const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
     const [ caption, setCaption ] = useState<string>()
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
@@ -68,7 +69,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }, [props, user, content])
 
-    useEffect(() => {
+    /*useEffect(() => {
         const getUserLikes = async (emails: string[] | undefined) => {
             try {
                 const response = await _apiClient.usersGET(emails)
@@ -81,7 +82,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
         
         getUserLikes(content.likes)
 
-    }, [contentExpanded, content])
+    }, [contentExpanded, content])*/
 
     const handleLike = async () => {
         try {
@@ -272,20 +273,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                 </TabList>
                             </Box>
                             
-                            <TabPanel value='comments'>
+                            <TabPanel sx={{p: '1px'}} value='comments'>
                                 <Comments contentId={content.id} comments={comments} addComments={addComments} addUserComment={addUserComment}/>
                             </TabPanel>
-                            <TabPanel value='likes'>
-                                <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                                    {userLikes.map( (like) => (
-                                        <ListItemButton key={like?.email} onClick={() => navigateToProfile(like?.email)} sx={{ pl: 4 }}>
-                                            <ListItemAvatar>
-                                                <Avatar src={like?.profilePictureUrl}/>
-                                            </ListItemAvatar>
-                                            <ListItemText primary={like?.email} />
-                                        </ListItemButton>
-                                    ))}
-                                </List>
+                            <TabPanel sx={{p: '1px'}} value='likes'>
+                                <Likes likes={content.likes as string[]} navigateToProfile={navigateToProfile}/>
                             </TabPanel>
                          </TabContext>
                          <Grid container>
