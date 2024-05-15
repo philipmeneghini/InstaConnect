@@ -17,7 +17,6 @@ interface CommentsProps {
 }
 
 const Comments = (props: CommentsProps) => {
-    const [ lastDate, setLastDate ] = useState<Date | undefined>(props?.comments.length === 0 ? undefined : props?.comments[props?.comments.length -1].dateCreated )
     const [ newComment, setNewComment ] = useState<string>('')
     const [ hasMore, setHasMore ] = useState<boolean>(true)
 
@@ -27,20 +26,16 @@ const Comments = (props: CommentsProps) => {
     const {ref, inView } = useInView()
 
     useEffect(() => {
-        if (hasMore && inView){
-            setLastDate(props.comments[props.comments.length -1].dateCreated)
-        }
-    }, [hasMore, inView])
-
-    useEffect(() => {
         const getComments = async (contentId: string) => {
             try {
-                const response = await _apiClient.commentsGET(undefined, [ contentId ], lastDate, 5)
-                if (response.length === 0) {
-                    setHasMore(false)
-                }
-                else {
-                    props.addComments(response)
+                if (hasMore && inView) {
+                    const response = await _apiClient.commentsGET(undefined, [ contentId ], props.comments.length === 0 ? undefined : props.comments[props.comments.length - 1].dateCreated, 10)
+                    if (response.length === 0) {
+                        setHasMore(false)
+                    }
+                    else {
+                        props.addComments(response)
+                    }
                 }
             }
             catch(err: any) {
@@ -56,7 +51,7 @@ const Comments = (props: CommentsProps) => {
 
         getComments(props.contentId as string)
 
-    }, [props.contentId, openToast, lastDate])
+    }, [props.contentId, hasMore, inView, openToast])
 
     const sendComment = async () => { 
         try {
@@ -75,10 +70,9 @@ const Comments = (props: CommentsProps) => {
         <>
             <Box sx={{overflow: 'auto', maxHeight: '30vh', p: '1px'}}>
                 {props.comments.map( (comment, index) => (
-                    (index === props.comments.length-1)
-                    ? <div key={comment.id} ref={ref}> <Comment key={comment?.id} comment={comment}/> </div>
-                    : <Comment key={comment?.id} comment={comment}/>
+                    <Comment key={comment?.id} comment={comment}/>
                 ))}
+                <div ref={ref}></div>
             </Box>
             <TextField
             sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}

@@ -12,7 +12,6 @@ interface LikesProps {
 }
 
 const Likes = (props: LikesProps) => {
-    const [ index, setIndex ] = useState<number>(0)
     const [ likes, setLikes ] = useState<Set<UserModel>>(new Set<UserModel>())
     const [ hasMore, setHasMore ] = useState<boolean>(true)
     const { openToast } = useContext(ToastContext)
@@ -20,25 +19,18 @@ const Likes = (props: LikesProps) => {
     const {ref, inView } = useInView()
 
     useEffect(() => {
-        if (inView && hasMore) {
-            setIndex(prev => prev + 10 >  props.likes.length-1 
-                    ? props.likes.length - 1
-                    : prev + 10)
-        }
-    }, [hasMore, inView])
-
-    useEffect(() => {
         const getUsers = async () => {
             try {
-                if (hasMore) {
-                    let users = await _apiClient.usersGET(props.likes.slice(index, (index + 10) > props.likes.length ? props.likes.length : index + 10))
+                if (hasMore && inView) {
+                    let index: number = likes.size + 10 > props.likes.length ? props.likes.length : likes.size + 10
+                    let users = await _apiClient.usersGET(props.likes.slice(likes.size, index))
                     let newUsers: Set<UserModel> = likes
                     users.forEach(u => newUsers.add(u))
                     setLikes(newUsers)
-                }
 
-                if (index === props.likes.length - 1) {
-                    setHasMore(false)
+                    if (index >= props.likes.length) {
+                        setHasMore(false)
+                    }
                 }
             }
             catch (err: any) {
@@ -50,26 +42,20 @@ const Likes = (props: LikesProps) => {
         }
         
         getUsers()
-    }, [index, props, hasMore, openToast])
+    }, [props, likes, hasMore, inView, openToast])
     
     return (
     <>
         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-            {[...likes].map( (like, index) => (
-                (index === likes.size - 1)
-                ? <ListItemButton ref={ref} key={like?.email} onClick={() => props.navigateToProfile(like?.email)} sx={{ pl: 4 }}>
-                    <ListItemAvatar>
-                        <Avatar src={like?.profilePictureUrl}/>
-                    </ListItemAvatar>
-                    <ListItemText primary={like?.email} />
-                </ListItemButton>
-                : <ListItemButton key={like?.email} onClick={() => props.navigateToProfile(like?.email)} sx={{ pl: 4 }}>
+            {[...likes].map( (like) => (
+                <ListItemButton key={like?.email} onClick={() => props.navigateToProfile(like?.email)} sx={{ pl: 4 }}>
                     <ListItemAvatar>
                         <Avatar src={like?.profilePictureUrl}/>
                     </ListItemAvatar>
                     <ListItemText primary={like?.email} />
                 </ListItemButton>
             ))}
+            <div ref={ref}></div>
         </List>
     </>)
 }
