@@ -23,6 +23,18 @@ namespace InstaConnect.Services
             _index = settings.Value.Index;
         }
 
+        protected long GetAmount(FilterDefinition<T> filter)
+        {
+            long result = _collection.CountDocuments(filter);
+            return result;
+        }
+
+        protected async Task<long> GetAmountAsync(FilterDefinition<T> filter)
+        {
+            long result = await _collection.CountDocumentsAsync(filter);
+            return result;
+        }
+
         protected T GetModel(FilterDefinition<T> filter)
         {
             var result= _collection.Find(filter);

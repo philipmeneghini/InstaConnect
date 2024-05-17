@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
 import { CommentModel, ContentModel } from '../../api/Client'
 import React from 'react'
@@ -48,7 +48,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const [ editMode, setEditMode ] = useState<boolean>(false)
     const [ comments, setComments ] = useState<CommentModel[]>([])
-    //const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
+    const [ commentsAmount, setCommentsAmount ] = useState<number>(0)
     const [ caption, setCaption ] = useState<string>()
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
@@ -69,20 +69,18 @@ export const PostContentBox = ( props: PostContentProps ) => {
         }
     }, [props, user, content])
 
-    /*useEffect(() => {
-        const getUserLikes = async (emails: string[] | undefined) => {
+    useEffect(() => {
+        const getNumberOfComments = async () => {
             try {
-                const response = await _apiClient.usersGET(emails)
-                setUserLikes(response)
+                let response: number = await _apiClient.commentsAmount(props.userContent.content.id)
+                setCommentsAmount(response)
             }
-            catch {
-                setUserLikes([])
+            catch (err: any) {
+                toastContext.openToast(false, 'Failed to load comments!')
             }
         }
-        
-        getUserLikes(content.likes)
-
-    }, [contentExpanded, content])*/
+        getNumberOfComments()
+    })
 
     const handleLike = async () => {
         try {
@@ -125,6 +123,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
     }
 
     const addUserComment = (comment: CommentModel) => {
+        setCommentsAmount(prev => prev + 1)
         setComments(prev => [ comment ].concat(prev))
     }
 
@@ -253,7 +252,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleComment}>
                             <AddCommentIcon/>
                         </IconButton>
-                    <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
+                    <Typography paddingLeft={'0.5vw'}> {commentsAmount} comments</Typography>
                     </Box>
                 </Box>
                 {editMode ? 

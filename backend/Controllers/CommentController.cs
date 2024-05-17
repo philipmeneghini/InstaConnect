@@ -17,6 +17,12 @@ namespace InstaConnect.Controllers
             _commentService = commentService;
         }
 
+        [HttpGet("CommentsAmount")]
+        public async Task<ActionResult<long>> GetCommentsAmount([FromQuery] string? contentId)
+        {
+            return await _commentService.GetNumberOfCommentsAsync(contentId);
+        }
+
         [HttpGet("Comment")]
         public async Task<ActionResult<CommentModel>> GetComment([FromQuery] string? id)
         {

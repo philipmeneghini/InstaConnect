@@ -53,6 +53,25 @@ namespace Backend.Services
             return content;
         }
 
+        public long GetNumberOfComments(string? contentId)
+        {
+            if (string.IsNullOrWhiteSpace(contentId))
+                throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
+
+            FilterDefinition<CommentModel> filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId);
+            return GetAmount(filter);
+
+        }
+
+        public async Task<long> GetNumberOfCommentsAsync(string? contentId)
+        {
+            if (string.IsNullOrWhiteSpace(contentId))
+                throw new InstaBadRequestException(ApplicationConstants.ContentIdEmpty);
+
+            FilterDefinition<CommentModel> filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.ContentId, contentId);
+            return await GetAmountAsync(filter);
+        }
+
         public async Task<List<CommentModel>> GetCommentsAsync(List<string>? ids, List<string>? contentIds, DateTime? lastDate = null, int? limit = null)
         {
             if ((ids == null || ids.Count == 0)
