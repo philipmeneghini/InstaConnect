@@ -1,10 +1,21 @@
-import { useContext, useEffect, useState } from "react"
-import { ToastContext } from "../context-provider/ToastProvider"
-import { useInView } from "react-intersection-observer"
-import { _apiClient } from "../../App"
-import React from "react"
-import { Avatar, List, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material"
-import { UserModel } from "../../api/Client"
+import React, { useContext, useEffect, useState } from 'react'
+import { ToastContext } from '../context-provider/ToastProvider'
+import { useInView } from 'react-intersection-observer'
+import { _apiClient } from '../../App'
+import { Avatar, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
+import { UserModel } from '../../api/Client'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        likesBox: {
+            overflowY: 'auto', 
+            maxHeight: '65vh'
+        },
+        listItem: {
+            pl: 4 
+        }
+}))
 
 interface LikesProps {
     likes: string[],
@@ -17,6 +28,9 @@ const Likes = (props: LikesProps) => {
     const { openToast } = useContext(ToastContext)
 
     const {ref, inView } = useInView()
+
+    const { likesBox,
+            listItem } = useStyles().classes
 
     useEffect(() => {
         const getUsers = async () => {
@@ -46,9 +60,9 @@ const Likes = (props: LikesProps) => {
     
     return (
     <>
-        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+        <List className={likesBox} component='div' disablePadding>
             {[...likes].map( (like) => (
-                <ListItemButton key={like?.email} onClick={() => props.navigateToProfile(like?.email)} sx={{ pl: 4 }}>
+                <ListItemButton key={like?.email} className={listItem} onClick={() => props.navigateToProfile(like?.email)}>
                     <ListItemAvatar>
                         <Avatar src={like?.profilePictureUrl}/>
                     </ListItemAvatar>

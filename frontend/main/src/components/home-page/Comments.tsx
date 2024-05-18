@@ -1,13 +1,38 @@
-import { useContext, useEffect, useState } from "react"
-import { CommentModel } from "../../api/Client"
-import { useInView } from "react-intersection-observer"
-import { _apiClient } from "../../App"
-import React from "react"
-import { Avatar, Box, IconButton, InputAdornment, TextField } from "@mui/material"
+import React, { useContext, useEffect, useState } from 'react'
+import { CommentModel } from '../../api/Client'
+import { useInView } from 'react-intersection-observer'
+import { _apiClient } from '../../App'
+import { Avatar, Box, IconButton, InputAdornment, TextField } from '@mui/material'
 import Comment from './Comment'
-import { UserContext } from "../context-provider/UserProvider"
-import { ToastContext } from "../context-provider/ToastProvider"
+import { UserContext } from '../context-provider/UserProvider'
+import { ToastContext } from '../context-provider/ToastProvider'
 import SendIcon from '@mui/icons-material/Send'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        commentsBox: {
+            overflow: 'auto', 
+            maxHeight: '30vh', 
+            p: '1px'
+        },
+        newCommentTextField: {
+            display: 'flex', 
+            justifyContent: 'left', 
+            marginLeft: '0.8vw', 
+            marginTop: '3vh'
+        },
+        avatar: {
+            width: '4vh', 
+            height: '4vh'
+        },
+        sendIconButton: {
+            maxHeight: '3vh'
+        },
+        sendIcon: {
+            color: 'blue'
+        }
+}))
 
 interface CommentsProps {
     contentId : string | undefined
@@ -24,6 +49,12 @@ const Comments = (props: CommentsProps) => {
     const { openToast } = useContext(ToastContext)
 
     const {ref, inView } = useInView()
+
+    const { commentsBox,
+            newCommentTextField,
+            avatar,
+            sendIconButton,
+            sendIcon } = useStyles().classes
 
     useEffect(() => {
         const getComments = async (contentId: string) => {
@@ -68,25 +99,25 @@ const Comments = (props: CommentsProps) => {
 
     return (
         <>
-            <Box sx={{overflow: 'auto', maxHeight: '30vh', p: '1px'}}>
-                {props.comments.map( (comment, index) => (
+            <Box className={commentsBox}>
+                {props.comments.map( (comment) => (
                     <Comment key={comment?.id} comment={comment}/>
                 ))}
                 <div ref={ref}></div>
             </Box>
             <TextField
-            sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
+            className={newCommentTextField}
             label={user?.email}
             value={newComment}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position='start'>
-                        <Avatar src={user?.profilePictureUrl} sx={{ width: '4vh', height: '4vh'}}/>
+                        <Avatar src={user?.profilePictureUrl} className={avatar}/>
                     </InputAdornment>
                 ),
                 endAdornment: (
-                    <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={sendComment}>
-                        <SendIcon sx={{color: 'blue'}}/>
+                    <IconButton className={sendIconButton} size='small' onClick={sendComment}>
+                        <SendIcon className={sendIcon}/>
                     </IconButton>
                 )
             }}
