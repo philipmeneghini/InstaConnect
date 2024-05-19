@@ -67,7 +67,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
         else {
             return false
         }
-    }, [props, user, content])
+    }, [user, content])
 
     useEffect(() => {
         const getNumberOfComments = async () => {
@@ -80,7 +80,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
             }
         }
         getNumberOfComments()
-    })
+    }, [props.userContent.content.id, toastContext])
 
     const handleLike = async () => {
         try {

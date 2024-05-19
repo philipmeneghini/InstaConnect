@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { ToastContext } from '../context-provider/ToastProvider'
 import { useInView } from 'react-intersection-observer'
 import { _apiClient } from '../../App'
-import { Avatar, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
+import { Avatar, Box, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
 import { UserModel } from '../../api/Client'
 import { makeStyles } from 'tss-react/mui'
 
@@ -10,7 +10,7 @@ const useStyles = makeStyles()(
     () => ({
         likesBox: {
             overflowY: 'auto', 
-            maxHeight: '65vh'
+            maxHeight: '30vh'
         },
         listItem: {
             pl: 4 
@@ -35,10 +35,10 @@ const Likes = (props: LikesProps) => {
     useEffect(() => {
         const getUsers = async () => {
             try {
-                if (hasMore && inView) {
-                    let index: number = likes.size + 10 > props.likes.length ? props.likes.length : likes.size + 10
+                if (hasMore && (inView || likes.size === 0)) {
+                    let index: number = likes.size + 5 > props.likes.length ? props.likes.length : likes.size + 5
                     let users = await _apiClient.usersGET(props.likes.slice(likes.size, index))
-                    let newUsers: Set<UserModel> = likes
+                    let newUsers: Set<UserModel> = new Set<UserModel> ([...likes])
                     users.forEach(u => newUsers.add(u))
                     setLikes(newUsers)
 
@@ -56,12 +56,21 @@ const Likes = (props: LikesProps) => {
         }
         
         getUsers()
-    }, [props, likes, hasMore, inView, openToast])
+    }, [props, hasMore, inView, openToast])
     
     return (
     <>
         <List className={likesBox} component='div' disablePadding>
-            {[...likes].map( (like) => (
+            {[...likes].map( (like, index) => (
+                (index === (likes.size-1))
+                ?
+                <ListItemButton ref={ref} key={like?.email} className={listItem} onClick={() => props.navigateToProfile(like?.email)}>
+                    <ListItemAvatar>
+                        <Avatar src={like?.profilePictureUrl}/>
+                    </ListItemAvatar>
+                    <ListItemText  primary={like?.email} />
+                </ListItemButton>
+                :
                 <ListItemButton key={like?.email} className={listItem} onClick={() => props.navigateToProfile(like?.email)}>
                     <ListItemAvatar>
                         <Avatar src={like?.profilePictureUrl}/>
@@ -69,7 +78,6 @@ const Likes = (props: LikesProps) => {
                     <ListItemText primary={like?.email} />
                 </ListItemButton>
             ))}
-            <div ref={ref}></div>
         </List>
     </>)
 }
