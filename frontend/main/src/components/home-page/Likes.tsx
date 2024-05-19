@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { ToastContext } from '../context-provider/ToastProvider'
 import { useInView } from 'react-intersection-observer'
 import { _apiClient } from '../../App'
-import { Avatar, Box, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
+import { Avatar, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
 import { UserModel } from '../../api/Client'
 import { makeStyles } from 'tss-react/mui'
 
