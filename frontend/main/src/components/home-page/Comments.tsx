@@ -59,8 +59,8 @@ const Comments = (props: CommentsProps) => {
     useEffect(() => {
         const getComments = async (contentId: string) => {
             try {
-                if (hasMore && inView) {
-                    const response = await _apiClient.commentsGET(undefined, [ contentId ], props.comments.length === 0 ? undefined : props.comments[props.comments.length - 1].dateCreated, 10)
+                if (hasMore && (inView || props.comments.length === 0)) {
+                    const response = await _apiClient.commentsGET(undefined, [ contentId ], props.comments.length === 0 ? undefined : props.comments[props.comments.length - 1].dateCreated, 11)
                     if (response.length === 0) {
                         setHasMore(false)
                     }
@@ -88,9 +88,9 @@ const Comments = (props: CommentsProps) => {
         try {
             let newCommentModel: CommentModel
             newCommentModel = { contentId: props.contentId, likes: [], body: newComment, email: user?.email as string } as CommentModel
-            await _apiClient.commentPOST(newCommentModel)
+            const res = await _apiClient.commentPOST(newCommentModel)
+            props.addUserComment(res)
             setNewComment('')
-            props.addUserComment(newCommentModel)
         }
         catch(err: any) {
             openToast(false, err.message)
@@ -100,10 +100,11 @@ const Comments = (props: CommentsProps) => {
     return (
         <>
             <Box className={commentsBox}>
-                {props.comments.map( (comment) => (
-                    <Comment key={comment?.id} comment={comment}/>
+                {props.comments.map( (comment, index) => (
+                    (index === props.comments.length - 1)
+                    ? <div ref={ref}> <Comment key={comment?.id} comment={comment}/> </div>
+                    : <Comment key={comment?.id} comment={comment}/>
                 ))}
-                <div ref={ref}></div>
             </Box>
             <TextField
             className={newCommentTextField}
