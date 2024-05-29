@@ -68,7 +68,7 @@ namespace Backend.Services
             return content;
         }
 
-        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
+        public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, DateTime? lastDate = null, int? limit = null)
         {
             if ((emails == null || emails.Count == 0)
                 && (ids == null || ids.Count == 0))
@@ -97,10 +97,15 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
+            if (lastDate != null)
+            {
+                var dateFilter = Builders<ContentModel>.Filter.Lt(ApplicationConstants.DateCreated, lastDate);
+                aggregatedFilter = Builders<ContentModel>.Filter.And(new FilterDefinition<ContentModel>[] { dateFilter, aggregatedFilter });
+            }
+
             var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
- 
-            var contents = await GetModelsAsync(aggregatedFilter, sort, lazyLoad);
+
+            var contents = await GetModelsAsync(aggregatedFilter, sort, limit);
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
@@ -109,7 +114,7 @@ namespace Backend.Services
             return contents;
         }
 
-        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails, int? index = null, int? limit = null)
+        public List<ContentModel> GetContents(List<string>? ids, List<string>? emails, DateTime? lastDate = null, int? limit = null)
         {
             if ((emails == null || emails.Count == 0)
                 && (ids == null || ids.Count == 0))
@@ -129,7 +134,7 @@ namespace Backend.Services
                     filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email));
                 }
             }
-            else if (ids != null && ids.Count != 0)
+            if (ids != null && ids.Count != 0)
             {
                 foreach (var id in ids)
                 {
@@ -138,12 +143,15 @@ namespace Backend.Services
             }
 
             var aggregatedFilter = Builders<ContentModel>.Filter.Or(filters);
-            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
-            var lazyLoad = (limit == null ? null : new LazyLoadModel(index, limit ?? 0));
+            if (lastDate != null)
+            {
+                var dateFilter = Builders<ContentModel>.Filter.Lt(ApplicationConstants.DateCreated, lastDate);
+                aggregatedFilter = Builders<ContentModel>.Filter.And(new FilterDefinition<ContentModel>[] { dateFilter, aggregatedFilter });
+            }
 
-            var contents = GetModels(aggregatedFilter, sort, lazyLoad);
-            if (index != null && limit != null)
-                contents = contents.OrderByDescending(c => c.DateCreated).Skip((int)index * (int)limit).Take((int)limit).ToList();
+            var sort = Builders<ContentModel>.Sort.Descending(c => c.DateCreated);
+
+            var contents = GetModels(aggregatedFilter, sort, limit);
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);

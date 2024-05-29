@@ -17,6 +17,12 @@ namespace InstaConnect.Controllers
             _commentService = commentService;
         }
 
+        [HttpGet("CommentsAmount")]
+        public async Task<ActionResult<long>> GetCommentsAmount([FromQuery] string? contentId)
+        {
+            return await _commentService.GetNumberOfCommentsAsync(contentId);
+        }
+
         [HttpGet("Comment")]
         public async Task<ActionResult<CommentModel>> GetComment([FromQuery] string? id)
         {
@@ -26,10 +32,10 @@ namespace InstaConnect.Controllers
         [HttpGet("Comments")]
         public async Task<ActionResult<List<CommentModel>>> GetComments([FromQuery] List<string>? ids, 
                                                                         [FromQuery] List<string>? contentIds, 
-                                                                        [FromQuery] int? index = null, 
+                                                                        [FromQuery] DateTime? lastDate = null, 
                                                                         [FromQuery] int? limit = null)
         {
-            return await _commentService.GetCommentsAsync(ids, contentIds, index, limit);
+            return await _commentService.GetCommentsAsync(ids, contentIds, lastDate, limit);
         }
 
         [Authorize(Policy = "CommentCreatePolicy")]

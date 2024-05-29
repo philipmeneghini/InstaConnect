@@ -257,6 +257,64 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param contentId (optional) 
+     * @return Success
+     */
+    commentsAmount(contentId?: string | undefined, cancelToken?: CancelToken | undefined): Promise<number> {
+        let url_ = this.baseUrl + "/Comment/CommentsAmount?";
+        if (contentId === null)
+            throw new Error("The parameter 'contentId' cannot be null.");
+        else if (contentId !== undefined)
+            url_ += "contentId=" + encodeURIComponent("" + contentId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCommentsAmount(_response);
+        });
+    }
+
+    protected processCommentsAmount(response: AxiosResponse): Promise<number> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = JSON.parse(resultData200);
+            return Promise.resolve<number>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<number>(null as any);
+    }
+
+    /**
      * @param id (optional) 
      * @return Success
      */
@@ -491,11 +549,11 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param ids (optional) 
      * @param contentIds (optional) 
-     * @param index (optional) 
+     * @param lastDate (optional) 
      * @param limit (optional) 
      * @return Success
      */
-    commentsGET(ids?: string[] | undefined, contentIds?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
+    commentsGET(ids?: string[] | undefined, contentIds?: string[] | undefined, lastDate?: Date | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<CommentModel[]> {
         let url_ = this.baseUrl + "/Comment/Comments?";
         if (ids === null)
             throw new Error("The parameter 'ids' cannot be null.");
@@ -505,10 +563,10 @@ export class Client extends AuthorizedApiBase {
             throw new Error("The parameter 'contentIds' cannot be null.");
         else if (contentIds !== undefined)
             contentIds && contentIds.forEach(item => { url_ += "contentIds=" + encodeURIComponent("" + item) + "&"; });
-        if (index === null)
-            throw new Error("The parameter 'index' cannot be null.");
-        else if (index !== undefined)
-            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (lastDate === null)
+            throw new Error("The parameter 'lastDate' cannot be null.");
+        else if (lastDate !== undefined)
+            url_ += "lastDate=" + encodeURIComponent(lastDate ? "" + lastDate.toString() : "") + "&";
         if (limit === null)
             throw new Error("The parameter 'limit' cannot be null.");
         else if (limit !== undefined)
@@ -970,11 +1028,11 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param ids (optional) 
      * @param emails (optional) 
-     * @param index (optional) 
+     * @param lastDate (optional) 
      * @param limit (optional) 
      * @return Success
      */
-    contentsGET(ids?: string[] | undefined, emails?: string[] | undefined, index?: number | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
+    contentsGET(ids?: string[] | undefined, emails?: string[] | undefined, lastDate?: Date | undefined, limit?: number | undefined, cancelToken?: CancelToken | undefined): Promise<ContentModel[]> {
         let url_ = this.baseUrl + "/Content/Contents?";
         if (ids === null)
             throw new Error("The parameter 'ids' cannot be null.");
@@ -984,10 +1042,10 @@ export class Client extends AuthorizedApiBase {
             throw new Error("The parameter 'emails' cannot be null.");
         else if (emails !== undefined)
             emails && emails.forEach(item => { url_ += "emails=" + encodeURIComponent("" + item) + "&"; });
-        if (index === null)
-            throw new Error("The parameter 'index' cannot be null.");
-        else if (index !== undefined)
-            url_ += "index=" + encodeURIComponent("" + index) + "&";
+        if (lastDate === null)
+            throw new Error("The parameter 'lastDate' cannot be null.");
+        else if (lastDate !== undefined)
+            url_ += "lastDate=" + encodeURIComponent(lastDate ? "" + lastDate.toString() : "") + "&";
         if (limit === null)
             throw new Error("The parameter 'limit' cannot be null.");
         else if (limit !== undefined)

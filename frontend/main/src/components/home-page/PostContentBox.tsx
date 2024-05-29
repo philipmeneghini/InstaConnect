@@ -1,23 +1,24 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
-import { CommentModel, ContentModel, UserModel } from '../../api/Client'
+import { CommentModel, ContentModel } from '../../api/Client'
 import React from 'react'
-import { Avatar, Box, Button, Checkbox, Grid, IconButton, InputAdornment, List, ListItemAvatar, ListItemButton, ListItemText, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Checkbox, Grid, IconButton, Modal, Tab, TextField, Tooltip, Typography } from '@mui/material'
 import AddCommentIcon from '@mui/icons-material/AddComment'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import { UserContents } from '../../pages/main-page/HomePage'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
-import SendIcon from '@mui/icons-material/Send'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteConfirmation from './DeleteConfirmation'
 import EditOffIcon from '@mui/icons-material/EditOff'
-import Comment from './Comment'
+import Comments from './Comments'
 import { ToastContext } from '../context-provider/ToastProvider'
+import { UserContext } from '../context-provider/UserProvider'
+import Likes from './Likes'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -40,7 +41,6 @@ const interactionToolbarStyle = {
 
 interface PostContentProps {
     userContent: UserContents
-    user: UserModel
     handleClose?: (() => void) | undefined
 }
 
@@ -48,70 +48,54 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const [ editMode, setEditMode ] = useState<boolean>(false)
     const [ comments, setComments ] = useState<CommentModel[]>([])
-    const [ userLikes, setUserLikes ] = useState<UserModel[]>([])
+    const [ commentsAmount, setCommentsAmount ] = useState<number>(0)
     const [ caption, setCaption ] = useState<string>()
     const [ contentExpanded, setContentExpanded ] = useState<boolean>(false)
     const [ menuSelection, setMenuSelection ] = useState<string>('comments')
     const [ content, setContent ] = useState<ContentModel>(props?.userContent?.content)
-    const [ newComment, setNewComment ] = useState<string>()
     const [ deleting, setDeleting ] = useState<boolean>(false)
+
+    const { user } = useContext(UserContext)
     const toastContext = useContext(ToastContext)
 
+
     const isContentLiked = useMemo((): boolean | undefined => {
-        const index: number = content?.likes?.indexOf(props?.user?.email, 0) ?? -1
+        const index: number = content?.likes?.indexOf(user?.email as string, 0) ?? -1
         if (index > -1) {
             return true
         }
         else {
             return false
         }
-    }, [props, content])
+    }, [user, content])
 
     useEffect(() => {
-        const getComments = async (content: ContentModel) => {
+        const getNumberOfComments = async () => {
             try {
-                const response = await _apiClient.commentsGET(undefined, [ content.id as string ])
-                setComments(response)
+                let response: number = await _apiClient.commentsAmount(props.userContent.content.id)
+                setCommentsAmount(response)
             }
-            catch {
-                setComments([])
-            }
-        }     
-
-        getComments(content)
-
-    }, [contentExpanded, content, newComment])
-
-    useEffect(() => {
-        const getUserLikes = async (emails: string[] | undefined) => {
-            try {
-                const response = await _apiClient.usersGET(emails)
-                setUserLikes(response)
-            }
-            catch {
-                setUserLikes([])
+            catch (err: any) {
+                toastContext.openToast(false, 'Failed to load comments!')
             }
         }
-        
-        getUserLikes(content.likes)
-
-    }, [contentExpanded, content])
+        getNumberOfComments()
+    }, [props.userContent.content.id, toastContext])
 
     const handleLike = async () => {
         try {
             let newContent: ContentModel = {...content}
             let newLikes: string[] | undefined = content?.likes
             if (newLikes === undefined || newLikes === null) {
-                newLikes = [ props?.user?.email ]
+                newLikes = [ user?.email as string ]
             }
             else {
-                const index: number = newLikes.indexOf(props?.user?.email, 0) ?? -1
+                const index: number = newLikes.indexOf(user?.email as string, 0) ?? -1
                 if (index > -1) {
                     newLikes.splice(index, 1)
                 }
                 else {
-                    console.log(props?.user?.email)
-                    newLikes.push(props?.user?.email)
+                    newLikes.push(user?.email as string)
                 }
             }
             newContent.likes = newLikes
@@ -134,14 +118,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
         setDeleting(true)
     }
 
-    const sendComment = async () => { 
-        try {
-            await _apiClient.commentPOST({ contentId: content.id, likes: [], body: newComment, email: props?.user?.email } as CommentModel)
-            setNewComment('')
-        }
-        catch(err: any) {
-            toastContext.openToast(false, err.message)
-        }
+    const addComments = (comments: CommentModel[]) => {
+        setComments(prev => prev.concat(comments))
+    }
+
+    const addUserComment = (comment: CommentModel) => {
+        setCommentsAmount(prev => prev + 1)
+        setComments(prev => [ comment ].concat(prev))
     }
 
     const handleDropdown = () => { 
@@ -158,7 +141,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const navigateToProfile = (email : string | undefined) => {
         if (email) {
-            if (email === props?.user?.email) {
+            if (email === user?.email) {
                 navigate(Paths.Profile, {replace: true})
             }
             else {
@@ -215,8 +198,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
     const handleSaveChanges = async () => {
         let newContent: ContentModel = { ...content,
                                         caption: caption}
-        console.log(caption)
-        console.log(newContent)
         try {
             await _apiClient.contentPUT(newContent)
             toastContext.openToast(true, 'Post Successfully Updated!')
@@ -239,7 +220,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         </IconButton>
                     </Box>
                     <Box>
-                        { props?.user?.email === props?.userContent?.user?.email ? 
+                        { user?.email === props?.userContent?.user?.email ? 
                             <>
                                 <IconButton sx={{marginRight: '1vw'}} size='small' onClick={handleEdit}>
                                     <Tooltip title={editMode ? 'Stop Editing Post' : 'Edit Post'}>
@@ -271,7 +252,7 @@ export const PostContentBox = ( props: PostContentProps ) => {
                         <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={handleComment}>
                             <AddCommentIcon/>
                         </IconButton>
-                    <Typography paddingLeft={'0.5vw'}> {comments.length} comments</Typography>
+                    <Typography paddingLeft={'0.5vw'}> {commentsAmount} comments</Typography>
                     </Box>
                 </Box>
                 {editMode ? 
@@ -290,45 +271,13 @@ export const PostContentBox = ( props: PostContentProps ) => {
                                     <Tab label="Likes" value='likes' />
                                 </TabList>
                             </Box>
-                            <Box sx={{overflow: 'auto', maxHeight: '30vh'}}>
-                            <TabPanel value='comments'>
-                                {comments.map( (comment) => (
-                                    <Comment key={comment?.id} comment={comment}/>
-                                ))}
-                                <TextField
-                                sx={{display: 'flex', justifyContent: 'left', marginLeft: '0.8vw', marginTop: '3vh'}}
-                                label={props?.user?.email}
-                                value={newComment}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <Avatar src={props?.user?.profilePictureUrl} sx={{ width: '4vh', height: '4vh'}}/>
-                                        </InputAdornment>
-                                    ),
-                                    endAdornment: (
-                                        <IconButton sx={{maxHeight: '3vh'}} size='small' onClick={sendComment}>
-                                            <SendIcon sx={{color: 'blue'}}/>
-                                        </IconButton>
-                                    )
-                                }}
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                    setNewComment(event.target.value)}}
-                                multiline
-                                />
+                            
+                            <TabPanel sx={{p: '1px'}} value='comments'>
+                                <Comments contentId={content.id} comments={comments} addComments={addComments} addUserComment={addUserComment}/>
                             </TabPanel>
-                            <TabPanel value='likes'>
-                                <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                                    {userLikes.map( (like) => (
-                                        <ListItemButton key={like?.email} onClick={() => navigateToProfile(like?.email)} sx={{ pl: 4 }}>
-                                            <ListItemAvatar>
-                                                <Avatar src={like?.profilePictureUrl}/>
-                                            </ListItemAvatar>
-                                            <ListItemText primary={like?.email} />
-                                        </ListItemButton>
-                                    ))}
-                                </List>
+                            <TabPanel sx={{p: '1px'}} value='likes'>
+                                <Likes likes={content.likes as string[]} navigateToProfile={navigateToProfile}/>
                             </TabPanel>
-                            </Box>
                          </TabContext>
                          <Grid container>
                             <Grid item xs={3}>

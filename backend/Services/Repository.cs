@@ -23,6 +23,18 @@ namespace InstaConnect.Services
             _index = settings.Value.Index;
         }
 
+        protected long GetAmount(FilterDefinition<T> filter)
+        {
+            long result = _collection.CountDocuments(filter);
+            return result;
+        }
+
+        protected async Task<long> GetAmountAsync(FilterDefinition<T> filter)
+        {
+            long result = await _collection.CountDocumentsAsync(filter);
+            return result;
+        }
+
         protected T GetModel(FilterDefinition<T> filter)
         {
             var result= _collection.Find(filter);
@@ -41,26 +53,25 @@ namespace InstaConnect.Services
             return model;
         }
 
-        protected List<T> GetModels(FilterDefinition<T> filter, SortDefinition<T>? sort = null, LazyLoadModel? lazyLoad = null)
+        protected List<T> GetModels(FilterDefinition<T> filter, SortDefinition<T>? sort = null, int? limit = null)
         {
             var users = _collection.Find(filter).Sort(sort);
-            if (lazyLoad != null)
-                users = users.Skip(lazyLoad.Index * lazyLoad.Limit).Limit(lazyLoad.Limit);
+            if (limit != null)
+                users = users.Limit(limit);
             var usersList = users.ToList();
             if (usersList.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return usersList;
         }
 
-        protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter, SortDefinition<T>? sort = null, LazyLoadModel? lazyLoad = null)
+        protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter, SortDefinition<T>? sort = null, int? limit = null)
         {
             var findOptions = new FindOptions<T, T>();
             if (sort != null) 
                 findOptions.Sort = sort;
-            if (lazyLoad != null)
+            if (limit != null)
             {
-                findOptions.Limit = lazyLoad.Limit;
-                findOptions.Skip = lazyLoad.Limit * lazyLoad.Index;
+                findOptions.Limit = limit;
             }
             var users = await _collection.FindAsync(filter, findOptions);
             var userList = await users.ToListAsync();
