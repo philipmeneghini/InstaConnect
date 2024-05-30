@@ -1,4 +1,4 @@
-import { Button, AppBar, Box, Collapse, Container, Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, ListItemAvatar, Badge } from '@mui/material'
+import { AppBar, Container, Drawer, Grid, Menu, MenuItem, Toolbar, Typography, Badge } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -8,9 +8,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
@@ -19,6 +16,7 @@ import { UserContext } from '../context-provider/UserProvider'
 import { ToastContext } from '../context-provider/ToastProvider'
 import { NotificationContext } from '../context-provider/NotificationProvider'
 import Notifications from './Notifications'
+import SideMenu from './SideMenu'
 
 export interface FollowContents {
     email : string
@@ -108,78 +106,6 @@ export const Header = ( props: HeaderProps ) => {
         setAnchorNoticiation(null)
     }
 
-    const sideMenu = () => (
-        <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
-            <Box sx={{height: '10vh'}}>
-                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
-                    <IconButton onClick={handleDrawerClose}>
-                        <ChevronLeftIcon />
-                    </IconButton>
-                </Box>
-                <Divider />
-            </Box>
-            <Box sx={{height:'80vh'}}>
-                <List component='nav' sx={{paddingTop: '0', height: '90vh'}}>
-                    <ListItemButton onClick={handleFollowingClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
-                        Following
-                        <ListItemIcon>
-                            {followingOpen? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
-                        </ListItemIcon>
-                    </ListItemButton>
-                    <Collapse in={followingOpen} timeout='auto' unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component='div' disablePadding>
-                            {following.map(following => (
-                                <ListItemButton key={following.email} onClick={() => navigateToProfile(following.email)} sx={{ pl: 4 }}>
-                                    <ListItemAvatar>
-                                        <Avatar src={following.profilePicture}/>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={following.email} />
-                                </ListItemButton>))}
-                        </List>
-                    </Collapse>
-                    <ListItemButton onClick={handleFollowersClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
-                        Followers
-                        <ListItemIcon>
-                            {followersOpen ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
-                        </ListItemIcon>
-                    </ListItemButton>
-                    <Collapse in={followersOpen} timeout="auto" unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                            {followers.map(follower => (
-                                <ListItemButton key={follower.email} onClick={() => navigateToProfile(follower.email)} sx={{ pl: 4 }}>
-                                    <ListItemAvatar>
-                                        <Avatar src={follower.profilePicture}/> 
-                                    </ListItemAvatar>
-                                    <ListItemText primary={ follower.email} />
-                                </ListItemButton>))}
-                        </List>
-                    </Collapse>
-                </List>
-            </Box>
-            <Box sx={{height: '10vh'}}>
-                <Divider/>
-                <Box
-                sx={{
-                    display: 'flex',
-                    gap: 1,
-                    p: 1.5,
-                    pb: 2,
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                }}
-                >
-                    <Avatar src={profilePicture}/>
-                    <div>
-                        <Typography>{props?.user?.firstName} {props?.user?.lastName}</Typography>
-                        <Button onClick={handleLogout} variant='text' size='small' sx={{color: 'black'}}>
-                            Logout
-                        </Button>
-                    </div>
-                </Box>
-            </Box>
-        </Box>
-    )
-
     return (
         <AppBar component='nav' position='fixed'>
             <Container maxWidth='xl'>
@@ -202,7 +128,16 @@ export const Header = ( props: HeaderProps ) => {
                                     }
                                     }}
                             > 
-                                {sideMenu()}
+                                <SideMenu 
+                                handleDrawerClose={handleDrawerClose}
+                                handleFollowersClick={handleFollowersClick}
+                                handleFollowingClick={handleFollowingClick}
+                                handleLogout={handleLogout}
+                                navigateToProfile={navigateToProfile}
+                                followers={followers}
+                                following={following}
+                                followersOpen={followersOpen}
+                                followingOpen={followingOpen}/>
                             </Drawer>
                             <SearchBar/>
                         </Grid>
