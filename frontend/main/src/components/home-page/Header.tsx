@@ -8,7 +8,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
 import { UserModel } from '../../api/Client'
-import useFollowers from '../../hooks/useFollowers'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import SearchBar from './SearchBar'
 import NotificationsIcon from '@mui/icons-material/Notifications'
@@ -35,8 +34,6 @@ export const Header = ( props: HeaderProps ) => {
     const [ followersOpen, setFollowersOpen ] = useState<boolean>(false)
     const [ followingOpen, setFollowingOpen ] = useState<boolean>(false)
 
-    const [ followers ] = useFollowers(props?.user?.followers, followersOpen)
-    const [ following ] = useFollowers(props?.user?.following, followingOpen)
     const [ profilePicture ] = useProfilePicture(props?.user?.profilePictureUrl)
 
     const userContext = useContext(UserContext)
@@ -134,8 +131,6 @@ export const Header = ( props: HeaderProps ) => {
                                 handleFollowingClick={handleFollowingClick}
                                 handleLogout={handleLogout}
                                 navigateToProfile={navigateToProfile}
-                                followers={followers}
-                                following={following}
                                 followersOpen={followersOpen}
                                 followingOpen={followingOpen}/>
                             </Drawer>

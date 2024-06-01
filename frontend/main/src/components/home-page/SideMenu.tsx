@@ -5,7 +5,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import React, { useContext } from 'react'
 import { UserContext } from '../context-provider/UserProvider'
 import useProfilePicture from '../../hooks/useProfilePicture'
-import { FollowContents } from './Header'
+import useLazyProfiles from '../../hooks/useLazyProfiles'
 
 interface sideMenuProps {
     handleDrawerClose : () => void,
@@ -13,8 +13,6 @@ interface sideMenuProps {
     handleFollowersClick : () => void,
     handleLogout : () => void,
     navigateToProfile : (email: string) => void,
-    followers : FollowContents[],
-    following : FollowContents[],
     followingOpen : boolean,
     followersOpen : boolean
 }
@@ -23,6 +21,9 @@ const SideMenu = (props: sideMenuProps) => {
 
     const { user } = useContext(UserContext)
     const [ profilePicture ] = useProfilePicture(user?.profilePictureUrl)
+
+    const [ followersRef, followers ] = useLazyProfiles('Failed to load followers', 10, user?.followers ?? [])
+    const [ followingRef, followings ] = useLazyProfiles('Failed to load following', 10, user?.following ?? [])
 
     return (
         <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
@@ -44,10 +45,19 @@ const SideMenu = (props: sideMenuProps) => {
                     </ListItemButton>
                     <Collapse in={props.followingOpen} timeout='auto' unmountOnExit>
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component='div' disablePadding>
-                            {props.following.map(following => (
+                            {followings.map((following, index) => (
+                                (index === (followings.length - 1)) 
+                                ? 
+                                <ListItemButton ref={followingRef} key={following.email} onClick={() => props.navigateToProfile(following.email)} sx={{ pl: 4 }}>
+                                    <ListItemAvatar>
+                                        <Avatar src={following.profilePictureUrl}/>
+                                    </ListItemAvatar>
+                                    <ListItemText primary={following.email} />
+                                </ListItemButton>
+                                :
                                 <ListItemButton key={following.email} onClick={() => props.navigateToProfile(following.email)} sx={{ pl: 4 }}>
                                     <ListItemAvatar>
-                                        <Avatar src={following.profilePicture}/>
+                                        <Avatar src={following.profilePictureUrl}/>
                                     </ListItemAvatar>
                                     <ListItemText primary={following.email} />
                                 </ListItemButton>))}
@@ -61,10 +71,19 @@ const SideMenu = (props: sideMenuProps) => {
                     </ListItemButton>
                     <Collapse in={props.followersOpen} timeout="auto" unmountOnExit>
                         <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
-                            {props.followers.map(follower => (
+                            {followers.map((follower, index) => (
+                                (index === (followers.length - 1))
+                                ?
+                                <ListItemButton ref={followersRef} key={follower.email} onClick={() => props.navigateToProfile(follower.email)} sx={{ pl: 4 }}>
+                                    <ListItemAvatar>
+                                        <Avatar src={follower.profilePictureUrl}/> 
+                                    </ListItemAvatar>
+                                    <ListItemText primary={ follower.email} />
+                                </ListItemButton>
+                                :
                                 <ListItemButton key={follower.email} onClick={() => props.navigateToProfile(follower.email)} sx={{ pl: 4 }}>
                                     <ListItemAvatar>
-                                        <Avatar src={follower.profilePicture}/> 
+                                        <Avatar src={follower.profilePictureUrl}/> 
                                     </ListItemAvatar>
                                     <ListItemText primary={ follower.email} />
                                 </ListItemButton>))}
