@@ -20,6 +20,10 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, profiles: str
                     let index: number = (profileContents.length + lazyLoad) > profiles.length 
                                         ? profiles.length 
                                         : profileContents.length + lazyLoad
+                    if (profiles.length === 0) {
+                        setHasMore(false)
+                        return
+                    }
                     let users = await _apiClient.usersGET(profiles.slice(profileContents.length, index))
                     let newUsers = [...profileContents]
                     newUsers.push(...users)
