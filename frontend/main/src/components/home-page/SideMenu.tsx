@@ -6,6 +6,61 @@ import React, { useContext } from 'react'
 import { UserContext } from '../context-provider/UserProvider'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import useLazyProfiles from '../../hooks/useLazyProfiles'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        menuBox: {
+            overflow: 'hidden', 
+            displaywidth: '20vw'
+        },
+        closeBox: {
+            height: '10vh' 
+        },
+        leftIconBox: {
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'flex-end'
+        },
+        mainBox: {
+            height:'80vh'
+        },
+        followingsFollowersList: {
+            paddingTop: '0', 
+            height: '90vh'
+        },
+        followingFollowerButton: {
+            paddingRight: '0', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            fontSize: '1.4rem'
+        },
+        followingFollowerList: {
+            overflowY: 'auto', 
+            maxHeight: '65vh'
+        },
+        profileButton: {
+            pl: 4
+        },
+        footerBox: {
+            height: '10vh'
+        },
+        avatarBox: {
+            display: 'flex',
+            gap: 1,
+            justifyContent: 'flex-start', 
+            padding: '5px',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+        },
+        textFooter: {
+            paddingLeft: '5px'
+        },
+        closeButton: {
+            color: 'black'
+        }
+
+}))
 
 interface sideMenuProps {
     handleDrawerClose : () => void,
@@ -25,37 +80,52 @@ const SideMenu = (props: sideMenuProps) => {
     const [ followersRef, followers ] = useLazyProfiles('Failed to load followers', 10, user?.followers ?? [])
     const [ followingRef, followings ] = useLazyProfiles('Failed to load following', 10, user?.following ?? [])
 
+    const {
+        menuBox,
+        closeBox,
+        leftIconBox,
+        mainBox,
+        followingsFollowersList,
+        followingFollowerButton,
+        followingFollowerList,
+        profileButton,
+        footerBox,
+        avatarBox,
+        textFooter,
+        closeButton,
+    } = useStyles().classes
+
     return (
-        <Box sx={{ overflow: 'hidden', displaywidth: '20vw'}}>
-            <Box sx={{height: '10vh'}}>
-                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
+        <Box className={menuBox}>
+            <Box className={closeBox}>
+                <Box className={leftIconBox}>
                     <IconButton onClick={props.handleDrawerClose}>
                         <ChevronLeftIcon />
                     </IconButton>
                 </Box>
                 <Divider />
             </Box>
-            <Box sx={{height:'80vh'}}>
-                <List component='nav' sx={{paddingTop: '0', height: '90vh'}}>
-                    <ListItemButton onClick={props.handleFollowingClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+            <Box className={mainBox}>
+                <List component='nav' className={followingsFollowersList}>
+                    <ListItemButton className={followingFollowerButton} onClick={props.handleFollowingClick} >
                         Following
                         <ListItemIcon>
                             {props.followingOpen? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </ListItemIcon>
                     </ListItemButton>
                     <Collapse in={props.followingOpen} timeout='auto' unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component='div' disablePadding>
+                        <List className={followingFollowerList} component='div' disablePadding>
                             {followings.map((following, index) => (
                                 (index === (followings.length - 1)) 
                                 ? 
-                                <ListItemButton ref={followingRef} key={following.email} onClick={() => props.navigateToProfile(following.email)} sx={{ pl: 4 }}>
+                                <ListItemButton className={profileButton} ref={followingRef} key={following.email} onClick={() => props.navigateToProfile(following.email)}>
                                     <ListItemAvatar>
                                         <Avatar src={following.profilePictureUrl}/>
                                     </ListItemAvatar>
                                     <ListItemText primary={following.email} />
                                 </ListItemButton>
                                 :
-                                <ListItemButton key={following.email} onClick={() => props.navigateToProfile(following.email)} sx={{ pl: 4 }}>
+                                <ListItemButton className={profileButton} key={following.email} onClick={() => props.navigateToProfile(following.email)}>
                                     <ListItemAvatar>
                                         <Avatar src={following.profilePictureUrl}/>
                                     </ListItemAvatar>
@@ -63,25 +133,25 @@ const SideMenu = (props: sideMenuProps) => {
                                 </ListItemButton>))}
                         </List>
                     </Collapse>
-                    <ListItemButton onClick={props.handleFollowersClick} sx={{paddingRight: '0', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem'}}>
+                    <ListItemButton className={followingFollowerButton} onClick={props.handleFollowersClick}>
                         Followers
                         <ListItemIcon>
                             {props.followersOpen ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </ListItemIcon>
                     </ListItemButton>
                     <Collapse in={props.followersOpen} timeout="auto" unmountOnExit>
-                        <List sx={{overflowY: 'auto', maxHeight: '65vh'}} component="div" disablePadding>
+                        <List className={followingFollowerList} component="div" disablePadding>
                             {followers.map((follower, index) => (
                                 (index === (followers.length - 1))
                                 ?
-                                <ListItemButton ref={followersRef} key={follower.email} onClick={() => props.navigateToProfile(follower.email)} sx={{ pl: 4 }}>
+                                <ListItemButton ref={followersRef} className={profileButton} key={follower.email} onClick={() => props.navigateToProfile(follower.email)}>
                                     <ListItemAvatar>
                                         <Avatar src={follower.profilePictureUrl}/> 
                                     </ListItemAvatar>
                                     <ListItemText primary={ follower.email} />
                                 </ListItemButton>
                                 :
-                                <ListItemButton key={follower.email} onClick={() => props.navigateToProfile(follower.email)} sx={{ pl: 4 }}>
+                                <ListItemButton className={profileButton} key={follower.email} onClick={() => props.navigateToProfile(follower.email)}>
                                     <ListItemAvatar>
                                         <Avatar src={follower.profilePictureUrl}/> 
                                     </ListItemAvatar>
@@ -91,25 +161,16 @@ const SideMenu = (props: sideMenuProps) => {
                     </Collapse>
                 </List>
             </Box>
-            <Box sx={{height: '10vh'}}>
+            <Box className={footerBox}>
                 <Divider/>
-                <Box
-                sx={{
-                    display: 'flex',
-                    gap: 1,
-                    p: 1.5,
-                    pb: 2,
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                }}
-                >
+                <Box className={avatarBox}>
                     <Avatar src={profilePicture}/>
-                    <div>
+                    <Box className={textFooter}>
                         <Typography>{user?.firstName} {user?.lastName}</Typography>
-                        <Button onClick={props.handleLogout} variant='text' size='small' sx={{color: 'black'}}>
+                        <Button className={closeButton} onClick={props.handleLogout} variant='text' size='small'>
                             Logout
                         </Button>
-                    </div>
+                    </Box>
                 </Box>
             </Box>
         </Box>
