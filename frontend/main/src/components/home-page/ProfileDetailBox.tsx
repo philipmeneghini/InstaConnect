@@ -5,7 +5,7 @@ import { Avatar, Box, Button, Grid, IconButton, List, ListItemAvatar, ListItemBu
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { useNavigate } from 'react-router-dom'
 import { Paths } from '../../utils/Constants'
-import useFollowers from '../../hooks/useFollowers'
+import useLazyProfiles from '../../hooks/useLazyProfiles'
 
 interface ProfileDetailProps {
     profile: UserModel
@@ -17,8 +17,8 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
 
     const [ menuSelection, setMenuSelection ] = useState<string>('followers')
 
-    const [ followers ] = useFollowers(props?.profile?.followers, true)
-    const [ following ] = useFollowers(props?.profile?.followers, true)
+    const [ followersRef, followers ] = useLazyProfiles('Failed to load followers!', 10, props?.profile?.followers ?? [])
+    const [ followingRef, followings ] = useLazyProfiles('Failed to load following!', 10, props?.profile?.following ?? [])
 
     const navigate = useNavigate()
 
@@ -86,10 +86,19 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                     <Box sx={{overflowY: 'auto', maxHeight: '30vh'}}>
                         <TabPanel value='followers'>
                             <List sx={{ maxHeight: '65vh'}} component="div" disablePadding>
-                                {followers ? followers.map( (follower) => (
+                                {followers ? followers.map( (follower, index) => (
+                                    (index === (followers.length - 1))
+                                    ?
+                                    <ListItemButton ref={followersRef} key={follower?.email} onClick={() => navigateToProfile(follower?.email)} sx={{ pl: 4 }}>
+                                        <ListItemAvatar>
+                                            <Avatar src={follower?.profilePictureUrl}/>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={follower?.email} />
+                                    </ListItemButton>
+                                    :
                                     <ListItemButton key={follower?.email} onClick={() => navigateToProfile(follower?.email)} sx={{ pl: 4 }}>
                                         <ListItemAvatar>
-                                            <Avatar src={follower?.profilePicture}/>
+                                            <Avatar src={follower?.profilePictureUrl}/>
                                         </ListItemAvatar>
                                         <ListItemText primary={follower?.email} />
                                     </ListItemButton>
@@ -98,10 +107,19 @@ export const ProfileDetailBox = ( props: ProfileDetailProps ) => {
                         </TabPanel>
                         <TabPanel value='following'>
                         <List sx={{ maxHeight: '65vh'}} component="div" disablePadding>
-                                {following ? following.map( (following) => (
+                                {followings ? followings.map( (following, index) => (
+                                    (index === (followings.length - 1))
+                                    ?
+                                    <ListItemButton ref={followingRef} key={following?.email} onClick={() => navigateToProfile(following?.email)} sx={{ pl: 4 }}>
+                                        <ListItemAvatar>
+                                            <Avatar src={following?.profilePictureUrl}/>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={following?.email} />
+                                    </ListItemButton>
+                                    :
                                     <ListItemButton key={following?.email} onClick={() => navigateToProfile(following?.email)} sx={{ pl: 4 }}>
                                         <ListItemAvatar>
-                                            <Avatar src={following?.profilePicture}/>
+                                            <Avatar src={following?.profilePictureUrl}/>
                                         </ListItemAvatar>
                                         <ListItemText primary={following?.email} />
                                     </ListItemButton>

@@ -1,10 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { ToastContext } from '../context-provider/ToastProvider'
-import { useInView } from 'react-intersection-observer'
-import { _apiClient } from '../../App'
+import React from 'react'
 import { Avatar, List, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
-import { UserModel } from '../../api/Client'
 import { makeStyles } from 'tss-react/mui'
+import useLazyProfiles from '../../hooks/useLazyProfiles'
 
 const useStyles = makeStyles()(
     () => ({
@@ -23,46 +20,17 @@ interface LikesProps {
 }
 
 const Likes = (props: LikesProps) => {
-    const [ likes, setLikes ] = useState<Set<UserModel>>(new Set<UserModel>())
-    const [ hasMore, setHasMore ] = useState<boolean>(true)
-    const { openToast } = useContext(ToastContext)
-
-    const {ref, inView } = useInView()
+    
+    const [ ref, likes ] = useLazyProfiles('Failed to load likes!', 5, props.likes ?? [])
 
     const { likesBox,
             listItem } = useStyles().classes
-
-    useEffect(() => {
-        const getUsers = async () => {
-            try {
-                if (hasMore && (inView || likes.size === 0)) {
-                    let index: number = likes.size + 5 > props.likes.length ? props.likes.length : likes.size + 5
-                    let users = await _apiClient.usersGET(props.likes.slice(likes.size, index))
-                    let newUsers: Set<UserModel> = new Set<UserModel> ([...likes])
-                    users.forEach(u => newUsers.add(u))
-                    setLikes(newUsers)
-
-                    if (index >= props.likes.length) {
-                        setHasMore(false)
-                    }
-                }
-            }
-            catch (err: any) {
-                if (err.status !== 404) {
-                    openToast(false, 'failed to load likes')
-                }
-                setHasMore(false)
-            }
-        }
-        
-        getUsers()
-    }, [props, hasMore, inView, openToast])
     
     return (
     <>
         <List className={likesBox} component='div' disablePadding>
-            {[...likes].map( (like, index) => (
-                (index === (likes.size-1))
+            {likes.map( (like, index) => (
+                (index === (likes.length -1))
                 ?
                 <ListItemButton ref={ref} key={like?.email} className={listItem} onClick={() => props.navigateToProfile(like?.email)}>
                     <ListItemAvatar>
