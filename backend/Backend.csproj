@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..\InstaConnect2\NewSolution</DockerfileContext>
+    <DockerfileContext>InstaSolution.sln</DockerfileContext>
     <UserSecretsId>55d17dc1-37f6-4d9b-82ef-18fcd81bc872</UserSecretsId>
   </PropertyGroup>
 

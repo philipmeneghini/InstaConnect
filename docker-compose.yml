@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - 80:80
+      - 443:443
+  frontend:
+    build: ./frontend/main
+    ports:
+      - 3000:3000
