@@ -10,3 +10,9 @@ services:
     build: ./frontend/main
     ports:
       - 3000:3000
+  database:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
