@@ -1,18 +1,28 @@
 version: "3"
-
 services:
   backend:
     build: ./backend
     ports:
       - 80:80
       - 443:443
+    depends_on:
+      - mongo
+    networks:
+     - ic_app
   frontend:
     build: ./frontend/main
     ports:
       - 3000:3000
-  database:
+    networks:
+      - ic_app
+  mongo:
     image: mongo
     container_name: mongodb
     restart: always
     ports:
       - 27017:27017
+    networks:
+      - ic_app
+networks:
+  ic_app:
+    driver: bridge
