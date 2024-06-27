@@ -1,0 +1,36 @@
+version: "3"
+services:
+  backend:
+    build: ./backend
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - mongo
+    networks:
+     - ic_app
+  frontend:
+    build: ./frontend/main
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_API_URL=http://localhost:80
+    networks:
+      - ic_app
+  mongo:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    networks:
+      - ic_app
+    volumes:
+      - mongo_data_container:/data/db
+networks:
+  ic_app:
+    driver: bridge
+volumes:
+  mongo_data_container:
