@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
@@ -10,7 +10,8 @@ import CreatePostBox from '../../components/home-page/CreatePostBox'
 import EditProfile from '../../components/home-page/EditProfile'
 import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
 import useProfilePicture from '../../hooks/useProfilePicture'
-import { dateCreatedDescendingContents } from '../../utils/Sorters'
+import useLazyContents from '../../hooks/useLazyContents'
+import { UserContext } from '../../components/context-provider/UserProvider'
 
 const postBoxStyle = {
     position: 'absolute',
@@ -26,9 +27,8 @@ const postBoxStyle = {
 }
 
 export const ProfilePage = () => {
-    const [ user, setUser ] = useState<UserModel | null>()
     const [ profile, setProfile ] = useState<UserModel | null>()
-    const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
+    //const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
@@ -37,35 +37,28 @@ export const ProfilePage = () => {
 
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
+    const { user } = useContext(UserContext)
+    const [ ref, contents ] = useLazyContents('Failed to load posts!', 5, user !== undefined ? [user?.email] : [])
 
     useEffect(() => {
-        const getUserProfileAndContents = async(jwt: string | null | undefined) => {
-            if (jwt) {
-                try {
-                    const jwtResponse = await _apiClient.verifyToken(jwt)
-                    const user = await _apiClient.userGET(jwtResponse.email)
-                    setUser(user)
-                    let profile: UserModel
-                    if (searchParams.get('email')) {
-                        profile = await _apiClient.userGET(searchParams.get('email') as string)
-                    }
-                    else {
-                        profile = user
-                    }
-                    setProfile(profile)
-                    const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-                    const orderedContents = contents.sort(dateCreatedDescendingContents)
-                    setContents(orderedContents)
+        const getUserProfile = async() => {
+            try {
+                let profile: UserModel
+                if (searchParams.get('email')) {
+                    profile = await _apiClient.userGET(searchParams.get('email') as string)
                 }
-                catch {
-                    setUser(null)
-                    setContents(new Array<ContentModel>())
+                else {
+                    profile = user as UserModel
                 }
+                setProfile(profile)
+            }
+            catch {
+                setProfile(null)
             }
         }
-        getUserProfileAndContents(localStorage.getItem('token'))
+        getUserProfile()
 
-    }, [ searchParams ])
+    }, [ user, searchParams ])
 
     useEffect(() => {
         if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
@@ -76,10 +69,10 @@ export const ProfilePage = () => {
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = async () => { 
-        if (profile) {
+        /*if (profile) {
             const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
             setContents(contents)
-        }
+        }*/
         setContent(null)
     }
 
@@ -101,9 +94,7 @@ export const ProfilePage = () => {
                         profile?.followers?.push(user?.email)
                 }
 
-                const res = await _apiClient.usersPUT( [ user, profile ] )
-                setUser(res[0])
-                setProfile(res[1])
+                await _apiClient.usersPUT( [ user, profile ] )
             }
         }
         catch {
@@ -113,10 +104,10 @@ export const ProfilePage = () => {
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
     const handleCreatePostClose = async () => {
-        if (profile) {
+        /*if (profile) {
             const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
             setContents(contents)
-        }
+        }*/
         setCreatePostOpen(false) 
     }
 
@@ -190,8 +181,18 @@ export const ProfilePage = () => {
             </Grid>}
             </div>
             <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
-                {contents.map((content) => (
-                    <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                {contents.map((content, index) => (
+                    index === contents.length -1 
+                    ? <ImageListItem ref={ref} sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                    <img
+                        style={{height: '164'}}
+                        src={content.mediaUrl}
+                        srcSet={content.mediaUrl}
+                        alt={content.caption}
+                        loading='lazy'
+                    />
+                    </ImageListItem>
+                    : <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
                         <img
                             style={{height: '164'}}
                             src={content.mediaUrl}
