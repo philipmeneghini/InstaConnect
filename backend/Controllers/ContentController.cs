@@ -17,6 +17,12 @@ namespace InstaConnect.Controllers
             _contentService = contentService;
         }
 
+        [HttpGet("ContentsAmount")]
+        public async Task<ActionResult<long>> GetContentsAmount([FromQuery] string? email)
+        {
+            return await _contentService.GetNumberOfContentsAsync(email);
+        }
+
         [HttpGet("Content")]
         public async Task<ActionResult<ContentModel>> GetContent([FromQuery] string? id)
         {

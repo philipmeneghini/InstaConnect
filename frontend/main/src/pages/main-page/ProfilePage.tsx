@@ -28,6 +28,7 @@ const postBoxStyle = {
 
 export const ProfilePage = () => {
     const [ profile, setProfile ] = useState<UserModel | null>()
+    const [ numberOfPosts, setNumberOfPosts ] = useState<number>()
     //const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
@@ -38,7 +39,7 @@ export const ProfilePage = () => {
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
     const { user } = useContext(UserContext)
-    const [ ref, contents ] = useLazyContents('Failed to load posts!', 5, user !== undefined ? [user?.email] : [])
+    const [ ref, contents ] = useLazyContents('Failed to load posts!', 10, profile !== null  && profile !== undefined ? [profile?.email as string] : [])
 
     useEffect(() => {
         const getUserProfile = async() => {
@@ -59,6 +60,16 @@ export const ProfilePage = () => {
         getUserProfile()
 
     }, [ user, searchParams ])
+
+    useEffect(() => {
+        const getNumberOfPosts = async() => {
+            if (profile !== undefined) {
+                const res = await _apiClient.contentsAmount(profile?.email)
+                setNumberOfPosts(res)
+            }
+        }
+        getNumberOfPosts()
+    }, [profile])
 
     useEffect(() => {
         if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
@@ -133,7 +144,7 @@ export const ProfilePage = () => {
                 <Grid container sx={{ maxWidth: '500px' }}>
                     <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
                         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
-                            <Typography> {contents.length} </Typography>
+                            <Typography> {numberOfPosts} </Typography>
                             <Typography> Posts </Typography>
                         </div>
                     </Grid>

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { ContentModel, UserModel } from '../api/Client'
+import { ContentModel } from '../api/Client'
 import { useInView } from 'react-intersection-observer'
 import { ToastContext } from '../components/context-provider/ToastProvider'
 import { _apiClient } from '../App'
@@ -13,10 +13,9 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
     const { openToast } = useContext(ToastContext)
 
     const {ref, inView } = useInView()
-
     
     useEffect(() => {
-        if (hasMore && inView){
+        if (hasMore && inView  && posts.length !== 0){
             setLastDate(posts[posts.length -1].dateCreated)
         }
     }, [hasMore, inView])
@@ -26,7 +25,6 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
             try {
                 if (hasMore && (inView || posts.length === 0)) {
                     if (emails.length === 0) {
-                        setHasMore(false)
                         return
                     }
                     let contents = await _apiClient.contentsGET(undefined, emails, lastDate, lazyLoad)
@@ -44,7 +42,7 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
         }
         
         getContents()
-    }, [posts, hasMore, inView, openToast])
+    }, [lastDate, hasMore, inView, openToast])
 
     return [ ref, posts ]
 }

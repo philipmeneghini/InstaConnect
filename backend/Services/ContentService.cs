@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using Amazon.SimpleEmail.Model;
 
 namespace Backend.Services
 {
@@ -66,6 +67,24 @@ namespace Backend.Services
             content.MediaUrl = url;
 
             return content;
+        }
+
+        public long GetNumberOfContents(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+
+            FilterDefinition<ContentModel> filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
+            return GetAmount(filter);
+        }
+
+        public async Task<long> GetNumberOfContentsAsync(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+
+            FilterDefinition<ContentModel> filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
+            return await GetAmountAsync(filter);
         }
 
         public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, DateTime? lastDate = null, int? limit = null)
