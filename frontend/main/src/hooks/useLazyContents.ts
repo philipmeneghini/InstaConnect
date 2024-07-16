@@ -9,24 +9,18 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
 
     const [ posts, setPosts ] = useState<ContentModel[]>([])
     const [ hasMore, setHasMore ] = useState<boolean>(true)
-    const [ lastDate, setLastDate ] = useState<Date>()
     const { openToast } = useContext(ToastContext)
 
     const {ref, inView } = useInView()
-    
-    useEffect(() => {
-        if (hasMore && inView  && posts.length !== 0){
-            setLastDate(posts[posts.length -1].dateCreated)
-        }
-    }, [hasMore, inView])
 
     useEffect(() => {
         const getContents = async () => {
             try {
-                if (hasMore && (inView || posts.length === 0)) {
+                if (hasMore && inView) {
                     if (emails.length === 0) {
                         return
                     }
+                    const lastDate: Date | undefined = posts.length === 0 ? undefined : posts[posts.length-1].dateCreated
                     let contents = await _apiClient.contentsGET(undefined, emails, lastDate, lazyLoad)
                     let newContents = [...posts]
                     newContents.push(...contents)
@@ -42,7 +36,7 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
         }
         
         getContents()
-    }, [lastDate, hasMore, inView, openToast])
+    }, [emails, posts, lazyLoad, failureMessage, hasMore, inView, openToast])
 
     return [ ref, posts ]
 }

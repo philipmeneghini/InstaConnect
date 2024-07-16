@@ -192,18 +192,8 @@ export const ProfilePage = () => {
             </Grid>}
             </div>
             <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
-                {contents.map((content, index) => (
-                    index === contents.length -1 
-                    ? <ImageListItem ref={ref} sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
-                    <img
-                        style={{height: '164'}}
-                        src={content.mediaUrl}
-                        srcSet={content.mediaUrl}
-                        alt={content.caption}
-                        loading='lazy'
-                    />
-                    </ImageListItem>
-                    : <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                {contents.map((content) => (
+                    <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
                         <img
                             style={{height: '164'}}
                             src={content.mediaUrl}
@@ -214,6 +204,7 @@ export const ProfilePage = () => {
                     </ImageListItem>
                 ))}
             </ImageList>
+            <div ref={ref}></div>
             <Modal
             open={content ? true : false}
             onClose={handleClose}
