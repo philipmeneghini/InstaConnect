@@ -16,6 +16,7 @@ interface ContentPostValues {
 }
 
 interface CreatePostProps {
+    addPost: (post: ContentModel) => void
     handleClose: () => void
 }
 
@@ -65,6 +66,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
             toastContext.openToast(true, 'Post Successfully Created!')
+            props.addPost(contentResponse)
             setTimeout(() => 
             { handleSuccessfulClose(resetForm) }, 
             3000)

@@ -39,7 +39,7 @@ export const ProfilePage = () => {
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
     const { user } = useContext(UserContext)
-    const [ ref, contents ] = useLazyContents('Failed to load posts!', 10, profile !== null  && profile !== undefined ? [profile?.email as string] : [])
+    const [ ref, contents, setContents ] = useLazyContents('Failed to load posts!', 10, profile !== null  && profile !== undefined ? [profile?.email as string] : [])
 
     useEffect(() => {
         const getUserProfile = async() => {
@@ -80,10 +80,6 @@ export const ProfilePage = () => {
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = async () => { 
-        /*if (profile) {
-            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-            setContents(contents)
-        }*/
         setContent(null)
     }
 
@@ -114,12 +110,13 @@ export const ProfilePage = () => {
     }
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
-    const handleCreatePostClose = async () => {
-        /*if (profile) {
-            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-            setContents(contents)
-        }*/
+    const handleCreatePostClose = () => {
         setCreatePostOpen(false) 
+    }
+
+    const addPost = (post: ContentModel) => {
+        setContents([post, ...contents])
+        setNumberOfPosts(prev => prev === undefined ? 1 : prev + 1)
     }
 
     const handleEditProfileOpen = () => { setEditProfileOpen(true) }
@@ -222,7 +219,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <CreatePostBox handleClose={handleCreatePostClose}/>
+                    <CreatePostBox addPost={addPost} handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>
             <Modal

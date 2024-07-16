@@ -5,7 +5,9 @@ import { ToastContext } from '../components/context-provider/ToastProvider'
 import { _apiClient } from '../App'
 
 const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: string[])
-                        : [ ref: (node?: Element | null | undefined) => void, posts: ContentModel[]] => {
+                        : [ ref: (node?: Element | null | undefined) => void, 
+                            posts: ContentModel[], 
+                            setPosts: React.Dispatch<React.SetStateAction<ContentModel[]>>] => {
 
     const [ posts, setPosts ] = useState<ContentModel[]>([])
     const [ hasMore, setHasMore ] = useState<boolean>(true)
@@ -38,7 +40,7 @@ const useLazyProfiles = (failureMessage: string, lazyLoad: number, emails: strin
         getContents()
     }, [emails, posts, lazyLoad, failureMessage, hasMore, inView, openToast])
 
-    return [ ref, posts ]
+    return [ ref, posts, setPosts ]
 }
 
 export default useLazyProfiles
