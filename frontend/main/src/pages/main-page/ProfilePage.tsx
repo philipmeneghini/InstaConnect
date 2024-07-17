@@ -12,6 +12,74 @@ import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
 import useProfilePicture from '../../hooks/useProfilePicture'
 import useLazyContents from '../../hooks/useLazyContents'
 import { UserContext } from '../../components/context-provider/UserProvider'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        headerBox: {
+            marginTop: '12vh', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            flexDirection: 'column', 
+            width: 'auto', 
+            alignItems: 'center'
+        },
+        profilePictureBox: { 
+            paddingBottom: '40px'
+        },
+        profilePictureAvatar: {
+            width: 100, 
+            height: 100
+        },
+        profileName: {
+            paddingBottom: '25px'
+        },
+        infoGrid: {
+            maxWidth: '500px'
+        },
+        infoItemGrid: {
+            display: 'flex', 
+            justifyContent: 'center',
+        },
+        infoItemBox: {
+            display: 'flex', 
+            justifyContent: 'center',
+            flexDirection: 'column'
+        },
+        actionButtonGrid: {
+            maxWidth: '700px'
+        },
+        actionButtonItem: {
+            flexGrow: 1, 
+            display: 'flex', 
+            justifyContent: 'center'
+        },
+        actionButton: {
+            borderRadius: 28
+        },
+        imageList: {
+            maxWidth: '100vw'
+        },
+        imageListItem: {
+            maxHeight: '164', 
+            overflow: 'hidden'
+        },
+        image: {
+            height: '164'
+        },
+        /*postBoxStyle: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '40vw',
+            maxHeight: '95vh',
+            bgcolor: 'white',
+            border: '1px solid #000',
+            p: '2vh',
+            overflowY: 'auto',
+        }*/
+  }))
 
 const postBoxStyle = {
     position: 'absolute',
@@ -29,7 +97,6 @@ const postBoxStyle = {
 export const ProfilePage = () => {
     const [ profile, setProfile ] = useState<UserModel | null>()
     const [ numberOfPosts, setNumberOfPosts ] = useState<number>()
-    //const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
     const [ content, setContent ] = useState<ContentModel | null>(null)
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
@@ -39,7 +106,9 @@ export const ProfilePage = () => {
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
     const { user } = useContext(UserContext)
-    const [ ref, contents, setContents ] = useLazyContents('Failed to load posts!', 10, profile !== null  && profile !== undefined ? [profile?.email as string] : [])
+    const [ ref, contents, setContents ] = useLazyContents('Failed to load posts!', 
+                                                            10, 
+                                                            profile !== null  && profile !== undefined ? [profile?.email as string] : [])
 
     useEffect(() => {
         const getUserProfile = async() => {
@@ -77,6 +146,23 @@ export const ProfilePage = () => {
         else
             setIsFollowing(false)
     }, [ user, profile ])
+
+    const {
+        headerBox,
+        profilePictureBox,
+        profilePictureAvatar,
+        profileName,
+        infoGrid,
+        infoItemGrid,
+        infoItemBox,
+        actionButtonGrid,
+        actionButtonItem,
+        actionButton,
+        imageList,
+        imageListItem,
+        image,
+        //postBoxStyle
+    } = useStyles().classes
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = async () => { 
@@ -129,32 +215,32 @@ export const ProfilePage = () => {
         user ? 
         <div>
             <Header user={user}/>
-            <div style={{ marginTop: '12vh', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
-                <div style={{ paddingBottom: '40px' }}>
-                    <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
+            <div className={headerBox}>
+                <div className={profilePictureBox}>
+                    <Avatar src={profilePicture}  className={profilePictureAvatar}/>
                 </div>
-                <div style={{ paddingBottom: '25px' }}>
+                <div className={profileName}>
                     <Typography>
                         {profile?.firstName} {profile?.lastName}
                     </Typography>
                 </div>
-                <Grid container sx={{ maxWidth: '500px' }}>
-                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                <Grid container className={infoGrid}>
+                    <Grid item xs ={5} className={infoItemGrid}>
+                        <div className={infoItemBox}>
                             <Typography> {numberOfPosts} </Typography>
                             <Typography> Posts </Typography>
                         </div>
                     </Grid>
-                    <Grid item xs ={2} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                    <Grid item xs ={2} className={infoItemGrid}>
+                        <div className={infoItemBox}>
                             <Typography> 
                                 {profile?.followers ? profile?.followers?.length : 0 } 
                             </Typography>
                             <Typography> Followers </Typography>
                         </div>
                     </Grid>
-                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                    <Grid item xs ={5} className={infoItemGrid}>
+                        <div className={infoItemBox}>
                             <Typography> 
                                 {profile?.following ? profile?.following?.length : 0 } 
                             </Typography>
@@ -163,36 +249,36 @@ export const ProfilePage = () => {
                     </Grid>
                 </Grid>
                 {user === profile ?
-                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
-                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                        <Button variant='contained' onClick={handleCreatePost} sx={{ borderRadius: 28 }}> 
+                <Grid container mt={2} className={actionButtonGrid}>
+                    <Grid item xs ={6} className={actionButtonItem}>
+                        <Button variant='contained' onClick={handleCreatePost} className={actionButton}> 
                             Create Post
                         </Button>
                     </Grid>
-                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                        <Button variant='contained' sx={{ borderRadius: 28 }} onClick={handleEditProfileOpen}> 
+                    <Grid item xs ={6} className={actionButtonItem}>
+                        <Button variant='contained' className={actionButton} onClick={handleEditProfileOpen}> 
                             Edit Profile
                         </Button>
                     </Grid>
                 </Grid> : 
-                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
-                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' onClick={handleFollowButton} sx={{ borderRadius: 28 }}> 
+                <Grid container mt={2} className={actionButtonGrid}>
+                <Grid item xs ={6} className={actionButtonItem}>
+                    <Button variant='contained' onClick={handleFollowButton} className={actionButton}> 
                         {isFollowing ? 'UnFollow' : 'Follow'}
                     </Button>
                 </Grid>
-                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' onClick={handleProfileDetailOpen} sx={{ borderRadius: 28 }}> 
+                <Grid item xs ={6} className={actionButtonItem}>
+                    <Button variant='contained' onClick={handleProfileDetailOpen} className={actionButton}> 
                         Profile
                     </Button>
                 </Grid>
             </Grid>}
             </div>
-            <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
+            <ImageList className={imageList} cols={9} rowHeight={164}>
                 {contents.map((content) => (
-                    <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                    <ImageListItem className={imageListItem} key={content.mediaUrl} onClick={() => handleOpen(content)}>
                         <img
-                            style={{height: '164'}}
+                            className={image}
                             src={content.mediaUrl}
                             srcSet={content.mediaUrl}
                             alt={content.caption}
