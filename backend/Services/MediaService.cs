@@ -5,7 +5,6 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using Backend.Services.Interfaces;
 using Backend.Models.Config;
-using Util.Exceptions;
 using Microsoft.Extensions.Options;
 using Util.Constants;
 using Util.MediaType;

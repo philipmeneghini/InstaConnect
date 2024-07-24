@@ -11,7 +11,6 @@ using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
-using Amazon.SimpleEmail.Model;
 
 namespace Backend.Services
 {
