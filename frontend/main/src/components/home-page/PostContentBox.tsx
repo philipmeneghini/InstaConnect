@@ -42,6 +42,7 @@ const interactionToolbarStyle = {
 interface PostContentProps {
     userContent: UserContents
     handleClose?: (() => void) | undefined
+    deletePost?: ((id: string) => void) | undefined
 }
 
 export const PostContentBox = ( props: PostContentProps ) => {
@@ -162,8 +163,10 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const handleDeleteModal = async () => {
         try {
-           await _apiClient.contentDELETE(props?.userContent?.content?.id)
+            await _apiClient.contentDELETE(props?.userContent?.content?.id)
             toastContext.openToast(true, 'Successfully deleted post!')
+            if (props?.deletePost)
+                props?.deletePost(props?.userContent?.content?.id as string)
         }
         catch(err: any) {
             toastContext.openToast(false, err.message)

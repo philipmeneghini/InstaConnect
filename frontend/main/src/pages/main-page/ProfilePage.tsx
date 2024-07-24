@@ -17,7 +17,7 @@ import { makeStyles } from 'tss-react/mui'
 const useStyles = makeStyles()(
     () => ({
         headerBox: {
-            marginTop: '12vh', 
+            marginTop: '85px', 
             display: 'flex', 
             justifyContent: 'center', 
             flexDirection: 'column', 
@@ -67,18 +67,6 @@ const useStyles = makeStyles()(
         image: {
             height: '164'
         },
-        /*postBoxStyle: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '40vw',
-            maxHeight: '95vh',
-            bgcolor: 'white',
-            border: '1px solid #000',
-            p: '2vh',
-            overflowY: 'auto',
-        }*/
   }))
 
 const postBoxStyle = {
@@ -161,7 +149,6 @@ export const ProfilePage = () => {
         imageList,
         imageListItem,
         image,
-        //postBoxStyle
     } = useStyles().classes
 
     const handleOpen = (content: ContentModel) => { setContent(content) }
@@ -203,6 +190,15 @@ export const ProfilePage = () => {
     const addPost = (post: ContentModel) => {
         setContents([post, ...contents])
         setNumberOfPosts(prev => prev === undefined ? 1 : prev + 1)
+    }
+
+    
+    const handleDeletePost = (id: string) => {
+        let newContents: ContentModel[] = [...contents]
+        const ind = newContents.findIndex(c => c.id === id)
+        newContents.splice(ind, 1)
+        setContents(newContents)
+        setNumberOfPosts(prev => prev === undefined ? 0 : prev -1)
     }
 
     const handleEditProfileOpen = () => { setEditProfileOpen(true) }
@@ -274,17 +270,20 @@ export const ProfilePage = () => {
                 </Grid>
             </Grid>}
             </div>
-            <ImageList className={imageList} cols={9} rowHeight={164}>
-                {contents.map((content) => (
-                    <ImageListItem className={imageListItem} key={content.mediaUrl} onClick={() => handleOpen(content)}>
-                        <img
-                            className={image}
-                            src={content.mediaUrl}
-                            srcSet={content.mediaUrl}
-                            alt={content.caption}
-                            loading='lazy'
-                        />
-                    </ImageListItem>
+            <ImageList className={imageList} cols={8} rowHeight={164}>
+                {contents.map((content, index) => (
+                    <>
+                        <ImageListItem className={imageListItem} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                            <img
+                                className={image}
+                                src={content.mediaUrl}
+                                srcSet={content.mediaUrl}
+                                alt={content.caption}
+                                loading='lazy'
+                            />
+                        </ImageListItem>
+                        {(index === contents.length-1) ? <div ref={ref}></div> : <></>}
+                    </>
                 ))}
             </ImageList>
             <div ref={ref}></div>
@@ -295,7 +294,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} handleClose={handleClose}/>
+                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} handleClose={handleClose} deletePost={handleDeletePost}/>
                 </Box>
             </Modal>
             <Modal

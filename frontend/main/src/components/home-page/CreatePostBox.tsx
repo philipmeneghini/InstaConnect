@@ -88,7 +88,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                         <Avatar src={user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
                             <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {user?.firstName} {user?.lastName} </Typography>
                     </Box>
-                    <Button variant='contained' onClick={props?.handleClose}> Close </Button>
+                    <Button variant='contained' onClick={() => props?.handleClose()}> Close </Button>
                 </Box>
                 <Formik initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
                     {formik => (
