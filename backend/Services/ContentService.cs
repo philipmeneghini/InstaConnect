@@ -68,6 +68,24 @@ namespace Backend.Services
             return content;
         }
 
+        public long GetNumberOfContents(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+
+            FilterDefinition<ContentModel> filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
+            return GetAmount(filter);
+        }
+
+        public async Task<long> GetNumberOfContentsAsync(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new InstaBadRequestException(ApplicationConstants.EmailEmpty);
+
+            FilterDefinition<ContentModel> filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Email, email);
+            return await GetAmountAsync(filter);
+        }
+
         public async Task<List<ContentModel>> GetContentsAsync(List<string>? ids, List<string>? emails, DateTime? lastDate = null, int? limit = null)
         {
             if ((emails == null || emails.Count == 0)

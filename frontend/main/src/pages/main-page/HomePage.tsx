@@ -162,7 +162,7 @@ export const HomePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box className={modalBox}>
-                    <CreatePostBox handleClose={handleCreatePostClose}/>
+                    <CreatePostBox addPost={() => {}} handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>
         </div> :

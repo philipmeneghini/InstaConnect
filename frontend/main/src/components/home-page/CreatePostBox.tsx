@@ -16,6 +16,7 @@ interface ContentPostValues {
 }
 
 interface CreatePostProps {
+    addPost: (post: ContentModel) => void
     handleClose: () => void
 }
 
@@ -65,6 +66,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                             values.multiMediaContent, 
                             { headers: { 'Content-Type': values.multiMediaContent.type } })
             toastContext.openToast(true, 'Post Successfully Created!')
+            props.addPost(contentResponse)
             setTimeout(() => 
             { handleSuccessfulClose(resetForm) }, 
             3000)
@@ -86,7 +88,7 @@ export const CreatePostBox = ( props: CreatePostProps ) => {
                         <Avatar src={user?.profilePictureUrl} sx={{ width: '5vh', height: '5vh'}}/>
                             <Typography sx={{margin: '0.5vh 0 0.5vh 1vh'}}> {user?.firstName} {user?.lastName} </Typography>
                     </Box>
-                    <Button variant='contained' onClick={props?.handleClose}> Close </Button>
+                    <Button variant='contained' onClick={() => props?.handleClose()}> Close </Button>
                 </Box>
                 <Formik initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
                     {formik => (

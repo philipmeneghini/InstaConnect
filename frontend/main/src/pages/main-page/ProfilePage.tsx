@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
@@ -10,7 +10,64 @@ import CreatePostBox from '../../components/home-page/CreatePostBox'
 import EditProfile from '../../components/home-page/EditProfile'
 import ProfileDetailBox from '../../components/home-page/ProfileDetailBox'
 import useProfilePicture from '../../hooks/useProfilePicture'
-import { dateCreatedDescendingContents } from '../../utils/Sorters'
+import useLazyContents from '../../hooks/useLazyContents'
+import { UserContext } from '../../components/context-provider/UserProvider'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(
+    () => ({
+        headerBox: {
+            marginTop: '85px', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            flexDirection: 'column', 
+            width: 'auto', 
+            alignItems: 'center'
+        },
+        profilePictureBox: { 
+            paddingBottom: '40px'
+        },
+        profilePictureAvatar: {
+            width: 100, 
+            height: 100
+        },
+        profileName: {
+            paddingBottom: '25px'
+        },
+        infoGrid: {
+            maxWidth: '500px'
+        },
+        infoItemGrid: {
+            display: 'flex', 
+            justifyContent: 'center',
+        },
+        infoItemBox: {
+            display: 'flex', 
+            justifyContent: 'center',
+            flexDirection: 'column'
+        },
+        actionButtonGrid: {
+            maxWidth: '700px'
+        },
+        actionButtonItem: {
+            flexGrow: 1, 
+            display: 'flex', 
+            justifyContent: 'center'
+        },
+        actionButton: {
+            borderRadius: 28
+        },
+        imageList: {
+            maxWidth: '100vw'
+        },
+        imageListItem: {
+            maxHeight: '164', 
+            overflow: 'hidden'
+        },
+        image: {
+            height: '164'
+        },
+  }))
 
 const postBoxStyle = {
     position: 'absolute',
@@ -26,9 +83,8 @@ const postBoxStyle = {
 }
 
 export const ProfilePage = () => {
-    const [ user, setUser ] = useState<UserModel | null>()
     const [ profile, setProfile ] = useState<UserModel | null>()
-    const [ contents, setContents ] = useState<ContentModel[]>(new Array<ContentModel>())
+    const [ numberOfPosts, setNumberOfPosts ] = useState<number>()
     const [ content, setContent ] = useState<ContentModel | null>(null)
     const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
@@ -37,35 +93,40 @@ export const ProfilePage = () => {
 
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
+    const { user } = useContext(UserContext)
+    const [ ref, contents, setContents ] = useLazyContents('Failed to load posts!', 
+                                                            10, 
+                                                            profile !== null  && profile !== undefined ? [profile?.email as string] : [])
 
     useEffect(() => {
-        const getUserProfileAndContents = async(jwt: string | null | undefined) => {
-            if (jwt) {
-                try {
-                    const jwtResponse = await _apiClient.verifyToken(jwt)
-                    const user = await _apiClient.userGET(jwtResponse.email)
-                    setUser(user)
-                    let profile: UserModel
-                    if (searchParams.get('email')) {
-                        profile = await _apiClient.userGET(searchParams.get('email') as string)
-                    }
-                    else {
-                        profile = user
-                    }
-                    setProfile(profile)
-                    const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-                    const orderedContents = contents.sort(dateCreatedDescendingContents)
-                    setContents(orderedContents)
+        const getUserProfile = async() => {
+            try {
+                let profile: UserModel
+                if (searchParams.get('email')) {
+                    profile = await _apiClient.userGET(searchParams.get('email') as string)
                 }
-                catch {
-                    setUser(null)
-                    setContents(new Array<ContentModel>())
+                else {
+                    profile = user as UserModel
                 }
+                setProfile(profile)
+            }
+            catch {
+                setProfile(null)
             }
         }
-        getUserProfileAndContents(localStorage.getItem('token'))
+        getUserProfile()
 
-    }, [ searchParams ])
+    }, [ user, searchParams ])
+
+    useEffect(() => {
+        const getNumberOfPosts = async() => {
+            if (profile !== undefined) {
+                const res = await _apiClient.contentsAmount(profile?.email)
+                setNumberOfPosts(res)
+            }
+        }
+        getNumberOfPosts()
+    }, [profile])
 
     useEffect(() => {
         if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
@@ -74,12 +135,24 @@ export const ProfilePage = () => {
             setIsFollowing(false)
     }, [ user, profile ])
 
+    const {
+        headerBox,
+        profilePictureBox,
+        profilePictureAvatar,
+        profileName,
+        infoGrid,
+        infoItemGrid,
+        infoItemBox,
+        actionButtonGrid,
+        actionButtonItem,
+        actionButton,
+        imageList,
+        imageListItem,
+        image,
+    } = useStyles().classes
+
     const handleOpen = (content: ContentModel) => { setContent(content) }
     const handleClose = async () => { 
-        if (profile) {
-            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-            setContents(contents)
-        }
         setContent(null)
     }
 
@@ -101,9 +174,7 @@ export const ProfilePage = () => {
                         profile?.followers?.push(user?.email)
                 }
 
-                const res = await _apiClient.usersPUT( [ user, profile ] )
-                setUser(res[0])
-                setProfile(res[1])
+                await _apiClient.usersPUT( [ user, profile ] )
             }
         }
         catch {
@@ -112,12 +183,22 @@ export const ProfilePage = () => {
     }
 
     const handleCreatePost = () => { setCreatePostOpen(true) }
-    const handleCreatePostClose = async () => {
-        if (profile) {
-            const contents = await _apiClient.contentsGET(undefined, [ profile?.email ])
-            setContents(contents)
-        }
+    const handleCreatePostClose = () => {
         setCreatePostOpen(false) 
+    }
+
+    const addPost = (post: ContentModel) => {
+        setContents([post, ...contents])
+        setNumberOfPosts(prev => prev === undefined ? 1 : prev + 1)
+    }
+
+    
+    const handleDeletePost = (id: string) => {
+        let newContents: ContentModel[] = [...contents]
+        const ind = newContents.findIndex(c => c.id === id)
+        newContents.splice(ind, 1)
+        setContents(newContents)
+        setNumberOfPosts(prev => prev === undefined ? 0 : prev -1)
     }
 
     const handleEditProfileOpen = () => { setEditProfileOpen(true) }
@@ -130,32 +211,32 @@ export const ProfilePage = () => {
         user ? 
         <div>
             <Header user={user}/>
-            <div style={{ marginTop: '12vh', display: 'flex', justifyContent: 'center', flexDirection: 'column', width: 'auto', alignItems: 'center' }}>
-                <div style={{ paddingBottom: '40px' }}>
-                    <Avatar src={profilePicture}  sx={{ width: 100, height: 100 }}/>
+            <div className={headerBox}>
+                <div className={profilePictureBox}>
+                    <Avatar src={profilePicture}  className={profilePictureAvatar}/>
                 </div>
-                <div style={{ paddingBottom: '25px' }}>
+                <div className={profileName}>
                     <Typography>
                         {profile?.firstName} {profile?.lastName}
                     </Typography>
                 </div>
-                <Grid container sx={{ maxWidth: '500px' }}>
-                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
-                            <Typography> {contents.length} </Typography>
+                <Grid container className={infoGrid}>
+                    <Grid item xs ={5} className={infoItemGrid}>
+                        <div className={infoItemBox}>
+                            <Typography> {numberOfPosts} </Typography>
                             <Typography> Posts </Typography>
                         </div>
                     </Grid>
-                    <Grid item xs ={2} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                    <Grid item xs ={2} className={infoItemGrid}>
+                        <div className={infoItemBox}>
                             <Typography> 
                                 {profile?.followers ? profile?.followers?.length : 0 } 
                             </Typography>
                             <Typography> Followers </Typography>
                         </div>
                     </Grid>
-                    <Grid item xs ={5} sx={{ display: 'flex', justifyContent: 'center'}}>
-                        <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+                    <Grid item xs ={5} className={infoItemGrid}>
+                        <div className={infoItemBox}>
                             <Typography> 
                                 {profile?.following ? profile?.following?.length : 0 } 
                             </Typography>
@@ -164,44 +245,48 @@ export const ProfilePage = () => {
                     </Grid>
                 </Grid>
                 {user === profile ?
-                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
-                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                        <Button variant='contained' onClick={handleCreatePost} sx={{ borderRadius: 28 }}> 
+                <Grid container mt={2} className={actionButtonGrid}>
+                    <Grid item xs ={6} className={actionButtonItem}>
+                        <Button variant='contained' onClick={handleCreatePost} className={actionButton}> 
                             Create Post
                         </Button>
                     </Grid>
-                    <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                        <Button variant='contained' sx={{ borderRadius: 28 }} onClick={handleEditProfileOpen}> 
+                    <Grid item xs ={6} className={actionButtonItem}>
+                        <Button variant='contained' className={actionButton} onClick={handleEditProfileOpen}> 
                             Edit Profile
                         </Button>
                     </Grid>
                 </Grid> : 
-                <Grid container mt={2} sx={{ maxWidth: '700px' }}>
-                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' onClick={handleFollowButton} sx={{ borderRadius: 28 }}> 
+                <Grid container mt={2} className={actionButtonGrid}>
+                <Grid item xs ={6} className={actionButtonItem}>
+                    <Button variant='contained' onClick={handleFollowButton} className={actionButton}> 
                         {isFollowing ? 'UnFollow' : 'Follow'}
                     </Button>
                 </Grid>
-                <Grid item xs ={6} sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
-                    <Button variant='contained' onClick={handleProfileDetailOpen} sx={{ borderRadius: 28 }}> 
+                <Grid item xs ={6} className={actionButtonItem}>
+                    <Button variant='contained' onClick={handleProfileDetailOpen} className={actionButton}> 
                         Profile
                     </Button>
                 </Grid>
             </Grid>}
             </div>
-            <ImageList sx={{ maxWidth: '100vw'}} cols={9} rowHeight={164}>
-                {contents.map((content) => (
-                    <ImageListItem sx={{maxHeight: '164', overflow: 'hidden'}} key={content.mediaUrl} onClick={() => handleOpen(content)}>
-                        <img
-                            style={{height: '164'}}
-                            src={content.mediaUrl}
-                            srcSet={content.mediaUrl}
-                            alt={content.caption}
-                            loading='lazy'
-                        />
-                    </ImageListItem>
+            <ImageList className={imageList} cols={8} rowHeight={164}>
+                {contents.map((content, index) => (
+                    <>
+                        <ImageListItem className={imageListItem} key={content.mediaUrl} onClick={() => handleOpen(content)}>
+                            <img
+                                className={image}
+                                src={content.mediaUrl}
+                                srcSet={content.mediaUrl}
+                                alt={content.caption}
+                                loading='lazy'
+                            />
+                        </ImageListItem>
+                        {(index === contents.length-1) ? <div ref={ref}></div> : <></>}
+                    </>
                 ))}
             </ImageList>
+            <div ref={ref}></div>
             <Modal
             open={content ? true : false}
             onClose={handleClose}
@@ -209,7 +294,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} handleClose={handleClose}/>
+                    <PostContentBox userContent={{user: profile as UserModel, content: content as ContentModel} as UserContents} handleClose={handleClose} deletePost={handleDeletePost}/>
                 </Box>
             </Modal>
             <Modal
@@ -219,7 +304,7 @@ export const ProfilePage = () => {
             aria-describedby='modal-modal-description'
             >
                 <Box sx={postBoxStyle}>
-                    <CreatePostBox handleClose={handleCreatePostClose}/>
+                    <CreatePostBox addPost={addPost} handleClose={handleCreatePostClose}/>
                 </Box>
             </Modal>
             <Modal

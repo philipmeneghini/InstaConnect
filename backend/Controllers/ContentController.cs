@@ -17,6 +17,12 @@ namespace InstaConnect.Controllers
             _contentService = contentService;
         }
 
+        [HttpGet("ContentsAmount")]
+        public async Task<ActionResult<long>> GetContentsAmount([FromQuery] string? email)
+        {
+            return await _contentService.GetNumberOfContentsAsync(email);
+        }
+
         [HttpGet("Content")]
         public async Task<ActionResult<ContentModel>> GetContent([FromQuery] string? id)
         {
@@ -32,14 +38,14 @@ namespace InstaConnect.Controllers
             return await _contentService.GetContentsAsync(ids, emails, lastDate, limit);
         }
 
-        [Authorize(Policy = "ContentPolicy")]
+        [Authorize(Policy = "ContentCreatePolicy")]
         [HttpPost("Content")]
         public async Task<ActionResult<ContentModel>> PostContent([FromBody] ContentModel? newContent)
         {
             return await _contentService.CreateContentAsync(newContent);
         }
 
-        [Authorize(Policy = "ContentPolicy")]
+        [Authorize(Policy = "ContentCreatePolicy")]
         [HttpPost("Contents")]
         public async Task<ActionResult<List<ContentModel>>> PostContents([FromBody] List<ContentModel>? newContents)
         {
