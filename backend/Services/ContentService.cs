@@ -5,12 +5,13 @@ using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
 using Util.MediaType;
-using InstaConnect.Services;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using Backend.Repositories;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Backend.Services
 {
@@ -259,6 +260,34 @@ namespace Backend.Services
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
 
             return contents;
+        }
+
+        public ContentModel PatchContent(string? id, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var content = GetModel(filter);
+
+            updates.ApplyTo(content);
+
+            var result = UpdateModel(content);
+            return result;
+        }
+
+        public async Task<ContentModel> PatchContentAsync(string? id, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var content = await GetModelAsync(filter);
+
+            updates.ApplyTo(content);
+
+            var result = await UpdateModelAsync(content);
+            return result;
         }
 
         public ContentModel UpdateContent(ContentModel? updatedContent)

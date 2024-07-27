@@ -49,6 +49,7 @@ namespace Util.Constants
         static public readonly string NoArgumentsPassed = "no valid arguments have been passed into the endpoint";
         static public readonly string UserEmpty = "no user passed in";
         static public readonly string ContentEmpty = "no content passed in";
+        static public readonly string UpdatesEmpty = "no updates passed in"; 
         static public readonly string CommentEmpty = "no comment passed in";
         static public readonly string IdsEmpty = "no ids passed in";
         static public readonly string EmailEmpty = "no email passed in";
