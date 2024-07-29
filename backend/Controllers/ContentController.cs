@@ -53,10 +53,16 @@ namespace InstaConnect.Controllers
             return await _contentService.CreateContentsAsync(newContents);
         }
 
-        [HttpPatch("Content/{Id}")]
-        public async Task<ActionResult<ContentModel>> PatchContent(string Id, [FromBody] JsonPatchDocument<ContentModel> patchDoc)
+        [HttpPatch("Content")]
+        public async Task<ActionResult<ContentModel>> PatchContent([FromQuery] string id, [FromBody] JsonPatchDocument<ContentModel> patchDoc)
         {
-            return await _contentService.PatchContentAsync(Id, patchDoc);
+            return await _contentService.PatchContentAsync(id, patchDoc);
+        }
+
+        [HttpPatch("Contents")]
+        public async Task<ActionResult<List<ContentModel>>> PatchContents([FromQuery] List<string> ids, [FromBody] JsonPatchDocument<ContentModel> patchDoc)
+        {
+            return await _contentService.PatchContentsAsync(ids, patchDoc);
         }
 
         [Authorize(Policy = "ContentUpdatePolicy")]

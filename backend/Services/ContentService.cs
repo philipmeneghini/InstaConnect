@@ -290,6 +290,42 @@ namespace Backend.Services
             return result;
         }
 
+        public List<ContentModel> PatchContents(List<string>? ids, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>();
+            ids.ForEach(i => filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<ContentModel>.Filter.Or(filters);
+
+            var contents = GetModels(resultingFilter);
+
+            contents.ForEach(c => updates.ApplyTo(c));
+
+            var result = UpdateModels(contents);
+            return result;
+        }
+
+        public async Task<List<ContentModel>> PatchContentsAsync(List<string>? ids, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>();
+            ids.ForEach(i => filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<ContentModel>.Filter.Or(filters);
+
+            var contents = await GetModelsAsync(resultingFilter);
+
+            contents.ForEach(c => updates.ApplyTo(c));
+
+            var result = await UpdateModelsAsync(contents);
+            return result;
+        }
+
         public ContentModel UpdateContent(ContentModel? updatedContent)
         {
             if (updatedContent == null) throw new InstaBadRequestException(ApplicationConstants.ContentEmpty);
