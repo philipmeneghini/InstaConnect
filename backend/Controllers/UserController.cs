@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace InstaConnect.Controllers
 {
@@ -41,6 +42,20 @@ namespace InstaConnect.Controllers
         public async Task<ActionResult<List<UserModel>>> PostUsers([FromBody] List<UserModel>? newUsers)
         {
             return await _userService.CreateUsersAsync(newUsers);
+        }
+
+        [HttpPatch("User")]
+        public async Task<ActionResult<UserModel>> PatchUser([FromQuery] string? email, 
+                                                             [FromBody] JsonPatchDocument<UserModel> updates)
+        {
+            return await _userService.PatchUserAsync(email, updates);
+        }
+
+        [HttpPatch("Users")]
+        public async Task<ActionResult<List<UserModel>>> PatchUsers([FromQuery] List<string>? emails,
+                                                              [FromBody] JsonPatchDocument<UserModel> updates)
+        {
+            return await _userService.PatchUsersAsync(emails, updates);
         }
 
         [Authorize(Policy = "UserUpdatePolicy")]

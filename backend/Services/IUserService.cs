@@ -1,4 +1,5 @@
 using Backend.Models;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Backend.Services.Interfaces
 {
@@ -18,6 +19,12 @@ namespace Backend.Services.Interfaces
 
         public List<UserModel> CreateUsers(List<UserModel>? newUsers);
         public Task<List<UserModel>> CreateUsersAsync(List<UserModel>? newUsers);
+
+        public UserModel PatchUser(string? email, JsonPatchDocument<UserModel>? updates);
+        public Task<UserModel> PatchUserAsync(string? email, JsonPatchDocument<UserModel>? updates);
+
+        public List<UserModel> PatchUsers(List<string>? emails, JsonPatchDocument<UserModel>? updates);
+        public Task<List<UserModel>> PatchUsersAsync(List<string>? emails, JsonPatchDocument<UserModel>? updates);
 
         public UserModel UpdateUser(UserModel? updatedUser);
         public Task<UserModel> UpdateUserAsync(UserModel? updatedUser);
