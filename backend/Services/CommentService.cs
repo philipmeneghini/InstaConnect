@@ -4,7 +4,7 @@ using MongoDB.Driver;
 using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
-using InstaConnect.Services;
+using Backend.Repositories;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using Backend.Models.Validation;

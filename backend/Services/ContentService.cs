@@ -12,26 +12,27 @@ using Backend.Models.Validation;
 using System.Text.RegularExpressions;
 using Backend.Repositories;
 using Microsoft.AspNetCore.JsonPatch;
+using Backend.Handlers.NotificationHandlers;
 
 namespace Backend.Services
 {
     public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
         private readonly IMediaService _mediaService;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationHandler<ContentModel> _notificationHandler;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
         private readonly IValidator<ContentModel> _createUpdateContentValidator;
         private readonly IValidator<ContentEmailValidationModel> _emailContentValidator;
 
         public ContentService(IMediaService mediaService, 
-                              INotificationService notificationService,
+                              INotificationHandler<ContentModel> notificationHandler,
                               IValidator<ContentIdValidationModel> deleteGetContentValidator, 
                               IValidator<ContentEmailValidationModel> emailContentValidator, 
                               IValidator<ContentModel> createUpdateContentValidator, 
                               IOptions<MongoSettings<ContentModel>> settings): base(settings)
         {
             _mediaService = mediaService;
-            _notificationService = notificationService;
+            _notificationHandler = notificationHandler;
             _deleteGetContentValidator = deleteGetContentValidator;
             _createUpdateContentValidator = createUpdateContentValidator;
             _emailContentValidator = emailContentValidator;
@@ -269,8 +270,10 @@ namespace Backend.Services
 
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = GetModel(filter);
+            var originalContent = content;
 
             updates.ApplyTo(content);
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
 
             var result = UpdateModel(content);
             return result;
@@ -283,8 +286,10 @@ namespace Backend.Services
 
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = await GetModelAsync(filter);
+            var originalContent = content;
 
             updates.ApplyTo(content);
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
 
             var result = await UpdateModelAsync(content);
             return result;
@@ -302,7 +307,13 @@ namespace Backend.Services
 
             var contents = GetModels(resultingFilter);
 
-            contents.ForEach(c => updates.ApplyTo(c));
+            foreach(var content in contents)
+            {
+                var originalContent = content;
+
+                updates.ApplyTo(content);
+                _notificationHandler.SendNotifications(originalContent, content);
+            }
 
             var result = UpdateModels(contents);
             return result;
@@ -320,7 +331,13 @@ namespace Backend.Services
 
             var contents = await GetModelsAsync(resultingFilter);
 
-            contents.ForEach(c => updates.ApplyTo(c));
+            foreach (var content in contents)
+            {
+                var originalContent = content;
+
+                updates.ApplyTo(content);
+                _notificationHandler.SendNotificationsAsync(originalContent, content);
+            }
 
             var result = await UpdateModelsAsync(contents);
             return result;
@@ -335,17 +352,10 @@ namespace Backend.Services
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var originalContent = GetContent(updatedContent.Id);
-            if (updatedContent.Likes.Count > originalContent.Likes.Count)
-            {
-                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
-                _notificationService.CreateNotification(new NotificationModel
-                {
-                    Reciever = originalContent.Email,
-                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
-                });
-            }
 
             var content = UpdateModel(updatedContent);
+
+            _notificationHandler.SendNotifications(originalContent, content);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
@@ -364,17 +374,10 @@ namespace Backend.Services
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var originalContent = await GetContentAsync(updatedContent.Id);
-            if (updatedContent.Likes.Count > originalContent.Likes.Count)
-            {
-                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
-                _notificationService.CreateNotification(new NotificationModel
-                {
-                    Reciever = originalContent.Email,
-                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender)
-                });
-            }
 
             var content = await UpdateModelAsync(updatedContent);
+
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
 
             string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
             string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
@@ -414,15 +417,7 @@ namespace Backend.Services
             foreach (var originalContent in originalContents)
             {
                 var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
-                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
-                {
-                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
-                    _notificationService.CreateNotification(new NotificationModel
-                    {
-                        Reciever = associatedNewContent.Email,
-                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
-                    });
-                }
+                _notificationHandler.SendNotifications(originalContent, associatedNewContent);
             }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
@@ -460,15 +455,7 @@ namespace Backend.Services
             foreach (var originalContent in originalContents)
             {
                 var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
-                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
-                {
-                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
-                    await _notificationService.CreateNotificationAsync(new NotificationModel
-                    {
-                        Reciever = associatedNewContent.Email,
-                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
-                    });
-                }
+                _notificationHandler.SendNotificationsAsync(originalContent, associatedNewContent);
             }
             contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
             contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));

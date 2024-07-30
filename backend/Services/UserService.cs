@@ -5,7 +5,7 @@ using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
 using Util.MediaType;
-using InstaConnect.Services;
+using Backend.Repositories;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using static Amazon.S3.HttpVerb;

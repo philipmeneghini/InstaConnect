@@ -20,6 +20,7 @@ using Backend.Validators.NotificationValidators;
 using Backend.Authorization.NotificationPolicies;
 using Backend.Util;
 using Backend.Authorization.Helpers;
+using Backend.Handlers.NotificationHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationHandler<ContentModel>, ContentNotificationHandler>();
+builder.Services.AddScoped<INotificationHandler<UserModel>, UserNotificationHandler>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddTransient<IAuthorizationHelper, AuthorizationHelper>();
