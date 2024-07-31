@@ -8,6 +8,8 @@ using Backend.Repositories;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using Backend.Models.Validation;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Services
 {
@@ -226,6 +228,82 @@ namespace Backend.Services
             var comments = await CreateModelsAsync(result);
 
             return comments;
+        }
+
+        public CommentModel PatchComment(string? id, JsonPatchDocument<CommentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var comment = GetModel(filter);
+            var originalComment = comment;
+
+            updates.ApplyTo(comment);
+
+            var result = UpdateModel(comment);
+            return result;
+        }
+
+        public async Task<CommentModel> PatchCommentAsync(string? id, JsonPatchDocument<CommentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var comment = await GetModelAsync(filter);
+            var originalComment = comment;
+
+            updates.ApplyTo(comment);
+
+            var result = await UpdateModelAsync(comment);
+            return result;
+        }
+
+        public List<CommentModel> PatchComments(List<string>? ids, JsonPatchDocument<CommentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<CommentModel>> filters = new List<FilterDefinition<CommentModel>>();
+            ids.ForEach(i => filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<CommentModel>.Filter.Or(filters);
+
+            var comments = GetModels(resultingFilter);
+
+            foreach (var comment in comments)
+            {
+                var originalComment = comment;
+
+                updates.ApplyTo(comment);
+            }
+
+            var result = UpdateModels(comments);
+            return result;
+        }
+
+        public async Task<List<CommentModel>> PatchCommentsAsync(List<string>? ids, JsonPatchDocument<CommentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<CommentModel>> filters = new List<FilterDefinition<CommentModel>>();
+            ids.ForEach(i => filters.Add(Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<CommentModel>.Filter.Or(filters);
+
+            var comments = await GetModelsAsync(resultingFilter);
+
+            foreach (var comment in comments)
+            {
+                var originalComment = comment;
+
+                updates.ApplyTo(comment);
+            }
+
+            var result = await UpdateModelsAsync(comments);
+            return result;
         }
 
         public CommentModel UpdateComment(CommentModel? updatedComment)
