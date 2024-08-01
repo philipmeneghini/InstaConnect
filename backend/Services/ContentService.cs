@@ -270,7 +270,7 @@ namespace Backend.Services
 
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = GetModel(filter);
-            var originalContent = content;
+            var originalContent = content.Clone() as ContentModel;
 
             updates.ApplyTo(content);
             _notificationHandler.SendNotificationsAsync(originalContent, content);
@@ -286,7 +286,7 @@ namespace Backend.Services
 
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = await GetModelAsync(filter);
-            var originalContent = content;
+            var originalContent = content.Clone() as ContentModel;
 
             updates.ApplyTo(content);
             _notificationHandler.SendNotificationsAsync(originalContent, content);
@@ -309,7 +309,7 @@ namespace Backend.Services
 
             foreach(var content in contents)
             {
-                var originalContent = content;
+                var originalContent = content.Clone() as ContentModel;
 
                 updates.ApplyTo(content);
                 _notificationHandler.SendNotifications(originalContent, content);
@@ -333,7 +333,7 @@ namespace Backend.Services
 
             foreach (var content in contents)
             {
-                var originalContent = content;
+                var originalContent = content.Clone() as ContentModel;
 
                 updates.ApplyTo(content);
                 _notificationHandler.SendNotificationsAsync(originalContent, content);

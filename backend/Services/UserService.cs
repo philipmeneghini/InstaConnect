@@ -301,7 +301,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = GetModel(filter);
-            var originalUser = user;
+            var originalUser = user.Clone() as UserModel;
 
             updates.ApplyTo(user);
             _notificationHandler.SendNotifications(originalUser, user);
@@ -317,7 +317,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = await GetModelAsync(filter);
-            var originalUser = user;
+            UserModel originalUser = user.Clone() as UserModel;
 
             updates.ApplyTo(user);
             _notificationHandler.SendNotifications(originalUser, user);
@@ -340,7 +340,7 @@ namespace Backend.Services
 
             foreach (var user in users)
             {
-                var originalUser = user;
+                var originalUser = user.Clone() as UserModel;
 
                 updates.ApplyTo(user);
                 _notificationHandler.SendNotifications(originalUser, user);

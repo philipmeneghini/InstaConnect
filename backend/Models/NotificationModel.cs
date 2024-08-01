@@ -12,6 +12,19 @@ namespace Backend.Models
             return ApplicationConstants.NotificationCollectionName;
         }
 
+        public IInstaModel Clone()
+        {
+            return new NotificationModel
+            {
+                Id = Id,
+                DateCreated = DateCreated,
+                Reciever = Reciever,
+                Read = Read,
+                Sender = Sender,
+                Body = Body
+            };
+        }
+
         public object GetIndex()
         {
             return Id;

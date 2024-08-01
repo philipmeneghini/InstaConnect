@@ -237,7 +237,7 @@ namespace Backend.Services
 
             var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var comment = GetModel(filter);
-            var originalComment = comment;
+            var originalComment = comment.Clone() as CommentModel;
 
             updates.ApplyTo(comment);
 
@@ -252,7 +252,7 @@ namespace Backend.Services
 
             var filter = Builders<CommentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var comment = await GetModelAsync(filter);
-            var originalComment = comment;
+            var originalComment = comment.Clone() as CommentModel;
 
             updates.ApplyTo(comment);
 
@@ -274,7 +274,7 @@ namespace Backend.Services
 
             foreach (var comment in comments)
             {
-                var originalComment = comment;
+                var originalComment = comment.Clone() as CommentModel;
 
                 updates.ApplyTo(comment);
             }
@@ -297,7 +297,7 @@ namespace Backend.Services
 
             foreach (var comment in comments)
             {
-                var originalComment = comment;
+                var originalComment = comment.Clone() as CommentModel;
 
                 updates.ApplyTo(comment);
             }

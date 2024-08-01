@@ -13,6 +13,28 @@ namespace Backend.Models
             return ApplicationConstants.UserCollectionName;
         }
 
+        public IInstaModel Clone()
+        {
+            return new UserModel
+            {
+                Id = Id,
+                Password = Password,
+                FirstName = FirstName,
+                LastName = LastName,
+                BirthDate = BirthDate,
+                Followers = Followers,
+                Following = Following,
+                Email = Email,
+                Role = Role,
+                ProfilePictureUrl = ProfilePictureUrl,
+                PhotosUrl = PhotosUrl,
+                ReelsUrl = ReelsUrl,
+                UploadProfilePictureUrl = UploadProfilePictureUrl,
+                UploadPhotosUrl = UploadPhotosUrl,
+                UploadReelsUrl = UploadReelsUrl,
+            };
+        }
+
         public object GetIndex()
         {
             return Email;

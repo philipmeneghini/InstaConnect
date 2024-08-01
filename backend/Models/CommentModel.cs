@@ -17,6 +17,19 @@ namespace Backend.Models
             return Id;
         }
 
+        public IInstaModel Clone()
+        {
+            return new CommentModel
+            {
+                Id = Id,
+                DateCreated = DateCreated,
+                ContentId = ContentId,
+                Body = Body,
+                Likes = Likes,
+                Email = Email
+            };
+        }
+
         public Type GetType()
         {
             return typeof(CommentModel);
