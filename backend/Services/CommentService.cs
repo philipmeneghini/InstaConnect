@@ -9,7 +9,6 @@ using Backend.Models.Config;
 using Microsoft.Extensions.Options;
 using Backend.Models.Validation;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Services
 {
