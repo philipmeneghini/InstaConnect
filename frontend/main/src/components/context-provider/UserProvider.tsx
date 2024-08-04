@@ -32,10 +32,12 @@ interface UserProviderProps {
 
 export const UserContext = createContext<{user: UserModel|undefined, 
                                           token: string|null, 
-                                          updateToken: (newToken: string|null) => void}>({
+                                          updateToken: (newToken: string|null) => void,
+                                          refreshUser: () => void}>({
         user: undefined,
         token: null,
         updateToken: (newToken: string|null) => {}, 
+        refreshUser: () => {}
       })
 
 const UserProvider = (props: UserProviderProps) => {
@@ -98,6 +100,24 @@ const UserProvider = (props: UserProviderProps) => {
       buttonWrapper
     } = classes
 
+    const refreshUser = async() => {
+      if (token) {
+        try {
+            const jwtResponse = await _apiClient.verifyToken(token)
+            const user = await _apiClient.userGET(jwtResponse.email)
+            setUser(user)
+            setJwt(jwtResponse)
+        }
+        catch(err: any) {
+            setUser(undefined)
+        }
+      }
+      else {
+        setJwt(undefined)
+        setUser(undefined)
+      }
+    }
+
     const handleLogout = () => {
       localStorage.removeItem('token')
       setToken(null)
@@ -125,7 +145,7 @@ const UserProvider = (props: UserProviderProps) => {
     }
 
     return (
-        <UserContext.Provider value={{user, token, updateToken}}>
+        <UserContext.Provider value={{user, token, updateToken, refreshUser}}>
           <Modal open={popup}>
             <Box className={modalBox}>
               <Typography textAlign={'center'}> 

@@ -320,7 +320,7 @@ namespace Backend.Services
             UserModel originalUser = user.Clone() as UserModel;
 
             updates.ApplyTo(user);
-            _notificationHandler.SendNotifications(originalUser, user);
+            _notificationHandler.SendNotificationsAsync(originalUser, user);
 
             var result = await UpdateModelAsync(user);
             return result;

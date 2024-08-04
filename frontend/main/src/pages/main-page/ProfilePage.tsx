@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { _apiClient } from '../../App'
 import { ContentModel, UserModel } from '../../api/Client'
 import Header from '../../components/home-page/Header'
@@ -86,14 +86,13 @@ export const ProfilePage = () => {
     const [ profile, setProfile ] = useState<UserModel | null>()
     const [ numberOfPosts, setNumberOfPosts ] = useState<number>()
     const [ content, setContent ] = useState<ContentModel | null>(null)
-    const [ isFollowing, setIsFollowing ] = useState<boolean>()
     const [ creatPostOpen, setCreatePostOpen ] = useState<boolean>(false)
     const [ editProfileOpen, setEditProfileOpen ] = useState<boolean>(false)
     const [ profileDetailOpen, setProfileDetailOpen ] = useState<boolean>(false)
 
     const [ profilePicture ] = useProfilePicture(profile?.profilePictureUrl)
     const [ searchParams ] = useSearchParams()
-    const { user } = useContext(UserContext)
+    const { user, refreshUser } = useContext(UserContext)
     const [ ref, contents, setContents ] = useLazyContents('Failed to load posts!', 
                                                             10, 
                                                             profile !== null  && profile !== undefined ? [profile?.email as string] : [])
@@ -128,11 +127,11 @@ export const ProfilePage = () => {
         getNumberOfPosts()
     }, [profile])
 
-    useEffect(() => {
+    const isFollowing: boolean = useMemo(() => {
         if (user && profile && user?.following?.includes(profile?.email) && profile?.followers?.includes(user?.email))
-            setIsFollowing(true)
+            return true
         else
-            setIsFollowing(false)
+            return false
     }, [ user, profile ])
 
     const {
@@ -159,22 +158,40 @@ export const ProfilePage = () => {
     const handleFollowButton = async () => {
         try {
             if (profile && user) {
+                const userFollowing = user?.following ?? []
+                const profileFollowers = profile?.followers ?? []
                 if (isFollowing) {
-                    const userIndex: number = user?.following?.indexOf(profile?.email, 0) ?? -1
-                    const profileIndex: number = profile?.followers?.indexOf(user?.email, 0) ?? -1
+                    const userIndex: number = userFollowing.indexOf(profile?.email, 0) ?? -1
+                    const profileIndex: number = profileFollowers.indexOf(user?.email, 0) ?? -1
                     if (userIndex !== -1)
-                        user?.following?.splice(userIndex, 1)
+                        userFollowing.splice(userIndex, 1)
                     if(profileIndex !== -1)
-                        profile?.followers?.splice(profileIndex, 1)
+                        profileFollowers.splice(profileIndex, 1)
                 }
                 else {
-                    if (!user?.following?.includes(profile?.email))
-                        user?.following?.push(profile?.email)
-                    if (!profile?.followers?.includes(user?.email))
-                        profile?.followers?.push(user?.email)
+                    if (!userFollowing.includes(profile?.email))
+                        userFollowing.push(profile?.email)
+                    if (!profileFollowers.includes(user?.email))
+                        profileFollowers.push(user?.email)
                 }
 
-                await _apiClient.usersPUT( [ user, profile ] )
+                await _apiClient.userPATCH(user?.email, 
+                [{
+                    op: 'add',
+                    path: '/following',
+                    value: userFollowing
+                }]);
+
+                await _apiClient.userPATCH(profile?.email, 
+                [{
+                    op: 'add',
+                    path: '/followers',
+                    value: profileFollowers
+                }]);
+
+                profile.followers = profileFollowers
+                setProfile(profile)
+                refreshUser()
             }
         }
         catch {

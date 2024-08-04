@@ -12,7 +12,7 @@ namespace Backend.Handlers.NotificationHandlers
 
         public void SendNotifications(UserModel originalUser, UserModel updatedUser)
         {
-            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            if (originalUser?.Followers?.Count < updatedUser?.Followers?.Count)
             {
                 var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
                 SendNotification(updatedUser.Email, string.Format(ApplicationConstants.NewFollowerNotification, newFollower));
@@ -21,7 +21,7 @@ namespace Backend.Handlers.NotificationHandlers
 
         public async void SendNotificationsAsync(UserModel originalUser, UserModel updatedUser)
         {
-            if (originalUser?.Followers?.Count > updatedUser?.Followers?.Count)
+            if (originalUser?.Followers?.Count < updatedUser?.Followers?.Count)
             {
                 var newFollower = updatedUser?.Followers?.FirstOrDefault(u => !originalUser.Followers.Contains(u));
                 await SendNotificationAsync(updatedUser.Email, string.Format(ApplicationConstants.NewFollowerNotification, newFollower));
