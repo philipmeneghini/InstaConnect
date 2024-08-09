@@ -21,6 +21,7 @@ using Backend.Authorization.NotificationPolicies;
 using Backend.Util;
 using Backend.Authorization.Helpers;
 using Backend.Handlers.NotificationHandlers;
+using Backend.Handlers.MediaHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,8 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationHandler<ContentModel>, ContentNotificationHandler>();
 builder.Services.AddScoped<INotificationHandler<UserModel>, UserNotificationHandler>();
+builder.Services.AddScoped<IMediaHandler<ContentModel>, ContentMediaHandler>();
+builder.Services.AddScoped<IMediaHandler<UserModel>, UserMediaHandler>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddTransient<IAuthorizationHelper, AuthorizationHelper>();

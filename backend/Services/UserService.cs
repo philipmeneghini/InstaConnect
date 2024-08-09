@@ -4,35 +4,34 @@ using MongoDB.Driver;
 using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
-using Util.MediaType;
 using Backend.Repositories;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
-using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
 using Backend.Util;
 using System.Data;
 using Microsoft.AspNetCore.JsonPatch;
 using Backend.Handlers.NotificationHandlers;
+using Backend.Handlers.MediaHandlers;
 
 namespace Backend.Services
 {
     public class UserService : Repository<UserModel>, IUserService, IRoleService, ISearchService<UserModel>
     {
-        private readonly IMediaService _mediaService;
         private readonly INotificationHandler<UserModel> _notificationHandler;
+        private readonly IMediaHandler<UserModel> _mediaHandler;
         private readonly IValidator<UserEmailValidationModel> _deleteGetUserValidator;
         private readonly IValidator<UserModel> _createUpdateUserValidator;
 
-        public UserService(IMediaService mediaService, 
-                           INotificationHandler<UserModel> notificationHandler, 
+        public UserService(INotificationHandler<UserModel> notificationHandler, 
+                           IMediaHandler<UserModel> mediaHandler,  
                            IValidator<UserEmailValidationModel> deleteGetUserValidator, 
                            IValidator<UserModel> createUpdateUserValidator, 
                            IOptions<MongoSettings<UserModel>> settings): base(settings)
         {
-            _mediaService = mediaService;
             _notificationHandler = notificationHandler;
+            _mediaHandler = mediaHandler;
             _deleteGetUserValidator = deleteGetUserValidator;
             _createUpdateUserValidator = createUpdateUserValidator;
         }
@@ -46,14 +45,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = GetModel(filter);
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
+            _mediaHandler.AttachPresignedUrls(user);
 
             return user;
         }
@@ -67,14 +59,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = await GetModelAsync(filter);
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
+            _mediaHandler.AttachPresignedUrls(user);
 
             return user;
         }
@@ -99,9 +84,7 @@ namespace Backend.Services
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users);
 
             return users;
         }
@@ -126,9 +109,7 @@ namespace Backend.Services
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users);
 
             return users;
         }
@@ -153,10 +134,7 @@ namespace Backend.Services
             var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
 
             var users = await GetModelsAsync(aggregatedFilter, sort);
-
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users);
 
             return users;
         }
@@ -180,11 +158,8 @@ namespace Backend.Services
             var aggregatedFilter = Builders<UserModel>.Filter.Or(filters);
             var sort = Builders<UserModel>.Sort.Descending(u => u.Id);
             var users = GetModels(aggregatedFilter, sort);
-
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
-
+            _mediaHandler.AttachPresignedUrls(users);
+           
             return users;
         }
 
@@ -198,20 +173,7 @@ namespace Backend.Services
             newUser.Role = Role.RegularUser;
             var user = CreateModel(newUser);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-            user.UploadProfilePictureUrl = uploadUrl;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            string uploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-            user.UploadPhotosUrl = uploadPhotosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            string uploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
-            user.UploadReelsUrl = uploadReelsUrl;
+            _mediaHandler.AttachPresignedUrls(user, true);
 
             return user;
         }
@@ -226,20 +188,7 @@ namespace Backend.Services
             newUser.Role = Role.RegularUser;
             var user = await CreateModelAsync(newUser);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-            user.UploadProfilePictureUrl = uploadUrl;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            string uploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-            user.UploadPhotosUrl = uploadPhotosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            string uploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
-            user.UploadReelsUrl = uploadReelsUrl;
+            _mediaHandler.AttachPresignedUrls(user, true);
 
             return user;
         }
@@ -259,12 +208,8 @@ namespace Backend.Services
 
             RemoveUrls(ref result);
             var users = CreateModels(result);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.UploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
-            users.ForEach(user => user.UploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels));
+
+            _mediaHandler.AttachPresignedUrls(users, true);
 
             return users;
         }
@@ -284,12 +229,8 @@ namespace Backend.Services
 
             RemoveUrls(ref result);
             var users = await CreateModelsAsync(result);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.UploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
-            users.ForEach(user => user.UploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels));
+
+            _mediaHandler.AttachPresignedUrls(users, true);
 
             return users;
         }
@@ -307,6 +248,7 @@ namespace Backend.Services
             _notificationHandler.SendNotifications(originalUser, user);
 
             var result = UpdateModel(user);
+            _mediaHandler.AttachPresignedUrls(result);
             return result;
         }
 
@@ -323,6 +265,7 @@ namespace Backend.Services
             _notificationHandler.SendNotificationsAsync(originalUser, user);
 
             var result = await UpdateModelAsync(user);
+            _mediaHandler.AttachPresignedUrls(result);
             return result;
         }
 
@@ -347,6 +290,7 @@ namespace Backend.Services
             }
 
             var result = UpdateModels(users);
+            _mediaHandler.AttachPresignedUrls(result);
             return result;
         }
 
@@ -371,6 +315,7 @@ namespace Backend.Services
             }
 
             var result = await UpdateModelsAsync(users);
+            _mediaHandler.AttachPresignedUrls(result);
             return result;
         }
 
@@ -385,21 +330,7 @@ namespace Backend.Services
             var originalUser = GetModel(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = UpdateModel(updatedUser);
             _notificationHandler.SendNotifications(originalUser, user);
-
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-            user.UploadProfilePictureUrl = uploadUrl;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            string uploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-            user.UploadPhotosUrl = uploadPhotosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            string uploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
-            user.UploadReelsUrl = uploadReelsUrl;
+            _mediaHandler.AttachPresignedUrls(user, true);
 
             return user;
         }
@@ -415,21 +346,7 @@ namespace Backend.Services
             var originalUser = await GetModelAsync(Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, updatedUser.Email));
             var user = await UpdateModelAsync(updatedUser);
             _notificationHandler.SendNotificationsAsync(originalUser, user);
-
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture);
-            user.ProfilePictureUrl = url;
-            user.UploadProfilePictureUrl = uploadUrl;
-
-            string photosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos);
-            string uploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos);
-            user.PhotosUrl = photosUrl;
-            user.UploadPhotosUrl = uploadPhotosUrl;
-
-            string reelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels);
-            string uploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels);
-            user.ReelsUrl = reelsUrl;
-            user.UploadReelsUrl = uploadReelsUrl;
+            _mediaHandler.AttachPresignedUrls(user, true);
 
             return user;
         }
@@ -465,12 +382,7 @@ namespace Backend.Services
                 var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
                 _notificationHandler.SendNotifications(originalUser, associatedNewUser);
             }
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.UploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
-            users.ForEach(user => user.UploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users, true);
 
             return users;
         }
@@ -508,12 +420,7 @@ namespace Backend.Services
                 var associatedNewUser = users.FirstOrDefault(u => u.Email.Equals(originalUser.Email, StringComparison.OrdinalIgnoreCase));
                 _notificationHandler.SendNotificationsAsync(originalUser, associatedNewUser);
             }
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.UploadProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, PUT, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.UploadPhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, PUT, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
-            users.ForEach(user => user.UploadReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, PUT, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users, true);
 
             return users;
         }
@@ -527,10 +434,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = DeleteModel(filter);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
-
+            _mediaHandler.RemoveMedia(user);
 
             return user;
         }
@@ -544,9 +448,7 @@ namespace Backend.Services
 
             var filter = Builders<UserModel>.Filter.Eq(ApplicationConstants.Email, email);
             var user = await DeleteModelAsync(filter);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
-            _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
+            _mediaHandler.RemoveMedia(user);
 
             return user;
         }
@@ -554,24 +456,14 @@ namespace Backend.Services
         public List<UserModel> DeleteUsers(FilterDefinition<UserModel> filter)
         {
             var users = DeleteModels(filter);
-            foreach (var user in users)
-            {
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName);
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
-            }
-            
+            _mediaHandler.RemoveMedia(users);
+
             return users;
         }
         public async Task<List<UserModel>> DeleteUsersAsync(FilterDefinition<UserModel> filter)
         {
             var users = await DeleteModelsAsync(filter);
-            foreach (var user in users)
-            {
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName);
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName);
-                _mediaService.DeleteMedia(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName);
-            }
+            _mediaHandler.RemoveMedia(users);
 
             return users;
         }
@@ -600,9 +492,7 @@ namespace Backend.Services
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users);
 
             return users;
         }
@@ -631,9 +521,7 @@ namespace Backend.Services
 
             if (users.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoUsersFound);
-            users.ForEach(user => user.ProfilePictureUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.ProfilePicture), ApplicationConstants.S3BucketName, GET, MediaType.ProfilePicture));
-            users.ForEach(user => user.PhotosUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Photos), ApplicationConstants.S3BucketName, GET, MediaType.Photos));
-            users.ForEach(user => user.ReelsUrl = _mediaService.GeneratePresignedUrl(GenerateKey(user.Email, MediaType.Reels), ApplicationConstants.S3BucketName, GET, MediaType.Reels));
+            _mediaHandler.AttachPresignedUrls(users);
 
             return users;
         }
@@ -744,26 +632,6 @@ namespace Backend.Services
                 else
                     throw new Exception(failure.ErrorMessage);
             }
-        }
-
-        private string GenerateKey(string id, MediaType destination)
-        {
-            string res = string.Empty;
-            switch (destination)
-            {
-                case MediaType.ProfilePicture:
-                    res = string.Format(ApplicationConstants.ProfilePictureDestination, id);
-                    break;
-                case MediaType.Photos:
-                    res = string.Format(ApplicationConstants.PhotosDestination, id);
-                    break;
-                case MediaType.Reels:
-                    res = string.Format(ApplicationConstants.ReelsDestination, id);
-                    break;
-                default:
-                    throw new InstaInternalServerException(ApplicationConstants.AwsDestinationNotFound);
-            }
-            return res;
         }
     }
 }

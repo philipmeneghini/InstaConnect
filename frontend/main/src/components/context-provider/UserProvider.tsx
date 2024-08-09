@@ -33,11 +33,13 @@ interface UserProviderProps {
 export const UserContext = createContext<{user: UserModel|undefined, 
                                           token: string|null, 
                                           updateToken: (newToken: string|null) => void,
-                                          refreshUser: () => void}>({
+                                          refreshUser: () => void,
+                                          setUser: (user: UserModel) => void}>({
         user: undefined,
         token: null,
         updateToken: (newToken: string|null) => {}, 
-        refreshUser: () => {}
+        refreshUser: () => {},
+        setUser: () => {}
       })
 
 const UserProvider = (props: UserProviderProps) => {
@@ -145,7 +147,7 @@ const UserProvider = (props: UserProviderProps) => {
     }
 
     return (
-        <UserContext.Provider value={{user, token, updateToken, refreshUser}}>
+        <UserContext.Provider value={{user, token, updateToken, refreshUser, setUser}}>
           <Modal open={popup}>
             <Box className={modalBox}>
               <Typography textAlign={'center'}> 
