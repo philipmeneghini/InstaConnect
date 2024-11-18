@@ -3,8 +3,6 @@ import { Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid,TextField } from '@mui/material'
 import { _apiClient } from '../../App'
-import { Paths } from '../../utils/Constants'
-import LoginHeader from './LoginHeader'
 import { ApiException } from '../../api/Client'
 import { ToastContext } from '../context-provider/ToastProvider'
 
