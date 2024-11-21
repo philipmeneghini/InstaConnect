@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link, OutlinedInput, TextField, Typography} from '@mui/material'
+import { Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, Link, OutlinedInput, Paper, TextField, Typography} from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import React from 'react'
@@ -65,65 +65,68 @@ export const LoginPage = () => {
     }
 
     return (
-      <>
+      <div>
         <LoginHeader sideButton='Register' sideButtonPath={Paths['Register']}/>
+        <Paper elevation={5} sx={{padding:'20px', margin:'20vh 25vw'}}>
+          <Typography variant='h3' marginBottom='20px'> Login </Typography>
         <Grid
           container
           spacing={3}
           direction='column'
           alignItems='center'
           justifyContent='center'
-          sx={{ minHeight: '100vh' }}
+          maxWidth='80vw'
         >
-          <Grid item xs={10}>
-            <TextField
-              style={{ width: '60ch' }}
-              label='Email'
-              variant='outlined'
-              value={email}
-              onChange={onChangeEmail} />
-          </Grid>
-          <Grid item xs={5}>
-            <FormControl sx={{ m: 1, width: '60ch' }} variant='outlined'>
-              <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
-              <OutlinedInput
-                id='outlined-adornment-password'
-                type={showPassword ? 'text' : 'password'}
-                endAdornment={<InputAdornment position='end'>
-                  <IconButton
-                    aria-label='toggle password visibility'
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge='end'
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>}
-                label='Password'
-                onChange={onChangePassword} />
-            </FormControl>
-          </Grid>
-          <Grid item container direction='row' alignItems='center' justifyContent='center' xs={11}>
-            <Grid item xs={4.75}></Grid>
-            <Grid item xs={1.5}>
-              <Button
-                type='submit'
-                variant='contained'
-                color='primary'
-                onClick={handleClickLogin}
-              >
-                <Typography variant='h5' display='block' align='center'>
-                  Log in
-                </Typography>
-              </Button>
+            <Grid item xs={10}>
+              <TextField
+                style={{ width: '60ch' }}
+                label='Email'
+                variant='outlined'
+                value={email}
+                onChange={onChangeEmail} />
             </Grid>
-            <Grid item xs={4.75}>
-              <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
+            <Grid item xs={5}>
+              <FormControl sx={{ m: 1, width: '60ch' }} variant='outlined'>
+                <InputLabel htmlFor='outlined-adornment-password'>Password</InputLabel>
+                <OutlinedInput
+                  id='outlined-adornment-password'
+                  type={showPassword ? 'text' : 'password'}
+                  endAdornment={<InputAdornment position='end'>
+                    <IconButton
+                      aria-label='toggle password visibility'
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge='end'
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>}
+                  label='Password'
+                  onChange={onChangePassword} />
+              </FormControl>
             </Grid>
-          </Grid>
+            <Grid item container direction='row' alignItems='center' justifyContent='center' xs={11}>
+              <Grid item xs={4}></Grid>
+              <Grid item xs={3}>
+                <Button
+                  type='submit'
+                  variant='contained'
+                  color='primary'
+                  onClick={handleClickLogin}
+                >
+                  <Typography variant='h5' display='block' align='center'>
+                    Log in
+                  </Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={4}>
+                <Link display='flex' alignContent='start' justifyContent='start' href='http://localhost:3000/resetPassword'>Reset Password</Link>
+              </Grid>
+            </Grid>
         </Grid>
+        </Paper>
         <LoginFooter/>
-      </>)
+      </div>)
 }
 
 export default LoginPage

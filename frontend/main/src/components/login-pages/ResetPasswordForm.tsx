@@ -3,8 +3,6 @@ import { Formik, Form, ErrorMessage, FormikHelpers, FormikErrors } from 'formik'
 import * as Yup from 'yup'
 import { Button, FormControl, Grid,TextField } from '@mui/material'
 import { _apiClient } from '../../App'
-import { Paths } from '../../utils/Constants'
-import LoginHeader from './LoginHeader'
 import { ApiException } from '../../api/Client'
 import { ToastContext } from '../context-provider/ToastProvider'
 
@@ -60,12 +58,11 @@ export const ResetPasswordForm = () => {
 
     return (
         <>
-            <LoginHeader sideButton='Login' sideButtonPath={Paths['Login']}/>
             <Formik initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
             {
                 formik => (
                 <Form style={{display: 'flex', verticalAlign: 'middle', marginTop: '15px', flexDirection: 'column'}}autoComplete='off'>
-                    <Grid container spacing={5} direction='column' justifyContent='center' alignItems='center' sx={{ minHeight: '100vh' }}>
+                    <Grid container spacing={5} direction='column' justifyContent='center' alignItems='center'>
                         <Grid item xs={12} sx={{maxHeight:'100px'}}>
                             <FormControl sx={{ verticalAlign: 'center', m: 1, width: '60ch' }} variant='outlined'>
                                 <TextField

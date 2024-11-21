@@ -73,7 +73,7 @@ export const RegisterForm = () => {
         birthDate: Yup.date().max(maxDate, 'Must Be At Least 18 Years Old').min(minDate, 'Invalid Date').required('Required').nullable() /*Yup.string().matches(/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/, 'Please Enter a Valid Date (MM-DD-YYYY)').required('Required')*/
     })
 
-    const paperStyle = {padding:20, height:'60vh', width:380, marginLeft:'35%', marginTop:'150px'}
+    const paperStyle = {padding:20, height:'60vh', width:380, margin: 'auto', marginTop: '100px'}
 
     return (
         <Grid>
