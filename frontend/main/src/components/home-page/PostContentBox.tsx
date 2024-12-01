@@ -85,7 +85,6 @@ export const PostContentBox = ( props: PostContentProps ) => {
 
     const handleLike = async () => {
         try {
-            let newContent: ContentModel = {...content}
             let newLikes: string[] | undefined = content?.likes
             if (newLikes === undefined || newLikes === null) {
                 newLikes = [ user?.email as string ]
@@ -99,8 +98,11 @@ export const PostContentBox = ( props: PostContentProps ) => {
                     newLikes.push(user?.email as string)
                 }
             }
-            newContent.likes = newLikes
-            await _apiClient.contentPUT(newContent)
+            let newContent = await _apiClient.contentPATCH(content.id, [ {
+                path: '/likes',
+                op: 'add',
+                value: newLikes
+            } ])
             setContent(newContent)
         }
         catch(err: any) {

@@ -9,6 +9,8 @@ namespace Backend.Models
 
         public Type GetType();
 
+        public IInstaModel Clone();
+
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
 

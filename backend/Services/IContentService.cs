@@ -1,4 +1,5 @@
 using Backend.Models;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Backend.Services.Interfaces
 {
@@ -18,6 +19,12 @@ namespace Backend.Services.Interfaces
 
         public List<ContentModel> CreateContents(List<ContentModel>? newContent);
         public Task<List<ContentModel>> CreateContentsAsync(List<ContentModel>? newContent);
+
+        public ContentModel PatchContent(string? id, JsonPatchDocument<ContentModel>? updates);
+        public Task<ContentModel> PatchContentAsync(string? id, JsonPatchDocument<ContentModel>? updates);
+
+        public List<ContentModel> PatchContents(List<string>? ids, JsonPatchDocument<ContentModel>? updates);
+        public Task<List<ContentModel>> PatchContentsAsync(List<string>? ids, JsonPatchDocument<ContentModel>? updates);
 
         public ContentModel UpdateContent(ContentModel? updatedContent);
         public Task<ContentModel> UpdateContentAsync(ContentModel? updatedContent);

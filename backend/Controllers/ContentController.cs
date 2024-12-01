@@ -2,6 +2,7 @@
 using Backend.Models;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace InstaConnect.Controllers
 {
@@ -50,6 +51,18 @@ namespace InstaConnect.Controllers
         public async Task<ActionResult<List<ContentModel>>> PostContents([FromBody] List<ContentModel>? newContents)
         {
             return await _contentService.CreateContentsAsync(newContents);
+        }
+
+        [HttpPatch("Content")]
+        public async Task<ActionResult<ContentModel>> PatchContent([FromQuery] string id, [FromBody] JsonPatchDocument<ContentModel> patchDoc)
+        {
+            return await _contentService.PatchContentAsync(id, patchDoc);
+        }
+
+        [HttpPatch("Contents")]
+        public async Task<ActionResult<List<ContentModel>>> PatchContents([FromQuery] List<string> ids, [FromBody] JsonPatchDocument<ContentModel> patchDoc)
+        {
+            return await _contentService.PatchContentsAsync(ids, patchDoc);
         }
 
         [Authorize(Policy = "ContentUpdatePolicy")]

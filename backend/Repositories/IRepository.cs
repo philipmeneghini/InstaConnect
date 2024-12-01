@@ -1,6 +1,6 @@
 ﻿using Backend.Models;
 
-namespace Backend.Services.Interfaces
+namespace Backend.Repositories
 {
     public interface IRepository<T> where T : IInstaModel
     {

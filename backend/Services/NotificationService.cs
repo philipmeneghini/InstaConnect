@@ -2,7 +2,7 @@
 using Backend.Models.Config;
 using Backend.Models.Validation;
 using FluentValidation;
-using InstaConnect.Services;
+using Backend.Repositories;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Util.Constants;

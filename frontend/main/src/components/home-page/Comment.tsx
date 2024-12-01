@@ -108,23 +108,28 @@ const Comment = (props: CommentProps) => {
 
     const handleLike = async () => {
         try {
-            let newComment: CommentModel = props?.comment
-            let newLikes: string[] = likes
-            newComment.dateCreated = undefined
-            newComment.dateUpdated = undefined
-            if (liked) {
-                newLikes.splice(likes?.indexOf(user?.email as string), 1)
-                newComment.likes = newLikes
-                await _apiClient.commentPUT( newComment)
-                setLikes(newLikes)
-                setLiked(false)
-            }
-            else {
-                newLikes.push(user?.email as string)
-                newComment.likes = newLikes
-                await _apiClient.commentPUT( newComment )
-                setLikes(newLikes)
-                setLiked(true)
+            if (props?.comment) {
+                let newLikes: string[] = likes
+                if (liked) {
+                    newLikes.splice(likes?.indexOf(user?.email as string), 1)
+                    await _apiClient.commentPATCH(props?.comment?.id, [ {
+                        path: '/likes',
+                        op: 'add',
+                        value: newLikes
+                    } ])
+                    setLikes(newLikes)
+                    setLiked(false)
+                }
+                else {
+                    newLikes.push(user?.email as string)
+                    await _apiClient.commentPATCH(props?.comment?.id, [ {
+                        path: '/likes',
+                        op: 'add',
+                        value: newLikes
+                    } ])
+                    setLikes(newLikes)
+                    setLiked(true)
+                }
             }
         }
         catch (err: any) {

@@ -19,6 +19,22 @@ namespace Backend.Models
             return Id;
         }
 
+        public IInstaModel Clone()
+        {
+            return new ContentModel()
+            {
+                Id = Id,
+                DateCreated = DateCreated,
+                DateUpdated = DateUpdated,
+                Caption = Caption,
+                Likes = Likes,
+                MediaType = MediaType,
+                Email = Email,
+                MediaUrl = MediaUrl,
+                UploadMediaUrl = UploadMediaUrl
+            };
+        }
+
         public Type GetType()
         {
             return typeof(ContentModel);

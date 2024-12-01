@@ -4,33 +4,34 @@ using MongoDB.Driver;
 using Util.Constants;
 using Util.Exceptions;
 using FluentValidation;
-using Util.MediaType;
-using InstaConnect.Services;
 using Backend.Models.Config;
 using Microsoft.Extensions.Options;
-using static Amazon.S3.HttpVerb;
 using Backend.Models.Validation;
 using System.Text.RegularExpressions;
+using Backend.Repositories;
+using Microsoft.AspNetCore.JsonPatch;
+using Backend.Handlers.NotificationHandlers;
+using Backend.Handlers.MediaHandlers;
 
 namespace Backend.Services
 {
     public class ContentService : Repository<ContentModel>, IContentService, ISearchService<ContentModel>
     {
-        private readonly IMediaService _mediaService;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationHandler<ContentModel> _notificationHandler;
+        private readonly IMediaHandler<ContentModel> _mediaHandler;
         private readonly IValidator<ContentIdValidationModel> _deleteGetContentValidator;
         private readonly IValidator<ContentModel> _createUpdateContentValidator;
         private readonly IValidator<ContentEmailValidationModel> _emailContentValidator;
 
-        public ContentService(IMediaService mediaService, 
-                              INotificationService notificationService,
+        public ContentService(INotificationHandler<ContentModel> notificationHandler,
+                              IMediaHandler<ContentModel> mediaHandler,
                               IValidator<ContentIdValidationModel> deleteGetContentValidator, 
                               IValidator<ContentEmailValidationModel> emailContentValidator, 
                               IValidator<ContentModel> createUpdateContentValidator, 
                               IOptions<MongoSettings<ContentModel>> settings): base(settings)
         {
-            _mediaService = mediaService;
-            _notificationService = notificationService;
+            _notificationHandler = notificationHandler;
+            _mediaHandler = mediaHandler;
             _deleteGetContentValidator = deleteGetContentValidator;
             _createUpdateContentValidator = createUpdateContentValidator;
             _emailContentValidator = emailContentValidator;
@@ -46,8 +47,7 @@ namespace Backend.Services
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = GetModel(filter);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            content.MediaUrl = url;
+            _mediaHandler.AttachPresignedUrls(content);
 
             return content;
         }
@@ -62,8 +62,7 @@ namespace Backend.Services
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
             var content = await GetModelAsync(filter);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            content.MediaUrl = url;
+            _mediaHandler.AttachPresignedUrls(content);
 
             return content;
         }
@@ -127,7 +126,8 @@ namespace Backend.Services
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents);
 
             return contents;
         }
@@ -173,7 +173,8 @@ namespace Backend.Services
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents);
 
             return contents;
         }
@@ -189,10 +190,7 @@ namespace Backend.Services
 
             var content = CreateModel(newContent);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
-            content.MediaUrl = url;
-            content.UploadMediaUrl = uploadUrl;
+            _mediaHandler.AttachPresignedUrls(content, true);
 
             return content;
         }
@@ -208,10 +206,7 @@ namespace Backend.Services
 
             var content = await CreateModelAsync(newContent);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
-            content.MediaUrl = url;
-            content.UploadMediaUrl = uploadUrl;
+            _mediaHandler.AttachPresignedUrls(content, true);
 
             return content;
         }
@@ -232,8 +227,8 @@ namespace Backend.Services
                 result.Add(newContent);
             }
             var contents = CreateModels(result);
-            contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
-            contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents, true);
 
             return contents;
         }
@@ -255,10 +250,102 @@ namespace Backend.Services
             }
 
             var contents = await CreateModelsAsync(result);
-            contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
-            contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents, true);
 
             return contents;
+        }
+
+        public ContentModel PatchContent(string? id, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var content = GetModel(filter);
+            var originalContent = content.Clone() as ContentModel;
+
+            updates.ApplyTo(content);
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
+
+            var result = UpdateModel(content);
+
+            _mediaHandler.AttachPresignedUrls(result);
+
+            return result;
+        }
+
+        public async Task<ContentModel> PatchContentAsync(string? id, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (id == null) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
+            var content = await GetModelAsync(filter);
+            var originalContent = content.Clone() as ContentModel;
+
+            updates.ApplyTo(content);
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
+
+            var result = await UpdateModelAsync(content);
+
+            _mediaHandler.AttachPresignedUrls(result);
+
+            return result;
+        }
+
+        public List<ContentModel> PatchContents(List<string>? ids, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>();
+            ids.ForEach(i => filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<ContentModel>.Filter.Or(filters);
+
+            var contents = GetModels(resultingFilter);
+
+            foreach(var content in contents)
+            {
+                var originalContent = content.Clone() as ContentModel;
+
+                updates.ApplyTo(content);
+                _notificationHandler.SendNotifications(originalContent, content);
+            }
+
+            var result = UpdateModels(contents);
+
+            _mediaHandler.AttachPresignedUrls(result);
+
+            return result;
+        }
+
+        public async Task<List<ContentModel>> PatchContentsAsync(List<string>? ids, JsonPatchDocument<ContentModel>? updates)
+        {
+            if (updates == null) throw new InstaBadRequestException(ApplicationConstants.UpdatesEmpty);
+            if (ids == null || ids.Count == 0) throw new InstaBadRequestException(ApplicationConstants.IdsEmpty);
+
+            List<FilterDefinition<ContentModel>> filters = new List<FilterDefinition<ContentModel>>();
+            ids.ForEach(i => filters.Add(Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, i)));
+
+            var resultingFilter = Builders<ContentModel>.Filter.Or(filters);
+
+            var contents = await GetModelsAsync(resultingFilter);
+
+            foreach (var content in contents)
+            {
+                var originalContent = content.Clone() as ContentModel;
+
+                updates.ApplyTo(content);
+                _notificationHandler.SendNotificationsAsync(originalContent, content);
+            }
+
+            var result = await UpdateModelsAsync(contents);
+
+            _mediaHandler.AttachPresignedUrls(result);
+
+            return result;
         }
 
         public ContentModel UpdateContent(ContentModel? updatedContent)
@@ -270,22 +357,12 @@ namespace Backend.Services
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var originalContent = GetContent(updatedContent.Id);
-            if (updatedContent.Likes.Count > originalContent.Likes.Count)
-            {
-                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
-                _notificationService.CreateNotification(new NotificationModel
-                {
-                    Reciever = originalContent.Email,
-                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender, originalContent.Id)
-                });
-            }
 
             var content = UpdateModel(updatedContent);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
-            content.MediaUrl = url;
-            content.UploadMediaUrl = uploadUrl;
+            _notificationHandler.SendNotifications(originalContent, content);
+
+            _mediaHandler.AttachPresignedUrls(content, true);
 
             return content;
         }
@@ -299,22 +376,12 @@ namespace Backend.Services
             updatedContent.DateUpdated = DateTime.UtcNow;
 
             var originalContent = await GetContentAsync(updatedContent.Id);
-            if (updatedContent.Likes.Count > originalContent.Likes.Count)
-            {
-                var sender = updatedContent.Likes.FirstOrDefault(l => !originalContent.Likes.Contains(l));
-                _notificationService.CreateNotification(new NotificationModel
-                {
-                    Reciever = originalContent.Email,
-                    Body = string.Format(ApplicationConstants.LikedPostNotification, sender)
-                });
-            }
 
             var content = await UpdateModelAsync(updatedContent);
 
-            string url = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType);
-            string uploadUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, PUT, content.MediaType);
-            content.MediaUrl = url;
-            content.UploadMediaUrl = uploadUrl;
+            _notificationHandler.SendNotificationsAsync(originalContent, content);
+
+            _mediaHandler.AttachPresignedUrls(content, true);           
 
             return content;
         }
@@ -349,18 +416,10 @@ namespace Backend.Services
             foreach (var originalContent in originalContents)
             {
                 var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
-                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
-                {
-                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
-                    _notificationService.CreateNotification(new NotificationModel
-                    {
-                        Reciever = associatedNewContent.Email,
-                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
-                    });
-                }
+                _notificationHandler.SendNotifications(originalContent, associatedNewContent);
             }
-            contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
-            contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents, true);
 
             return contents;
         }
@@ -395,18 +454,10 @@ namespace Backend.Services
             foreach (var originalContent in originalContents)
             {
                 var associatedNewContent = contents.FirstOrDefault(u => u.Id.Equals(originalContent.Id, StringComparison.OrdinalIgnoreCase));
-                if (associatedNewContent?.Likes?.Count > originalContent?.Likes?.Count)
-                {
-                    var newLike = associatedNewContent?.Likes?.FirstOrDefault(u => !originalContent.Likes.Contains(u));
-                    await _notificationService.CreateNotificationAsync(new NotificationModel
-                    {
-                        Reciever = associatedNewContent.Email,
-                        Body = string.Format(ApplicationConstants.LikedPostNotification, newLike)
-                    });
-                }
+                _notificationHandler.SendNotificationsAsync(originalContent, associatedNewContent);
             }
-            contents.ForEach(c => c.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, GET, c.MediaType));
-            contents.ForEach(c => c.UploadMediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName, PUT, c.MediaType));
+
+            _mediaHandler.AttachPresignedUrls(contents, true);
 
             return contents;
         }
@@ -421,7 +472,7 @@ namespace Backend.Services
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
 
             var content = DeleteModel(filter);
-            _mediaService.DeleteMedia(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName);
+            _mediaHandler.RemoveMedia(content);
 
             return content;
         }
@@ -436,7 +487,7 @@ namespace Backend.Services
             var filter = Builders<ContentModel>.Filter.Eq(ApplicationConstants.Id, id);
 
             var content = await DeleteModelAsync(filter);
-            _mediaService.DeleteMedia(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName);
+            _mediaHandler.RemoveMedia(content);
 
             return content;
         }
@@ -457,7 +508,7 @@ namespace Backend.Services
             }
 
             var content = DeleteModels(filter);
-            content.ForEach(c => _mediaService.DeleteMedia(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName));
+            _mediaHandler.RemoveMedia(content);
 
             return content;
         }
@@ -478,7 +529,7 @@ namespace Backend.Services
             }
 
             var content = await DeleteModelsAsync(filter);
-            content.ForEach(c => _mediaService.DeleteMedia(GenerateKey(c.Email, c.Id, c.MediaType), ApplicationConstants.S3BucketName));
+            _mediaHandler.RemoveMedia(content);
 
             return content;
         }
@@ -505,7 +556,7 @@ namespace Backend.Services
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+            _mediaHandler.AttachPresignedUrls(contents);
 
             return contents;
         }
@@ -532,7 +583,7 @@ namespace Backend.Services
 
             if (contents.Count == 0)
                 throw new InstaNotFoundException(ApplicationConstants.NoContentFound);
-            contents.ForEach(content => content.MediaUrl = _mediaService.GeneratePresignedUrl(GenerateKey(content.Email, content.Id, content.MediaType), ApplicationConstants.S3BucketName, GET, content.MediaType));
+            _mediaHandler.AttachPresignedUrls(contents);
 
             return contents;
         }
@@ -546,26 +597,6 @@ namespace Backend.Services
                 else
                     throw new Exception(failure.ErrorMessage);
             }
-        }
-
-        private static string GenerateKey(string email, string id, MediaType destination)
-        {
-            string res;
-            switch (destination)
-            {
-                case MediaType.ProfilePicture:
-                    res = string.Format(ApplicationConstants.ProfilePictureDestination, email, id);
-                    break;
-                case MediaType.Photos:
-                    res = string.Format(ApplicationConstants.PhotosContentDestination, email, id);
-                    break;
-                case MediaType.Reels:
-                    res = string.Format(ApplicationConstants.ReelsContentDestination, email, id);
-                    break;
-                default:
-                    throw new InstaInternalServerException(ApplicationConstants.AwsDestinationNotFound);
-            }
-            return res;
         }
     }
 }

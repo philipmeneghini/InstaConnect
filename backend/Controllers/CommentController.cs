@@ -2,6 +2,7 @@
 using Backend.Models;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace InstaConnect.Controllers
 {
@@ -50,6 +51,18 @@ namespace InstaConnect.Controllers
         public async Task<ActionResult<List<CommentModel>>> PostComments([FromBody] List<CommentModel>? newComments)
         {
             return await _commentService.CreateCommentsAsync(newComments);
+        }
+
+        [HttpPatch("Comment")]
+        public async Task<ActionResult<CommentModel>> PatchComment([FromQuery] string? id, [FromBody] JsonPatchDocument<CommentModel>? updates)
+        {
+            return await _commentService.PatchCommentAsync(id, updates);
+        }
+
+        [HttpPatch("Comments")]
+        public async Task<ActionResult<List<CommentModel>>> PatchComments([FromQuery] List<string>? ids, [FromBody] JsonPatchDocument<CommentModel>? updates)
+        {
+            return await _commentService.PatchCommentsAsync(ids, updates);
         }
 
         [Authorize(Policy = "CommentUpdatePolicy")]

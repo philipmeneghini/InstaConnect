@@ -1,14 +1,13 @@
 using MongoDB.Driver;
-using Backend.Services.Interfaces;
 using Util.Constants;
 using Microsoft.Extensions.Options;
 using Backend.Models;
 using Util.Exceptions;
 using Backend.Models.Config;
 
-namespace InstaConnect.Services
+namespace Backend.Repositories
 {
-    public abstract class Repository<T> : IRepository<T> where T:IInstaModel
+    public abstract class Repository<T> : IRepository<T> where T : IInstaModel
     {
         private MongoClient _dbClient;
         private IMongoDatabase _database;
@@ -37,7 +36,7 @@ namespace InstaConnect.Services
 
         protected T GetModel(FilterDefinition<T> filter)
         {
-            var result= _collection.Find(filter);
+            var result = _collection.Find(filter);
             var model = result.FirstOrDefault();
             if (model == null)
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
@@ -67,7 +66,7 @@ namespace InstaConnect.Services
         protected async Task<List<T>> GetModelsAsync(FilterDefinition<T> filter, SortDefinition<T>? sort = null, int? limit = null)
         {
             var findOptions = new FindOptions<T, T>();
-            if (sort != null) 
+            if (sort != null)
                 findOptions.Sort = sort;
             if (limit != null)
             {
@@ -79,7 +78,7 @@ namespace InstaConnect.Services
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return userList;
         }
-        
+
         protected T CreateModel(T model)
         {
             var filter = Builders<T>.Filter.Eq(_index, model.GetIndex());
@@ -116,7 +115,7 @@ namespace InstaConnect.Services
             if (modelsFound.Count != 0)
                 throw new InstaBadRequestException(ApplicationConstants.InsertModelExistsException);
             _collection.InsertMany(models);
-           return models;
+            return models;
         }
 
         protected async Task<List<T>> CreateModelsAsync(List<T> models)
@@ -263,7 +262,7 @@ namespace InstaConnect.Services
                 throw new InstaNotFoundException(ApplicationConstants.NotFoundMongoErrorMessage);
             return result;
         }
-        protected async Task<T> DeleteModelAsync(FilterDefinition<T> filter) 
+        protected async Task<T> DeleteModelAsync(FilterDefinition<T> filter)
         {
             var result = await _collection.FindOneAndDeleteAsync(filter);
             if (result == null)
